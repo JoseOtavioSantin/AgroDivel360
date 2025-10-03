@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Cadastro de Gestores</title>
+    <!-- Adicione aqui seu CSS para estilizar a página -->
+    <link rel="stylesheet" href="/assets/css/Pages/Cadastros/style.css"> 
+</head>
+<body>
+
+    <div class="container">
+        <h1>Cadastro de Novos Gestores</h1>
+        <p>Preencha os dados abaixo para criar um novo usuário e associá-lo a um grupo.</p>
+
+        <form id="form-cadastro-gestor">
+            <div class="form-group">
+                <label for="nome">Nome Completo:</label>
+                <input type="text" id="nome" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha Provisória:</label>
+                <input type="password" id="senha" required>
+            </div>
+
+            <div class="form-group">
+                <label for="grupo">Grupo de Permissão:</label>
+                <select id="grupo" required>
+                    <option value="">Selecione um grupo</option>
+                    <option value="admin">Admin</option>
+                    <option value="diretoria">Diretoria</option>
+                    <option value="comercial">Comercial</option>
+                    <option value="pecas">Peças</option>
+                    <option value="servicos">Serviços</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="filial">Filial:</label>
+                <input type="text" id="filial" placeholder="Ex: Campos Novos" required>
+            </div>
+            
+            <button type="submit">Cadastrar Gestor</button>
+        </form>
+        
+        <div id="status-message" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- Importe os scripts do Firebase e o seu script de lógica -->
+    <!-- ATENÇÃO: Use o type="module" para que os 'imports' funcionem -->
+    <script type="module" src="/assets/js/firebase-config.js"></script>
+    <script type="module" src="/assets/js/Cadastros/CadastroGestores.js"></script>
+
+</body>
+</html>
