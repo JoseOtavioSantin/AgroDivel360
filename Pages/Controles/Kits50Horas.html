@@ -139,7 +139,7 @@
   </div>
 
 <script type="module">
-  import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+  import { garantirAutenticacao } from '/assets/js/auth-guard.js?v=2';
   import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, getDocs, doc, updateDoc, addDoc, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -152,10 +152,11 @@
       const db = getFirestore(app);
       const kitsCollection = collection(db, "kits50Horas");
 
-      // NOVO: Pega os grupos do usuário do localStorage
+      // Pega os grupos do usuário do localStorage. Esta é a verificação principal.
       const userGroups = JSON.parse(localStorage.getItem("userGroups") || "[]");
       const podeEditar = userGroups.includes("pecas");
 
+      // O resto do seu código de inicialização...
       let logoBase64 = null;
       async function carregarLogoParaPDF() { /* ...código do logo sem alterações... */ }
       await carregarLogoParaPDF();
@@ -207,7 +208,7 @@
         atualizarCards();
       }
 
-      // FUNÇÃO RENDERIZAR TABELA ATUALIZADA
+      // FUNÇÃO RENDERIZAR TABELA ATUALIZADA E SIMPLIFICADA
       function renderizarTabela() {
         tabelaBody.innerHTML = '';
         if (dadosFiltrados.length === 0) {
@@ -219,12 +220,11 @@
           tr.dataset.id = kit.id;
           tr.className = kit.status === 'Em Andamento' ? 'status-em-andamento' : 'status-concluido';
           
-          // Gera o botão de edição apenas se o usuário tiver permissão
+          // Gera o botão de edição se o usuário tiver permissão
           const editButtonHTML = podeEditar 
-            ? `<button class="btn-row-action btn-edit" title="Editar"><i data-lucide="pencil" style="width: 16px;"></i></button>` 
+            ? `<button class="btn-row-action btn-edit" data-id="${kit.id}" title="Editar"><i data-lucide="pencil" style="width: 16px;"></i></button>` 
             : '';
 
-          // Células não são mais 'contenteditable' por padrão
           tr.innerHTML = `
             <td data-field="dataEntrega">${formatarData(kit.dataEntrega)}</td>
             <td data-field="chassi">${kit.chassi || ''}</td>
@@ -234,95 +234,86 @@
             <td data-field="quemEntregou">${kit.quemEntregou || ''}</td>
             <td data-field="quemPegou">${kit.quemPegou || ''}</td>
             <td>
-                <select class="status-select" data-field="status" ${!podeEditar ? 'disabled' : ''}>
+                <select class="status-select" data-id="${kit.id}" data-field="status" ${!podeEditar ? 'disabled' : ''}>
                     <option value="Em Andamento">Em Andamento</option>
                     <option value="Concluído">Concluído</option>
                 </select>
             </td>
             <td class="acoes-cell">
                 ${editButtonHTML}
-                <button class="btn-row-action btn-print" title="Gerar PDF"><i data-lucide="printer" style="width: 16px;"></i></button>
+                <button class="btn-row-action btn-print" data-id="${kit.id}" title="Gerar PDF"><i data-lucide="printer" style="width: 16px;"></i></button>
             </td>
           `;
           tabelaBody.appendChild(tr);
           tr.querySelector('select[data-field="status"]').value = kit.status;
         });
         lucide.createIcons();
-        adicionarEventosTabela();
+        adicionarEventosTabela(); // Chama a função para adicionar os eventos de clique
       }
-
-      function gerarPDF(kit) { /* ...código do PDF sem alterações... */ }
 
       // FUNÇÃO DE EVENTOS ATUALIZADA
       function adicionarEventosTabela() {
-          tabelaBody.querySelectorAll('tr').forEach(row => {
-              const id = row.dataset.id;
-              if (!id) return;
+          // Usando delegação de eventos para simplificar
+          tabelaBody.addEventListener('click', (event) => {
+              const button = event.target.closest('button');
+              if (!button) return;
 
-              // Evento para o botão de Editar/Salvar
-              const editButton = row.querySelector('.btn-edit');
-              if (editButton) {
-                  editButton.addEventListener('click', () => toggleEditMode(row, id));
-              }
+              const id = button.dataset.id;
+              const row = button.closest('tr');
 
-              // Evento para o botão de Imprimir
-              row.querySelector('.btn-print').addEventListener('click', () => {
+              if (button.classList.contains('btn-edit')) {
+                  toggleEditMode(row, id, button);
+              } else if (button.classList.contains('btn-save-row')) {
+                  toggleEditMode(row, id, button); // A mesma função vai tratar o salvamento
+              } else if (button.classList.contains('btn-print')) {
                   const kitData = dadosFiltrados.find(k => k.id === id);
                   if (kitData) gerarPDF(kitData);
-              });
-
-              // Evento para o select de status (se o usuário puder editar)
-              const statusSelect = row.querySelector('.status-select');
-              if (!statusSelect.disabled) {
-                  statusSelect.addEventListener('change', async (e) => {
-                      await atualizarDocumento(id, { status: e.target.value });
-                      aplicarFiltros(); // Re-renderiza para ordenar e atualizar cores
-                  });
               }
+          });
+
+          // Evento para o select de status
+          tabelaBody.querySelectorAll('.status-select').forEach(select => {
+              if (select.disabled) return;
+              select.addEventListener('change', async (e) => {
+                  const id = e.target.dataset.id;
+                  await atualizarDocumento(id, { status: e.target.value });
+                  aplicarFiltros();
+              });
           });
       }
 
-      // NOVA FUNÇÃO: GERENCIA O MODO DE EDIÇÃO
-      async function toggleEditMode(row, id) {
+      // FUNÇÃO DE MODO DE EDIÇÃO ATUALIZADA
+      async function toggleEditMode(row, id, button) {
           const isEditing = row.classList.contains('editing');
-          const editButton = row.querySelector('.btn-row-action');
           const cellsToEdit = row.querySelectorAll('td[data-field]:not([data-field="dataEntrega"])');
 
-          if (isEditing) { // SALVAR ALTERAÇÕES
+          if (isEditing) { // SALVAR
               const dataToUpdate = {};
               cellsToEdit.forEach(cell => {
                   dataToUpdate[cell.dataset.field] = cell.textContent.trim();
                   cell.contentEditable = 'false';
               });
-
               await atualizarDocumento(id, dataToUpdate);
-
               row.classList.remove('editing');
-              editButton.classList.remove('btn-save-row');
-              editButton.classList.add('btn-edit');
-              editButton.title = 'Editar';
-              editButton.innerHTML = '<i data-lucide="pencil" style="width: 16px;"></i>';
-              lucide.createIcons();
-
-          } else { // ENTRAR NO MODO DE EDIÇÃO
+              button.classList.replace('btn-save-row', 'btn-edit');
+              button.title = 'Editar';
+              button.innerHTML = '<i data-lucide="pencil" style="width: 16px;"></i>';
+          } else { // EDITAR
               cellsToEdit.forEach(cell => {
                   cell.contentEditable = 'true';
               });
               row.classList.add('editing');
-              editButton.classList.remove('btn-edit');
-              editButton.classList.add('btn-save-row');
-              editButton.title = 'Salvar';
-              editButton.innerHTML = '<i data-lucide="save" style="width: 16px;"></i>';
-              lucide.createIcons();
-              // Foca na primeira célula editável
+              button.classList.replace('btn-edit', 'btn-save-row');
+              button.title = 'Salvar';
+              button.innerHTML = '<i data-lucide="save" style="width: 16px;"></i>';
               cellsToEdit[0].focus();
           }
+          lucide.createIcons();
       }
 
-      async function atualizarDocumento(id, data) {
-          await updateDoc(doc(db, "kits50Horas", id), data);
-      }
-
+      // Funções auxiliares (sem alterações)
+      function gerarPDF(kit) { /* ...código do PDF sem alterações... */ }
+      async function atualizarDocumento(id, data) { await updateDoc(doc(db, "kits50Horas", id), data); }
       function atualizarCards() { /* ...sem alterações... */ }
       function formatarData(dataString) { /* ...sem alterações... */ }
       window.abrirModal = () => { /* ...sem alterações... */ }
@@ -346,6 +337,7 @@
 
   iniciarPagina();
 </script>
-
+  
 </body>
 </html>
+
