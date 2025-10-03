@@ -14,15 +14,11 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- SCRIPT DE PROTEÇÃO UNIVERSAL (DEVE VIR ANTES DO SCRIPT PRINCIPAL ) -->
-  <!-- Certifique-se de que o caminho para 'auth-guard.js' e 'firebase-config.js' está correto -->
-  <script type="module" src="/assets/js/auth-guard.js"></script>
-
   <style>
-    /* Seu CSS continua o mesmo, sem alterações */
+    /* Seu CSS aqui... */
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
-    header { background-color: #2c2f3f; padding: 20px; text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 1px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    header { background-color: #2c2f3f; padding: 20px; text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 1px; box-shadow: 0 2px 4px rgba(0,0,0,0.2 ); }
     #dynamic-title { margin-top: 10px; font-size: 16px; font-weight: normal; color: #ccc; }
     .main { display: flex; flex: 1; overflow: hidden; }
     .sidebar { width: 250px; background-color: #2c2f3f; padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
@@ -64,6 +60,7 @@
   </style>
 </head>
 <body>
+  <!-- Seu HTML do body aqui... -->
   <header>
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <img src="/assets/images/logo.png" alt="Logo" class="logo">
@@ -74,11 +71,9 @@
       <div style="width: 65px;"></div>
     </div>
   </header>
-
   <button onclick="window.history.back()" title="Voltar" style="position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #00205b, #009bd6); color: white; border: none; margin-right; 10px; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 9999;">
     ← Voltar
   </button>
-
   <div class="main">
     <div class="sidebar">
       <div class="card pink-card"><h2 id="total-clientes">0</h2><p><i data-lucide="users"></i> Total Clientes</p></div>
@@ -86,7 +81,6 @@
       <div class="card blue-card"><h2 id="valor-total">R$ 0,00</h2><p><i data-lucide="dollar-sign"></i> Valor Total (R$)</p></div>
       <div class="card purple-card"><h2 id="cancelados">0</h2><p><i data-lucide="x-octagon"></i> Cancelados</p></div>
     </div>
-
     <div class="content">
       <div class="filters">
         <input id="filtro-cliente" type="text" placeholder="Buscar cliente..." />
@@ -113,7 +107,6 @@
       </table>
     </div>
   </div>
-
   <div id="popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:9999;">
     <div style="background:#2c2f3f;padding:20px;border-radius:12px;width:90%;max-width:400px;">
       <h3>Atualizar Checklist</h3>
@@ -135,177 +128,162 @@
     </div>
   </div>
 
-  <!-- SCRIPT PRINCIPAL DA PÁGINA -->
+  <!-- SCRIPT PRINCIPAL DA PÁGINA (VERSÃO FINAL) -->
   <script type="module">
-    // Importa as funções do Firebase (o auth-guard já inicializou o app)
+    // 1. Importa a função de guarda (com o "cache buster") e as funções do Firebase
+    import { garantirAutenticacao } from '/assets/js/auth-guard.js';
     import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-    // Configurações iniciais
-    const db = getFirestore( );
-    const tipoChecklist = new URLSearchParams(window.location.search).get("tipo") || "checklistComercial";
-    let dadosTotais = [];
+    // Função principal assíncrona para iniciar a página
+    async function iniciarPagina( ) {
+        try {
+            // 2. ESPERA a autenticação ser confirmada.
+            await garantirAutenticacao();
+            console.log("Autenticação confirmada. Iniciando a página do dashboard...");
 
-    // --- LÓGICA DA PÁGINA (INICIA APÓS AUTENTICAÇÃO) ---
+            // 3. Agora que a autenticação passou, podemos configurar o Firebase e a página
+            const app = getApp();
+            const db = getFirestore(app);
+            const tipoChecklist = new URLSearchParams(window.location.search).get("tipo") || "checklistComercial";
+            let dadosTotais = [];
 
-    // 1. Espera o evento 'auth-ready' do auth-guard.js antes de executar qualquer coisa.
-    window.addEventListener('auth-ready', () => {
-        console.log("Autenticação confirmada. Iniciando a página do dashboard...");
-        
-        // Configura os elementos da página que dependem do DOM
-        setupPage();
-        
-        // Agora que a autenticação passou, podemos carregar os dados com segurança.
-        carregarDados();
-    });
+            // --- O RESTO DO SEU CÓDIGO VAI AQUI DENTRO ---
 
-    function setupPage() {
-        // Define o título principal com base no tipo de checklist
-        document.getElementById("dynamic-title").textContent =
-            tipoChecklist === "checklistComercial" ? "Comercial" :
-            tipoChecklist === "checklistRevisao" ? "Revisão" :
-            tipoChecklist === "checklistPecas" ? "Peças" : "Painel";
-
-        // Adiciona os listeners para os filtros e botões
-        lucide.createIcons();
-        document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
-        document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
-        document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
-        document.getElementById("filtro-municipio").addEventListener("input", aplicarFiltros);
-        document.getElementById("btn-exportar").addEventListener("click", exportarParaExcel);
-
-        flatpickr("#filtro-periodo", {
-            mode: "range",
-            dateFormat: "Y-m-d",
-            locale: "pt",
-            onChange: aplicarFiltros
-        });
-
-        // Configura o auto-refresh
-        setInterval(() => {
-            console.log("Atualizando dados do painel...");
-            carregarDados();
-        }, 60000); // 1 minuto
-    }
-
-    async function carregarDados() {
-        // As filiais já foram salvas no localStorage pelo auth-guard.js
-        const filiaisLogadas = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-        
-        // Atualiza o título da página com as filiais do gestor
-        document.getElementById("dynamic-title").textContent += ` | Filiais: ${filiaisLogadas.join(", ")}`;
-
-        const querySnapshot = await getDocs(collection(db, tipoChecklist));
-        dadosTotais = [];
-
-        querySnapshot.forEach(docItem => {
-            const dados = docItem.data();
-            // Filtra os dados para incluir apenas os das filiais do gestor logado
-            if (filiaisLogadas.map(f => f.toLowerCase().trim()).includes((dados.filial || "").toLowerCase().trim())) {
-                dadosTotais.push({ id: docItem.id, ...dados });
+            function setupPage() {
+                document.getElementById("dynamic-title").textContent =
+                    tipoChecklist === "checklistComercial" ? "Comercial" :
+                    tipoChecklist === "checklistRevisao" ? "Revisão" :
+                    tipoChecklist === "checklistPecas" ? "Peças" : "Painel";
+                lucide.createIcons();
+                document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
+                document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
+                document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
+                document.getElementById("filtro-municipio").addEventListener("input", aplicarFiltros);
+                document.getElementById("btn-exportar").addEventListener("click", exportarParaExcel);
+                flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
+                setInterval(() => { console.log("Atualizando dados do painel..."); carregarDados(); }, 60000);
             }
-        });
-        
-        console.log("Total de registros encontrados para as filiais:", dadosTotais.length);
-        aplicarFiltros();
+
+            async function carregarDados() {
+                const filiaisLogadas = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
+                const tituloBase = document.getElementById("dynamic-title").textContent.split('|')[0].trim();
+                document.getElementById("dynamic-title").textContent = `${tituloBase} | Filiais: ${filiaisLogadas.join(", ")}`;
+                
+                const querySnapshot = await getDocs(collection(db, tipoChecklist));
+                dadosTotais = [];
+                querySnapshot.forEach(docItem => {
+                    const dados = docItem.data();
+                    if (filiaisLogadas.map(f => f.toLowerCase().trim()).includes((dados.filial || "").toLowerCase().trim())) {
+                        dadosTotais.push({ id: docItem.id, ...dados });
+                    }
+                });
+                console.log("Total de registros encontrados para as filiais:", dadosTotais.length);
+                aplicarFiltros();
+            }
+
+            function aplicarFiltros() {
+              const clienteFiltro = document.getElementById("filtro-cliente").value.toLowerCase();
+              const statusFiltro = document.getElementById("filtro-status").value;
+              const consultorFiltro = document.getElementById("filtro-consultor").value.toLowerCase();
+              const municipioFiltro = document.getElementById("filtro-municipio").value.toLowerCase();
+              const instance = document.getElementById("filtro-periodo")._flatpickr;
+              const selectedDates = instance.selectedDates;
+              let dataInicio = "", dataFim = "";
+              if (selectedDates.length === 2) {
+                dataInicio = selectedDates[0].toISOString().slice(0, 10);
+                dataFim = selectedDates[1].toISOString().slice(0, 10);
+              } else if (selectedDates.length === 1) {
+                dataInicio = dataFim = selectedDates[0].toISOString().slice(0, 10);
+              }
+              const painel = document.getElementById("painel-detalhes");
+              painel.innerHTML = "";
+              const filtrados = dadosTotais.filter(d => {
+                const clienteOk = (d.nomeCliente || "").toLowerCase().includes(clienteFiltro);
+                const statusOk = statusFiltro === "" || (d.statusChecklist || "") === statusFiltro;
+                const consultorOk = (d.consultor || "").toLowerCase().includes(consultorFiltro);
+                const municipioOk = (d.municipio || "").toLowerCase().includes(municipioFiltro);
+                const dentroDoPeriodo = (!dataInicio || (d.dataVisita || "") >= dataInicio) && (!dataFim || (d.dataVisita || "") <= dataFim);
+                return clienteOk && statusOk && consultorOk && municipioOk && dentroDoPeriodo;
+              });
+              document.getElementById("total-clientes").textContent = filtrados.length;
+              document.getElementById("total-concluidos").textContent = filtrados.filter(d => d.statusChecklist === "Concluído").length;
+              document.getElementById("cancelados").textContent = filtrados.filter(d => d.statusChecklist === "Cancelado").length;
+              let totalValor = 0;
+              filtrados.forEach(d => {
+                if (!isNaN(d.valorNegociado)) totalValor += Number(d.valorNegociado);
+                const statusClass = d.statusChecklist === "Concluído" ? "status-concluido" : d.statusChecklist === "Cancelado" ? "status-cancelado" : d.statusChecklist === "Em andamento" ? "status-em-andamento" : "";
+                painel.innerHTML += `
+                  <tr class="${statusClass}">
+                    <td>${d.dataVisita || "-"}</td><td>${d.nomeCliente || "-"}</td><td>${d.municipio || "-"}</td><td>${d.consultor || "-"}</td><td>${d.modelo || "-"}</td><td>${d.horimetro || "-"}</td><td>${d.modeloTrator || "-"}</td>
+                    <td style="text-align: center;">${d.telefone ? `<a href="https://wa.me/55${d.telefone.replace(/\D/g, '' )}" target="_blank" title="Chamar no WhatsApp" style="color: #25D366; font-size: 22px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i></a>` : "-"}</td>
+                    <td data-comentario="${d.comentarioResponsavel || ''}" data-valor="${d.valorNegociado || 0}">${d.observacoes || "-"}</td>
+                    <td>${(d.checklist || []).map(item => `<span style="background:#fff; color:#00205b; padding:3px 8px; border-radius:5px; margin:2px; display:inline-block; font-size:10px">${item}</span>`).join("")}</td>
+                    <td class="acoes"><button class="btn-acao" data-id="${d.id}" title="Abrir ações">➕</button></td>
+                  </tr>`;
+              });
+              document.getElementById("valor-total").textContent = `R$ ${totalValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+              document.querySelectorAll(".acoes button").forEach(btn => btn.addEventListener("click", () => abrirPopup(btn.getAttribute("data-id"))));
+            }
+
+            async function abrirPopup(id) {
+              document.getElementById("popup").style.display = "flex";
+              document.getElementById("docIdSelecionado").value = id;
+              const docRef = doc(db, tipoChecklist, id);
+              const docSnap = await getDoc(docRef);
+              if (docSnap.exists()) {
+                const dados = docSnap.data();
+                document.getElementById("comentario").value = dados.comentarioResponsavel || "";
+                document.getElementById("statusChecklist").value = dados.statusChecklist || "Em andamento";
+                document.getElementById("valorNegociado").value = dados.valorNegociado || "";
+              }
+            }
+
+            function fecharPopup() { document.getElementById("popup").style.display = "none"; }
+
+            async function salvarPopup() {
+              const id = document.getElementById("docIdSelecionado").value;
+              const docRef = doc(db, tipoChecklist, id);
+              await updateDoc(docRef, {
+                comentarioResponsavel: document.getElementById("comentario").value,
+                statusChecklist: document.getElementById("statusChecklist").value,
+                valorNegociado: parseFloat(document.getElementById("valorNegociado").value) || 0
+              });
+              fecharPopup();
+              carregarDados();
+            }
+
+            function exportarParaExcel() {
+              const headers = ["Data da Visita", "Cliente", "Município", "Consultor", "Modelo", "Horímetro", "Troca", "Telefone", "Observações", "Checklist", "Comentário", "Valor (R$)", "Status"];
+              const linhas = Array.from(document.querySelectorAll("#painel-detalhes tr")).map(tr => {
+                const tds = tr.querySelectorAll("td");
+                const status = tr.classList.contains("status-concluido") ? "Concluído" : tr.classList.contains("status-cancelado") ? "Cancelado" : tr.classList.contains("status-em-andamento") ? "Em andamento" : "";
+                return [
+                  tds[0]?.textContent.trim(), tds[1]?.textContent.trim(), tds[2]?.textContent.trim(), tds[3]?.textContent.trim(), tds[4]?.textContent.trim(),
+                  tds[5]?.textContent.trim(), tds[6]?.textContent.trim(), tds[7]?.textContent.trim(), tds[8]?.textContent.trim(), tds[9]?.innerText.trim(),
+                  tds[8]?.dataset.comentario || "", tds[8]?.dataset.valor || "", status
+                ];
+              });
+              const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]);
+              const wb = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(wb, planilha, "Checklist");
+              XLSX.writeFile(wb, "checklists_filtrados.xlsx");
+            }
+
+            window.fecharPopup = fecharPopup;
+            window.salvarPopup = salvarPopup;
+
+            // Finalmente, chamamos as funções para montar a página
+            setupPage();
+            carregarDados();
+
+        } catch (error) {
+            console.error("Falha na autenticação:", error);
+        }
     }
 
-    function aplicarFiltros() {
-      const clienteFiltro = document.getElementById("filtro-cliente").value.toLowerCase();
-      const statusFiltro = document.getElementById("filtro-status").value;
-      const consultorFiltro = document.getElementById("filtro-consultor").value.toLowerCase();
-      const municipioFiltro = document.getElementById("filtro-municipio").value.toLowerCase();
-      
-      const instance = document.getElementById("filtro-periodo")._flatpickr;
-      const selectedDates = instance.selectedDates;
-      let dataInicio = "", dataFim = "";
-      if (selectedDates.length === 2) {
-        dataInicio = selectedDates[0].toISOString().slice(0, 10);
-        dataFim = selectedDates[1].toISOString().slice(0, 10);
-      } else if (selectedDates.length === 1) {
-        dataInicio = dataFim = selectedDates[0].toISOString().slice(0, 10);
-      }
-
-      const painel = document.getElementById("painel-detalhes");
-      painel.innerHTML = "";
-
-      const filtrados = dadosTotais.filter(d => {
-        const clienteOk = (d.nomeCliente || "").toLowerCase().includes(clienteFiltro);
-        const statusOk = statusFiltro === "" || (d.statusChecklist || "") === statusFiltro;
-        const consultorOk = (d.consultor || "").toLowerCase().includes(consultorFiltro);
-        const municipioOk = (d.municipio || "").toLowerCase().includes(municipioFiltro);
-        const dentroDoPeriodo = (!dataInicio || (d.dataVisita || "") >= dataInicio) && (!dataFim || (d.dataVisita || "") <= dataFim);
-        return clienteOk && statusOk && consultorOk && municipioOk && dentroDoPeriodo;
-      });
-
-      document.getElementById("total-clientes").textContent = filtrados.length;
-      document.getElementById("total-concluidos").textContent = filtrados.filter(d => d.statusChecklist === "Concluído").length;
-      document.getElementById("cancelados").textContent = filtrados.filter(d => d.statusChecklist === "Cancelado").length;
-
-      let totalValor = 0;
-      filtrados.forEach(d => {
-        if (!isNaN(d.valorNegociado)) totalValor += Number(d.valorNegociado);
-        const statusClass = d.statusChecklist === "Concluído" ? "status-concluido" : d.statusChecklist === "Cancelado" ? "status-cancelado" : d.statusChecklist === "Em andamento" ? "status-em-andamento" : "";
-        painel.innerHTML += `
-          <tr class="${statusClass}">
-            <td>${d.dataVisita || "-"}</td><td>${d.nomeCliente || "-"}</td><td>${d.municipio || "-"}</td><td>${d.consultor || "-"}</td><td>${d.modelo || "-"}</td><td>${d.horimetro || "-"}</td><td>${d.modeloTrator || "-"}</td>
-            <td style="text-align: center;">${d.telefone ? `<a href="https://wa.me/55${d.telefone.replace(/\D/g, '' )}" target="_blank" title="Chamar no WhatsApp" style="color: #25D366; font-size: 22px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i></a>` : "-"}</td>
-            <td data-comentario="${d.comentarioResponsavel || ''}" data-valor="${d.valorNegociado || 0}">${d.observacoes || "-"}</td>
-            <td>${(d.checklist || []).map(item => `<span style="background:#fff; color:#00205b; padding:3px 8px; border-radius:5px; margin:2px; display:inline-block; font-size:10px">${item}</span>`).join("")}</td>
-            <td class="acoes"><button class="btn-acao" data-id="${d.id}" title="Abrir ações">➕</button></td>
-          </tr>`;
-      });
-
-      document.getElementById("valor-total").textContent = `R$ ${totalValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-      document.querySelectorAll(".acoes button").forEach(btn => btn.addEventListener("click", () => abrirPopup(btn.getAttribute("data-id"))));
-    }
-
-    async function abrirPopup(id) {
-      document.getElementById("popup").style.display = "flex";
-      document.getElementById("docIdSelecionado").value = id;
-      const docRef = doc(db, tipoChecklist, id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const dados = docSnap.data();
-        document.getElementById("comentario").value = dados.comentarioResponsavel || "";
-        document.getElementById("statusChecklist").value = dados.statusChecklist || "Em andamento";
-        document.getElementById("valorNegociado").value = dados.valorNegociado || "";
-      }
-    }
-
-    function fecharPopup() { document.getElementById("popup").style.display = "none"; }
-
-    async function salvarPopup() {
-      const id = document.getElementById("docIdSelecionado").value;
-      const docRef = doc(db, tipoChecklist, id);
-      await updateDoc(docRef, {
-        comentarioResponsavel: document.getElementById("comentario").value,
-        statusChecklist: document.getElementById("statusChecklist").value,
-        valorNegociado: parseFloat(document.getElementById("valorNegociado").value) || 0
-      });
-      fecharPopup();
-      carregarDados();
-    }
-
-    function exportarParaExcel() {
-      const headers = ["Data da Visita", "Cliente", "Município", "Consultor", "Modelo", "Horímetro", "Troca", "Telefone", "Observações", "Checklist", "Comentário", "Valor (R$)", "Status"];
-      const linhas = Array.from(document.querySelectorAll("#painel-detalhes tr")).map(tr => {
-        const tds = tr.querySelectorAll("td");
-        const status = tr.classList.contains("status-concluido") ? "Concluído" : tr.classList.contains("status-cancelado") ? "Cancelado" : tr.classList.contains("status-em-andamento") ? "Em andamento" : "";
-        return [
-          tds[0]?.textContent.trim(), tds[1]?.textContent.trim(), tds[2]?.textContent.trim(), tds[3]?.textContent.trim(), tds[4]?.textContent.trim(),
-          tds[5]?.textContent.trim(), tds[6]?.textContent.trim(), tds[7]?.textContent.trim(), tds[8]?.textContent.trim(), tds[9]?.innerText.trim(),
-          tds[8]?.dataset.comentario || "", tds[8]?.dataset.valor || "", status
-        ];
-      });
-      const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, planilha, "Checklist");
-      XLSX.writeFile(wb, "checklists_filtrados.xlsx");
-    }
-
-    // Disponibiliza funções no escopo global para serem chamadas pelo HTML (onclick)
-    window.fecharPopup = fecharPopup;
-    window.salvarPopup = salvarPopup;
+    // Inicia todo o processo
+    iniciarPagina();
 
   </script>
 
