@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-    /* Seus estilos permanecem os mesmos */
+    /* Seus estilos CSS permanecem os mesmos */
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
     header { background-color: #2c2f3f; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2  ); display: flex; align-items: center; justify-content: space-between; }
@@ -50,6 +50,19 @@
     .status-em-andamento { background-color: #c67903; }
     .status-concluido { background-color: #193b7c; }
     #loader-overlay { display: none; position: fixed; z-index: 9999; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); color: white; font-size: 20px; align-items: center; justify-content: center; font-weight: bold; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+    .modal-content { background-color: #2c2f3f; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 15px; }
+    .modal-header h3 { margin: 0; }
+    .close-button { cursor: pointer; font-size: 28px; font-weight: bold; transition: color 0.2s; }
+    .close-button:hover { color: #ff6b6b; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .form-grid label { display: block; margin-bottom: 5px; font-size: 14px; }
+    .form-grid input, .form-grid select { width: 100%; padding: 10px; border-radius: 6px; border: none; background-color: #262a3d; color: white; }
+    .form-buttons { text-align: right; display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-acao { border: none; padding: 10px 20px; border-radius: 8px; color: white; font-size: 14px; cursor: pointer; transition: transform 0.2s; }
+    .btn-concluir { background: #1e8a4a; }
+    .btn-cancelar { background: #c72c41; }
   </style>
 </head>
 <body>
@@ -57,7 +70,7 @@
     <img src="/assets/images/logo.png" alt="Logo" class="logo">
     <div class="header-center">
         <em>Controle de Kits 50 Horas</em>
-        <div id="dynamic-title">Aguardando autenticação...</div>
+        <div id="dynamic-title">Carregando...</div>
     </div>
     <button class="btn-voltar" title="Voltar" onclick="window.history.back()">
         <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Voltar
@@ -88,7 +101,8 @@
       <table>
         <thead>
           <tr>
-            <th>Data da Entrega</th><th>Chassi</th><th>Modelo</th><th>Descrição</th><th>OS</th><th>Quem Entregou</th><th>Quem Retirou</th><th>Status</th><th>Ações</th>
+            <!-- NOVO: Coluna NF adicionada -->
+            <th>Data da Entrega</th><th>Chassi</th><th>Modelo</th><th>Descrição</th><th>OS</th><th>NF</th><th>Quem Entregou</th><th>Quem Retirou</th><th>Status</th><th>Ações</th>
           </tr>
         </thead>
         <tbody id="tabela-kits"></tbody>
@@ -97,7 +111,28 @@
   </div>
 
   <div id="kit-modal" class="modal">
-      <!-- Conteúdo do modal aqui -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Adicionar Novo Kit</h3>
+        <span class="close-button" onclick="fecharModal()">&times;</span>
+      </div>
+      <div class="form-grid">
+        <div><label for="form-data-entrega">Data da Entrega</label><input type="date" id="form-data-entrega"></div>
+        <div><label for="form-chassi">Chassi</label><input type="text" id="form-chassi" placeholder="Nº do Chassi"></div>
+        <div><label for="form-modelo">Modelo</label><input type="text" id="form-modelo" placeholder="Modelo do Veículo"></div>
+        <div><label for="form-descricao">Descrição</label><input type="text" id="form-descricao" placeholder="Ex: Kit 50h, Filtro..."></div>
+        <div><label for="form-os">OS</label><input type="text" id="form-os" placeholder="Nº da Ordem de Serviço"></div>
+        <!-- NOVO: Campo NF adicionado ao formulário -->
+        <div><label for="form-nf">Nota Fiscal (NF)</label><input type="text" id="form-nf" placeholder="Nº da Nota Fiscal"></div>
+        <div><label for="form-quem-entregou">Quem Entregou</label><input type="text" id="form-quem-entregou" placeholder="Nome do funcionário"></div>
+        <div><label for="form-quem-pegou">Quem Retirou</label><input type="text" id="form-quem-pegou" placeholder="Nome do cliente/responsável"></div>
+        <div><label for="form-status">Status</label><select id="form-status"><option value="Em Andamento">Em Andamento</option><option value="Concluído">Concluído</option></select></div>
+      </div>
+      <div class="form-buttons">
+        <button class="btn-acao btn-cancelar" onclick="fecharModal()">Cancelar</button>
+        <button class="btn-acao btn-concluir" id="btn-save">Salvar</button>
+      </div>
+    </div>
   </div>
 
 <script type="module">
@@ -121,10 +156,33 @@
           podeEditar = userData.grupo.includes("pecas");
           podeApagar = userData.grupo.includes("admin");
       }
-      console.log(`Permissões: Editar=${podeEditar}, Apagar=${podeApagar}`);
+
+      let logoBase64 = null;
+      async function carregarLogoParaPDF() {
+          try {
+              const response = await fetch('/assets/images/logoPDF.png'); // <-- LINHA CORRIGIDA
+              if (!response.ok) {
+                  // Lança um erro mais descritivo se a imagem não for encontrada
+                  throw new Error(`Imagem do logo não encontrada no caminho: ${response.url}. Status: ${response.status}`);
+              }
+              const blob = await response.blob();
+              const reader = new FileReader();
+              reader.readAsDataURL(blob);
+              return new Promise(resolve => {
+                  reader.onloadend = () => {
+                      logoBase64 = reader.result;
+                      resolve();
+                  };
+              });
+          } catch (error) { 
+              console.error("Erro ao carregar o logo local para o PDF:", error); 
+          }
+      }
+      await carregarLogoParaPDF();
 
       lucide.createIcons();
       const tabelaBody = document.getElementById('tabela-kits');
+      const kitModal = document.getElementById('kit-modal');
       let dadosCompletos = [], dadosFiltrados = [];
       
       async function carregarDadosDoFirebase() {
@@ -133,7 +191,6 @@
               const filiaisLogadas = userData.filial || [];
               document.getElementById('dynamic-title').textContent = `Filial: ${filiaisLogadas.join(", ")}`;
               
-              // A ordenação inicial por data já vem do Firebase
               const q = query(kitsCollection, orderBy("dataEntrega", "desc"));
               const querySnapshot = await getDocs(q);
               const todosOsKits = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -164,14 +221,10 @@
           (kit.descricao || '').toLowerCase().includes(descricaoFiltro)
         );
         
-        // --- CORREÇÃO DE ORDENAÇÃO APLICADA AQUI ---
         dadosFiltrados.sort((a, b) => {
-            // Se os status são diferentes, ordena por status
             if (a.status !== b.status) {
-                // 'Em Andamento' vem antes de 'Concluído'
                 return a.status === 'Em Andamento' ? -1 : 1;
             }
-            // Se os status são iguais, a ordenação por data (já feita pelo Firebase) é mantida.
             return 0; 
         });
         
@@ -181,7 +234,7 @@
       function renderizarTabela() {
         tabelaBody.innerHTML = '';
         if (dadosFiltrados.length === 0) {
-            tabelaBody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Nenhum registro encontrado.</td></tr>';
+            tabelaBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Nenhum registro encontrado para esta filial.</td></tr>';
             return;
         }
         dadosFiltrados.forEach(kit => {
@@ -189,15 +242,17 @@
           tr.dataset.id = kit.id;
           tr.className = kit.status === 'Em Andamento' ? 'status-em-andamento' : 'status-concluido';
           
-          const editButtonHTML = podeEditar ? `<button class="btn-row-action btn-edit" data-id="${kit.id}" title="Editar"><i data-lucide="pencil" style="width: 16px;"></i></button>` : '';
-          const deleteButtonHTML = podeApagar ? `<button class="btn-row-action btn-delete" data-id="${kit.id}" title="Apagar"><i data-lucide="trash-2" style="width: 16px;"></i></button>` : '';
+          const editButtonHTML = podeEditar ? `<button class="btn-row-action btn-edit" data-id="${kit.id}" title="Editar"><i data-lucide="pencil" style="width: 16px; pointer-events: none;"></i></button>` : '';
+          const deleteButtonHTML = podeApagar ? `<button class="btn-row-action btn-delete" data-id="${kit.id}" title="Apagar"><i data-lucide="trash-2" style="width: 16px; pointer-events: none;"></i></button>` : '';
 
+          // NOVO: Célula da NF adicionada na linha da tabela
           tr.innerHTML = `
             <td data-field="dataEntrega">${formatarData(kit.dataEntrega)}</td>
             <td data-field="chassi">${kit.chassi || ''}</td>
             <td data-field="modelo">${kit.modelo || ''}</td>
             <td data-field="descricao">${kit.descricao || ''}</td>
             <td data-field="os">${kit.os || ''}</td>
+            <td data-field="nf">${kit.nf || ''}</td>
             <td data-field="quemEntregou">${kit.quemEntregou || ''}</td>
             <td data-field="quemPegou">${kit.quemPegou || ''}</td>
             <td>
@@ -208,7 +263,7 @@
             </td>
             <td class="acoes-cell">
                 ${editButtonHTML}
-                <button class="btn-row-action btn-print" data-id="${kit.id}" title="Gerar PDF"><i data-lucide="printer" style="width: 16px;"></i></button>
+                <button class="btn-row-action btn-print" data-id="${kit.id}" title="Gerar PDF"><i data-lucide="printer" style="width: 16px; pointer-events: none;"></i></button>
                 ${deleteButtonHTML}
             </td>
           `;
@@ -235,26 +290,121 @@
               if (confirm(`Tem certeza que deseja apagar o kit do chassi "${chassi}"? Esta ação não pode ser desfeita.`)) {
                   try {
                       await deleteDoc(doc(db, "kits50Horas", id));
-                      alert("Registro apagado com sucesso!");
                       carregarDadosDoFirebase();
-                  } catch (error) {
-                      console.error("Erro ao apagar registro:", error);
-                      alert("Ocorreu um erro ao apagar o registro.");
-                  }
+                  } catch (error) { console.error("Erro ao apagar registro:", error); }
               }
           }
       });
 
-      // O restante das funções permanece o mesmo
-      async function toggleEditMode(row, id, button) { /* ... */ }
-      function atualizarCards(dados) { /* ... */ }
-      function formatarData(dataString) { /* ... */ }
-      function gerarPDF(kit) { /* ... */ }
+      async function toggleEditMode(row, id, button) {
+          const isEditing = row.classList.contains('editing');
+          const cellsToEdit = row.querySelectorAll('td[data-field]:not([data-field="dataEntrega"])');
+          if (isEditing) {
+              const dataToUpdate = {};
+              cellsToEdit.forEach(cell => {
+                  dataToUpdate[cell.dataset.field] = cell.textContent.trim();
+                  cell.contentEditable = 'false';
+              });
+              await updateDoc(doc(db, "kits50Horas", id), dataToUpdate);
+              row.classList.remove('editing');
+              button.classList.replace('btn-save-row', 'btn-edit');
+              button.title = 'Editar';
+              button.innerHTML = '<i data-lucide="pencil" style="width: 16px; pointer-events: none;"></i>';
+          } else {
+              cellsToEdit.forEach(cell => { cell.contentEditable = 'true'; });
+              row.classList.add('editing');
+              button.classList.replace('btn-edit', 'btn-save-row');
+              button.title = 'Salvar';
+              button.innerHTML = '<i data-lucide="save" style="width: 16px; pointer-events: none;"></i>';
+              cellsToEdit[0].focus();
+          }
+          lucide.createIcons();
+      }
+      
+      function atualizarCards(dados) {
+          const total = dados.length;
+          const andamento = dados.filter(k => k.status === 'Em Andamento').length;
+          const concluidos = total - andamento;
+          document.getElementById('total-kits').textContent = total;
+          document.getElementById('kits-andamento').textContent = andamento;
+          document.getElementById('kits-concluidos').textContent = concluidos;
+      }
 
-      // Adiciona os listeners aos filtros
+      function formatarData(dataString) {
+          if (!dataString || dataString === 'undefined') return '-';
+          const partes = dataString.split('-');
+          if (partes.length !== 3) return dataString;
+          return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+
+      function gerarPDF(kit) {
+          const doc = new jsPDF();
+          if (logoBase64) {
+              doc.addImage(logoBase64, 'PNG', 15, 15, 45, 45, undefined, 'NONE');
+          }
+          doc.setFont('Helvetica', 'bold');
+          doc.setFontSize(12);
+          let y = 70; 
+          const lineHeight = 10;
+          doc.text('Comprovante de Entrega - Kit 50 Horas', 105, 20, { align: 'center' });
+          doc.setFont('Helvetica', 'bold'); doc.text('CLIENTE:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text('AGRO DIVEL', 55, y); y += lineHeight;
+          doc.setFont('Helvetica', 'bold'); doc.text('MODELO:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text(kit.modelo || '-', 55, y); y += lineHeight;
+          doc.setFont('Helvetica', 'bold'); doc.text('CHASSI:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text(kit.chassi || '-', 55, y); y += lineHeight;
+          doc.setFont('Helvetica', 'bold'); doc.text('DESCRIÇÃO:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text(kit.descricao || '-', 55, y); y += lineHeight;
+          // NOVO: Campo NF adicionado ao PDF
+          doc.setFont('Helvetica', 'bold'); doc.text('NOTA FISCAL:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text(kit.nf || '-', 55, y); y += lineHeight;
+          doc.setFont('Helvetica', 'bold'); doc.text('ORDEM SERVIÇO:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text(kit.os || '-', 55, y); y += lineHeight;
+          doc.setFont('Helvetica', 'bold'); doc.text('RESPONSÁVEL:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text(kit.quemEntregou || '-', 55, y); y += lineHeight;
+          doc.setFont('Helvetica', 'bold'); doc.text('DATA:', 15, y); doc.setFont('Helvetica', 'normal'); doc.text(formatarData(kit.dataEntrega) || '-', 55, y);
+          doc.save(`Comprovante_${kit.chassi || 'kit'}.pdf`);
+      }
+
+      async function salvarKit() {
+          const filiaisDoUsuario = userData.filial || [];
+          if (filiaisDoUsuario.length === 0) {
+              alert("Não foi possível identificar a sua filial principal. Contate o administrador.");
+              return;
+          }
+          // NOVO: Captura o valor do campo NF
+          const novoKit = {
+              dataEntrega: document.getElementById('form-data-entrega').value,
+              chassi: document.getElementById('form-chassi').value.trim(),
+              modelo: document.getElementById('form-modelo').value.trim(),
+              descricao: document.getElementById('form-descricao').value.trim(),
+              os: document.getElementById('form-os').value.trim(),
+              nf: document.getElementById('form-nf').value.trim(), // Salva a NF
+              quemEntregou: document.getElementById('form-quem-entregou').value.trim(),
+              quemPegou: document.getElementById('form-quem-pegou').value.trim(),
+              status: document.getElementById('form-status').value,
+              filial: filiaisDoUsuario[0]
+          };
+          if (!novoKit.dataEntrega || !novoKit.chassi) {
+              alert("Os campos 'Data da Entrega' e 'Chassi' são obrigatórios.");
+              return;
+          }
+          await addDoc(kitsCollection, novoKit);
+          fecharModal();
+          await carregarDadosDoFirebase();
+      }
+
+      window.abrirModal = () => {
+          document.getElementById('form-data-entrega').valueAsDate = new Date();
+          // NOVO: Limpa o campo NF ao abrir o modal
+          ['chassi', 'modelo', 'descricao', 'os', 'nf', 'quem-entregou', 'quem-pegou'].forEach(id => document.getElementById(`form-${id}`).value = '');
+          document.getElementById('form-status').value = 'Em Andamento';
+          kitModal.style.display = 'flex';
+      }
+      window.fecharModal = () => {
+          kitModal.style.display = 'none';
+      }
+
+      // Listeners
       document.getElementById('filtro-chassi').addEventListener('input', aplicarFiltros);
       document.getElementById('filtro-modelo').addEventListener('input', aplicarFiltros);
       document.getElementById('filtro-descricao').addEventListener('input', aplicarFiltros);
+      document.getElementById('btn-add-kit').addEventListener('click', abrirModal);
+      document.getElementById('btn-save').addEventListener('click', salvarKit);
+      window.addEventListener('click', (e) => { if (e.target == kitModal) fecharModal(); });
 
       carregarDadosDoFirebase();
 
