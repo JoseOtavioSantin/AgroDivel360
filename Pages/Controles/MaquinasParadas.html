@@ -10,9 +10,10 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
   <style>
+    /* Estilos padronizados e adaptados */
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
-    header { background-color: #2c2f3f; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2   ); display: flex; align-items: center; justify-content: space-between; }
+    header { background-color: #2c2f3f; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2 ); display: flex; align-items: center; justify-content: space-between; }
     .logo { height: 80px; margin-left: 45px; margin-right: 15px; }
     .header-center { flex: 1; text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 1px; }
     #dynamic-title { margin-top: 10px; font-size: 16px; font-weight: normal; color: #ccc; font-style: italic; }
@@ -27,41 +28,38 @@
     .filters-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
     .filters { display: flex; flex-wrap: wrap; gap: 10px; }
     .filters input, .filters select { padding: 8px; border-radius: 6px; border: none; min-width: 180px; height: 40px; background-color: #fff; color: #333; }
-    .filters input::placeholder { color: #888; }
     .acoes-topo { margin-left: auto; display: flex; gap: 10px; }
     .btn-acao-topo { background: linear-gradient(135deg, #00205b, #009bd6); border: none; width: 40px; height: 40px; border-radius: 8px; color: white; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
     .btn-acao-topo:hover { transform: scale(1.05); }
     table { width: 100%; border-collapse: collapse; background-color: #2c2f3f; border-radius: 12px; overflow: hidden; }
     th, td { font-size: 12px; padding: 12px 15px; text-align: left; border-bottom: 1px solid #444; }
     th { background-color: #ffffff; color: #00205b; }
-    .acoes-botoes { display: flex; gap: 8px; }
+    .acoes-botoes { display: flex; gap: 8px; align-items: center; }
     .btn-acao { border: none; padding: 8px 12px; border-radius: 6px; color: white; font-size: 14px; cursor: pointer; transition: transform 0.2s, background-color 0.2s; }
-    .btn-acao:hover { transform: scale(1.05); }
-    .btn-concluir { background: #1e8a4a; }
-    .btn-concluir:hover { background: #25a25a; }
-    .btn-cancelar { background: #c72c41; }
-    .btn-cancelar:hover { background: #e0445a; }
-    .popup { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
-    .popup-content { background: #2c2f3f; padding: 30px; border-radius: 12px; width: 90%; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-    .popup-content h3 { margin-top: 0; }
-    .popup-content label { display: block; margin-bottom: 8px; font-size: 14px; }
-    .popup-content input, .popup-content textarea, .popup-content select { width: 100%; padding: 10px; border-radius: 6px; border: none; margin-bottom: 15px; }
-    .popup-content textarea { min-height: 80px; resize: vertical; }
-    .popup-buttons { text-align: right; display: flex; gap: 10px; justify-content: flex-end; }
-    #campo-curva-peca { display: none; }
-    ::-webkit-scrollbar { width: 10px; }
-    ::-webkit-scrollbar-track { background: #1e1e2f; }
-    ::-webkit-scrollbar-thumb { background: #009bd6; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #00bfff; }
-    * { scrollbar-width: thin; scrollbar-color: #009bd6 #1e1e2f; }
+    .btn-concluir-form { background: #1e8a4a; }
+    .btn-cancelar-form { background: #c72c41; }
+    .btn-row-action { background: transparent; border: none; width: 32px; height: 32px; border-radius: 6px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
+    .btn-edit { background-color: #f39c12; } .btn-edit:hover { background-color: #e67e22; }
+    .btn-concluir { background-color: #27ae60; } .btn-concluir:hover { background-color: #229954; }
+    .btn-cancelar { background-color: #c72c41; } .btn-cancelar:hover { background-color: #a52335; }
+    .btn-delete { background-color: #e74c3c; } .btn-delete:hover { background-color: #c0392b; }
     .status-parada { background-color: #c67903; }
     .status-concluida { background-color: #193b7c; }
     .status-cancelada { background-color: #626262; }
     .linha-alerta { animation: pulsarAlerta 1.2s ease-in-out infinite alternate; }
-    @keyframes pulsarAlerta {
-      from { background-color: #950000; }
-      to { background-color: #c67903; }
-    }
+    @keyframes pulsarAlerta { from { background-color: #950000; } to { background-color: #c67903; } }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+    .modal-content { background-color: #2c2f3f; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 15px; }
+    .modal-header h3 { margin: 0; }
+    .close-button { cursor: pointer; font-size: 28px; font-weight: bold; transition: color 0.2s; }
+    .close-button:hover { color: #ff6b6b; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+    .form-grid .full-width { grid-column: 1 / -1; }
+    .form-grid label { display: block; margin-bottom: 5px; font-size: 14px; }
+    .form-grid input, .form-grid select, .form-grid textarea { width: 100%; padding: 10px; border-radius: 6px; border: none; background-color: #262a3d; color: white; }
+    .form-buttons { text-align: right; display: flex; gap: 10px; justify-content: flex-end; }
+    #campo-curva-peca, #campo-curva-peca-editar { display: none; }
   </style>
 </head>
 <body>
@@ -78,22 +76,10 @@
 
   <div class="main">
     <div class="sidebar">
-        <div class="card">
-          <h2 id="card-total-aberto">0</h2>
-          <p><i data-lucide="alert-circle"></i> Total em Aberto</p>
-        </div>
-        <div class="card">
-          <h2 id="card-mes-aberto">0</h2>
-          <p><i data-lucide="calendar-plus"></i> Abertas no Mês</p>
-        </div>
-        <div class="card">
-          <h2 id="card-mes-fechado">0</h2>
-          <p><i data-lucide="calendar-check"></i> Fechadas no Mês</p>
-        </div>
-        <div class="card">
-          <h2 id="card-concluido-30d">0</h2>
-          <p><i data-lucide="check-circle"></i> Concluído (30 dias)</p>
-        </div>
+        <div class="card"><h2 id="card-total-aberto">0</h2><p><i data-lucide="alert-circle"></i> Total em Aberto</p></div>
+        <div class="card"><h2 id="card-mes-aberto">0</h2><p><i data-lucide="calendar-plus"></i> Abertas no Mês</p></div>
+        <div class="card"><h2 id="card-mes-fechado">0</h2><p><i data-lucide="calendar-check"></i> Fechadas no Mês</p></div>
+        <div class="card"><h2 id="card-concluido-30d">0</h2><p><i data-lucide="check-circle"></i> Concluído (30 dias)</p></div>
     </div>
 
     <div class="content">
@@ -110,27 +96,14 @@
                 <input id="filtro-periodo" placeholder="Selecione o período" />
             </div>
             <div class="acoes-topo">
-                <button class="btn-acao-topo" title="Ir para Análise" onclick="window.location.href='analisarparadas.html'">
-                    <i data-lucide="pie-chart"></i>
-                </button>
-                <button class="btn-acao-topo" title="Adicionar Máquina" onclick="abrirPopup('popup-adicionar')">
-                    <i data-lucide="plus"></i>
-                </button>
+                <button class="btn-acao-topo" title="Ir para Análise" onclick="window.location.href='analisarparadas.html'"><i data-lucide="pie-chart"></i></button>
+                <button class="btn-acao-topo" title="Adicionar Máquina" id="btn-add-maquina"><i data-lucide="plus"></i></button>
             </div>
         </div>
-
       <table>
         <thead>
           <tr>
-            <th>Data Parada</th>
-            <th>Cliente</th>
-            <th>Chassis</th>
-            <th>Modelo</th>
-            <th>Horas</th>
-            <th>OS</th>
-            <th>Técnico Responsável</th>
-            <th>Máquina Parada Por</th>
-            <th>Ações</th>
+            <th>Data Parada</th><th>Cliente</th><th>Chassis</th><th>Modelo</th><th>Horas</th><th>OS</th><th>Técnico</th><th>Parada Por</th><th>Ações</th>
           </tr>
         </thead>
         <tbody id="tabela-maquinas"></tbody>
@@ -138,346 +111,469 @@
     </div>
   </div>
 
-  <div id="popup-adicionar" class="popup">
-    <div class="popup-content">
+  <!-- MODAL ADICIONAR -->
+  <div id="modal-adicionar" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
         <h3>Adicionar Nova Máquina Parada</h3>
-        <label for="novo-dataParada">Data da Parada*</label>
-        <input type="date" id="novo-dataParada">
-        <label for="novo-cliente">Cliente*</label>
-        <input type="text" id="novo-cliente">
-        <label for="novo-chassis">Chassis*</label>
-        <input type="text" id="novo-chassis">
-        <label for="novo-modelo">Modelo</label>
-        <input type="text" id="novo-modelo">
-        <label for="novo-horas">Horas</label>
-        <input type="number" id="novo-horas">
-        <label for="novo-os">Ordem de Serviço</label>
-        <input type="text" id="novo-os">
-        
-        <!-- === CAMPO DE TÉCNICO MODIFICADO === -->
-        <label for="novo-tecnico">Técnico Responsável</label>
-        <select id="novo-tecnico">
-            <option value="">Carregando técnicos...</option>
-        </select>
-        
-        <label for="novo-motivo">Máquina Parada Por*</label>
-        <input type="text" id="novo-motivo" list="motivos-sugeridos" oninput="verificarMotivoPecas(this.value)">
-        <datalist id="motivos-sugeridos">
-            <option value="THD"></option>
-            <option value="APROVAÇÃO SEGURO"></option>
-            <option value="PEÇAS"></option>
-            <option value="APROVAÇÃO DO CLIENTE"></option>
-            <option value="FERRAMENTAS"></option>
-            <option value="SERVIÇOS DE TERCEIRO"></option>
-            <option value="GARANTIA"></option>
-            <option value="INDISPONIBILIDADE DE TÉCNICO"></option>
-        </datalist>
-        
-        <div id="campo-curva-peca">
-            <label for="novo-curva">Curva da Peça*</label>
-            <select id="novo-curva">
-                <option value="">Selecione a curva</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-                <option value="E">E</option>
-            </select>
-        </div>
-
-        <div class="popup-buttons">
-            <button class="btn-acao btn-cancelar" onclick="fecharPopup('popup-adicionar')">Cancelar</button>
-            <button class="btn-acao btn-concluir" onclick="salvarNovaMaquina()">Salvar</button>
-        </div>
+        <span class="close-button" onclick="fecharModal('modal-adicionar')">&times;</span>
+      </div>
+      <div class="form-grid">
+        <div><label for="novo-dataParada">Data da Parada*</label><input type="date" id="novo-dataParada"></div>
+        <div><label for="novo-cliente">Cliente*</label><input type="text" id="novo-cliente"></div>
+        <div><label for="novo-chassis">Chassis*</label><input type="text" id="novo-chassis"></div>
+        <div><label for="novo-modelo">Modelo</label><input type="text" id="novo-modelo"></div>
+        <div><label for="novo-horas">Horas</label><input type="number" id="novo-horas"></div>
+        <div><label for="novo-os">Ordem de Serviço</label><input type="text" id="novo-os"></div>
+        <div class="full-width"><label for="novo-tecnico">Técnico Responsável*</label><select id="novo-tecnico"><option value="">Carregando...</option></select></div>
+        <div class="full-width"><label for="novo-motivo">Máquina Parada Por*</label><input type="text" id="novo-motivo" list="motivos-sugeridos" oninput="verificarMotivoPecas(this.value, 'novo')"></div>
+        <datalist id="motivos-sugeridos"><option value="THD"></option><option value="APROVAÇÃO SEGURO"></option><option value="PEÇAS"></option><option value="APROVAÇÃO DO CLIENTE"></option><option value="FERRAMENTAS"></option><option value="SERVIÇOS DE TERCEIRO"></option><option value="GARANTIA"></option><option value="INDISPONIBILIDADE DE TÉCNICO"></option></datalist>
+        <div id="campo-curva-peca" class="full-width"><label for="novo-curva">Curva da Peça*</label><select id="novo-curva"><option value="">Selecione</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option></select></div>
+      </div>
+      <div class="form-buttons">
+        <button class="btn-acao btn-cancelar-form" onclick="fecharModal('modal-adicionar')">Cancelar</button>
+        <button class="btn-acao btn-concluir-form" id="btn-save-maquina">Salvar</button>
+      </div>
     </div>
   </div>
 
-  <div id="popup-concluir" class="popup">
-    <div class="popup-content">
-        <h3>Concluir Parada</h3>
-        <input type="hidden" id="maquina-id-concluir">
-        <label for="data-resolucao">Data da Resolução*</label>
-        <input type="date" id="data-resolucao">
-        <div class="popup-buttons">
-            <button class="btn-acao btn-cancelar" onclick="fecharPopup('popup-concluir')">Cancelar</button>
-            <button class="btn-acao btn-concluir" onclick="salvarConclusao()">Salvar</button>
-        </div>
+  <!-- MODAL EDITAR (NOVO) -->
+  <div id="modal-editar" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Máquina Parada</h3>
+        <span class="close-button" onclick="fecharModal('modal-editar')">&times;</span>
+      </div>
+      <input type="hidden" id="maquina-id-editar">
+      <div class="form-grid">
+        <div><label for="editar-dataParada">Data da Parada*</label><input type="date" id="editar-dataParada"></div>
+        <div><label for="editar-cliente">Cliente*</label><input type="text" id="editar-cliente"></div>
+        <div><label for="editar-chassis">Chassis*</label><input type="text" id="editar-chassis"></div>
+        <div><label for="editar-modelo">Modelo</label><input type="text" id="editar-modelo"></div>
+        <div><label for="editar-horas">Horas</label><input type="number" id="editar-horas"></div>
+        <div><label for="editar-os">Ordem de Serviço</label><input type="text" id="editar-os"></div>
+        <div class="full-width"><label for="editar-tecnico">Técnico Responsável*</label><select id="editar-tecnico"><option value="">Carregando...</option></select></div>
+        <div class="full-width"><label for="editar-motivo">Máquina Parada Por*</label><input type="text" id="editar-motivo" list="motivos-sugeridos" oninput="verificarMotivoPecas(this.value, 'editar')"></div>
+        <div id="campo-curva-peca-editar" class="full-width"><label for="editar-curva">Curva da Peça*</label><select id="editar-curva"><option value="">Selecione</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option></select></div>
+      </div>
+      <div class="form-buttons">
+        <button class="btn-acao btn-cancelar-form" onclick="fecharModal('modal-editar')">Cancelar</button>
+        <button class="btn-acao btn-concluir-form" id="btn-update-maquina">Salvar Alterações</button>
+      </div>
     </div>
   </div>
 
-  <div id="popup-cancelar" class="popup">
-    <div class="popup-content">
-        <h3>Cancelar Parada</h3>
-        <input type="hidden" id="maquina-id-cancelar">
-        <label for="motivo-cancelamento">Motivo do Cancelamento*</label>
-        <textarea id="motivo-cancelamento" placeholder="Descreva por que esta parada está sendo cancelada..."></textarea>
-        <div class="popup-buttons">
-            <button class="btn-acao btn-cancelar" onclick="fecharPopup('popup-cancelar')">Voltar</button>
-            <button class="btn-acao btn-concluir" onclick="salvarCancelamento()">Confirmar Cancelamento</button>
-        </div>
-    </div>
-  </div>
+  <!-- MODAL CONCLUIR -->
+  <div id="modal-concluir" class="modal"><div class="modal-content"><h3>Concluir Parada</h3><input type="hidden" id="maquina-id-concluir"><label for="data-resolucao">Data da Resolução*</label><input type="date" id="data-resolucao"><div class="form-buttons"><button class="btn-acao btn-cancelar-form" onclick="fecharModal('modal-concluir')">Cancelar</button><button class="btn-acao btn-concluir-form" id="btn-save-conclusao">Salvar</button></div></div></div>
+  <!-- MODAL CANCELAR -->
+  <div id="modal-cancelar" class="modal"><div class="modal-content"><h3>Cancelar Parada</h3><input type="hidden" id="maquina-id-cancelar"><label for="motivo-cancelamento">Motivo do Cancelamento*</label><textarea id="motivo-cancelamento" placeholder="Descreva..."></textarea><div class="form-buttons"><button class="btn-acao btn-cancelar-form" onclick="fecharModal('modal-cancelar')">Voltar</button><button class="btn-acao btn-concluir-form" id="btn-save-cancelamento">Confirmar</button></div></div></div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+  import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
-    authDomain: "agro-divel.firebaseapp.com",
-    projectId: "agro-divel"
-  };
-  const app = initializeApp(firebaseConfig  );
-  const db = getFirestore(app);
-  const maquinasCollection = collection(db, "maquinasParadas");
-  let dadosMaquinas = [];
-
-  window.verificarMotivoPecas = (motivo) => {
-    const campoCurva = document.getElementById('campo-curva-peca');
-    if (motivo.trim().toLowerCase() === 'peças') {
-        campoCurva.style.display = 'block';
-    } else {
-        campoCurva.style.display = 'none';
-    }
-  }
-
-  async function getFiliaisDoGestor() {
-      let filiais = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-      if (filiais.length > 0) return filiais;
-      const emailGestor = localStorage.getItem("gestorEmail");
-      if (!emailGestor) { console.warn("E-mail do gestor não encontrado."); return []; }
-      const gestoresRef = collection(db, "gestores");
-      const q = query(gestoresRef, where("email", "==", emailGestor));
-      try {
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-            filiais = snapshot.docs[0].data().filial || [];
-            localStorage.setItem("gestorFilial", JSON.stringify(filiais));
-            return filiais;
-        } else { console.warn("Gestor não encontrado."); return []; }
-      } catch (error) { console.error("Erro ao buscar gestor:", error); return []; }
-  }
-
-  // === NOVA FUNÇÃO PARA CARREGAR TÉCNICOS FILTRADOS ===
-  async function carregarTecnicosDaFilial() {
-    const selectTecnico = document.getElementById('novo-tecnico');
-    selectTecnico.innerHTML = '<option value="">Carregando...</option>';
-
+  async function iniciarPagina( ) {
     try {
-        const filiaisDoGestor = await getFiliaisDoGestor();
-        if (filiaisDoGestor.length === 0) {
-            selectTecnico.innerHTML = '<option value="">Nenhuma filial encontrada</option>';
-            return;
+      const userData = await garantirAutenticacao();
+      
+      const app = getApp();
+      const db = getFirestore(app);
+      const maquinasCollection = collection(db, "maquinasParadas");
+      let dadosMaquinas = [];
+
+      let podeAgir = false;
+      let podeApagar = false;
+      if (userData.grupo) {
+          // Se for admin, pode fazer tudo.
+          if (userData.grupo.includes("admin")) {
+              podeAgir = true;
+              podeApagar = true;
+          } else {
+              // Se não for admin, verifica se é de "servicos" para ações padrão.
+              podeAgir = userData.grupo.includes("servicos");
+              // podeApagar continua false se não for admin.
+          }
+      }
+      console.log(`Permissões: Ações (Editar/Concluir/Cancelar)=${podeAgir}, Apagar=${podeApagar}`);
+
+      lucide.createIcons();
+      flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
+
+      window.verificarMotivoPecas = (motivo, prefix) => {
+        const campoCurvaId = prefix === 'editar' ? 'campo-curva-peca-editar' : 'campo-curva-peca';
+        document.getElementById(campoCurvaId).style.display = motivo.trim().toLowerCase() === 'peças' ? 'block' : 'none';
+      };
+
+      async function carregarTecnicosDaFilial(filiais) {
+        const selectsTecnico = [document.getElementById('novo-tecnico'), document.getElementById('editar-tecnico')];
+        selectsTecnico.forEach(select => select.innerHTML = '<option value="">Carregando...</option>');
+        try {
+          if (!filiais || filiais.length === 0) throw new Error("Filiais do gestor não encontradas.");
+          const tecnicosRef = collection(db, "tecnicos");
+          const q = query(tecnicosRef, where("filial", "in", filiais));
+          const snapshot = await getDocs(q);
+          if (snapshot.empty) throw new Error("Nenhum técnico encontrado para esta(s) filial(is).");
+          
+          const nomesTecnicos = snapshot.docs.map(doc => doc.data().nome).sort();
+          
+          selectsTecnico.forEach(select => {
+            select.innerHTML = '<option value="">Selecione um técnico</option>';
+            nomesTecnicos.forEach(nome => {
+              const option = document.createElement('option');
+              option.value = nome;
+              option.textContent = nome;
+              select.appendChild(option);
+            });
+          });
+        } catch (error) {
+          console.error("Erro ao carregar técnicos:", error);
+          selectsTecnico.forEach(select => select.innerHTML = `<option value="">${error.message}</option>`);
         }
+      }
 
-        const tecnicosRef = collection(db, "tecnicos");
-        // Nota: Se um técnico pode pertencer a múltiplas filiais (array), 
-        // a consulta 'in' pode não funcionar como esperado para encontrar correspondências de array.
-        // A consulta 'array-contains-any' seria ideal, mas 'in' funciona se o campo 'filial' for uma string única.
-        // Vamos usar 'in' assumindo que o gestor pode ter mais de uma filial e o técnico está em uma delas.
-        const q = query(tecnicosRef, where("filial", "in", filiaisDoGestor));
+      async function carregarDados() {
+        const filiaisLogadas = userData.filial || [];
+        document.getElementById('dynamic-title').textContent = `Filial: ${filiaisLogadas.join(", ")}`;
         
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-            selectTecnico.innerHTML = '<option value="">Nenhum técnico para esta filial</option>';
-            return;
+        if (filiaisLogadas.length === 0) {
+          document.getElementById("tabela-maquinas").innerHTML = '<tr><td colspan="9" style="text-align:center;">Nenhuma filial associada a este usuário.</td></tr>';
+          return;
         }
-
-        selectTecnico.innerHTML = '<option value="">Selecione um técnico</option>';
         
-        const nomesTecnicos = snapshot.docs.map(doc => doc.data().nome).sort();
+        const q = query(maquinasCollection, where("filial", "in", filiaisLogadas));
+        try {
+          const snapshot = await getDocs(q);
+          dadosMaquinas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          aplicarFiltros();
+        } catch (error) { console.error("Erro ao carregar dados:", error); }
+      }
+
+      function aplicarFiltros() {
+        const filtroCliente = document.getElementById('filtro-cliente').value.toLowerCase();
+        const filtroStatus = document.getElementById('filtro-status').value;
+        const filtroTecnico = document.getElementById('filtro-tecnico').value.toLowerCase();
+        const filtroPeriodo = document.getElementById('filtro-periodo')._flatpickr.selectedDates;
         
-        nomesTecnicos.forEach(nome => {
-            const option = document.createElement('option');
-            option.value = nome;
-            option.textContent = nome;
-            selectTecnico.appendChild(option);
-        });
-
-    } catch (error) {
-        console.error("Erro ao carregar técnicos da filial:", error);
-        selectTecnico.innerHTML = '<option value="">Erro ao carregar</option>';
-    }
-  }
-
-  async function carregarDados() {
-    const filiaisLogadas = await getFiliaisDoGestor();
-    if (filiaisLogadas.length === 0) {
-        document.getElementById("dynamic-title").textContent = "Nenhuma filial encontrada";
-        document.getElementById("tabela-maquinas").innerHTML = '<tr><td colspan="9" style="text-align:center;">Nenhuma filial de gestor foi encontrada.</td></tr>';
-        return;
-    }
-    document.getElementById("dynamic-title").textContent = `Filial: ${filiaisLogadas.join(", ")}`;
-    const q = query(maquinasCollection, where("filial", "in", filiaisLogadas));
-    try {
-        const snapshot = await getDocs(q);
-        dadosMaquinas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        aplicarFiltros();
-    } catch (error) { console.error("Erro ao carregar dados:", error); }
-  }
-
-  // === EVENTO DOMContentLoaded MODIFICADO ===
-  document.addEventListener("DOMContentLoaded", () => {
-    lucide.createIcons();
-    flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: () => aplicarFiltros() });
-    document.getElementById('filtro-cliente').addEventListener('input', aplicarFiltros);
-    document.getElementById('filtro-status').addEventListener('change', aplicarFiltros);
-    document.getElementById('filtro-tecnico').addEventListener('input', aplicarFiltros);
-    
-    carregarDados();
-    carregarTecnicosDaFilial(); // Carrega os técnicos filtrados
-  });
-
-  function aplicarFiltros() {
-    const filtroCliente = document.getElementById('filtro-cliente').value.toLowerCase();
-    const filtroStatus = document.getElementById('filtro-status').value;
-    const filtroTecnico = document.getElementById('filtro-tecnico').value.toLowerCase();
-    const filtroPeriodo = document.getElementById('filtro-periodo')._flatpickr.selectedDates;
-    const dadosFiltrados = dadosMaquinas.filter(dado => {
-        const buscaCliente = (dado.cliente || "").toLowerCase().includes(filtroCliente) || (dado.chassis || "").toLowerCase().includes(filtroCliente);
-        const buscaStatus = !filtroStatus || dado.status === filtroStatus;
-        const buscaTecnico = !filtroTecnico || (dado.tecnico || "").toLowerCase().includes(filtroTecnico);
-        let buscaPeriodo = true;
-        if (filtroPeriodo.length === 2) {
+        const dadosFiltrados = dadosMaquinas.filter(dado => {
+          const buscaCliente = (dado.cliente || "").toLowerCase().includes(filtroCliente) || (dado.chassis || "").toLowerCase().includes(filtroCliente);
+          const buscaStatus = !filtroStatus || dado.status === filtroStatus;
+          const buscaTecnico = !filtroTecnico || (dado.tecnico || "").toLowerCase().includes(filtroTecnico);
+          let buscaPeriodo = true;
+          if (filtroPeriodo.length === 2) {
             const dataParada = new Date(dado.dataParada + "T00:00:00");
             buscaPeriodo = dataParada >= filtroPeriodo[0] && dataParada <= filtroPeriodo[1];
+          }
+          return buscaCliente && buscaStatus && buscaTecnico && buscaPeriodo;
+        });
+        
+        renderizarTabela(dadosFiltrados);
+        atualizarCards(dadosFiltrados);
+      }
+
+      function renderizarTabela(dados) {
+        const tabela = document.getElementById('tabela-maquinas');
+        tabela.innerHTML = '';
+        dados.sort((a, b) => {
+          const statusOrder = { 'parada': 1, 'concluida': 2, 'cancelada': 3 };
+          const aIsAlert = isOverdue(a.dataParada) && a.status === 'parada';
+          const bIsAlert = isOverdue(b.dataParada) && b.status === 'parada';
+          if (aIsAlert && !bIsAlert) return -1;
+          if (!aIsAlert && bIsAlert) return 1;
+          const statusDiff = (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
+          if (statusDiff !== 0) return statusDiff;
+          return new Date(b.dataParada) - new Date(a.dataParada);
+        });
+        
+        if (dados.length === 0) {
+          tabela.innerHTML = '<tr><td colspan="9" style="text-align: center;">Nenhum registro encontrado.</td></tr>';
+          return;
         }
-        return buscaCliente && buscaStatus && buscaTecnico && buscaPeriodo;
-    });
-    renderizarTabela(dadosFiltrados);
-    atualizarCards(dadosFiltrados);
-  }
+        
+        dados.forEach(dado => {
+          const tr = document.createElement('tr');
+          tr.dataset.id = dado.id;
+          let classesLinha = `status-${dado.status}`;
+          if (dado.status === 'parada' && isOverdue(dado.dataParada)) { classesLinha += ' linha-alerta'; }
+          tr.className = classesLinha;
 
-  function renderizarTabela(dados) {
-    const tabela = document.getElementById('tabela-maquinas');
-    tabela.innerHTML = '';
-    dados.sort((a, b) => {
-        const statusOrder = { 'parada': 1, 'concluida': 2, 'cancelada': 3 };
-        const aIsAlert = isOverdue(a.dataParada) && a.status === 'parada';
-        const bIsAlert = isOverdue(b.dataParada) && b.status === 'parada';
-        if (aIsAlert && !bIsAlert) return -1;
-        if (!aIsAlert && bIsAlert) return 1;
-        const statusDiff = (statusOrder[a.status] || 4) - (statusOrder[b.status] || 4);
-        if (statusDiff !== 0) return statusDiff;
-        return new Date(b.dataParada) - new Date(a.dataParada);
-    });
-    if (dados.length === 0) {
-        tabela.innerHTML = '<tr><td colspan="9" style="text-align: center;">Nenhum registro encontrado.</td></tr>';
-        return;
-    }
-    dados.forEach(dado => {
-        let classesLinha = `status-${dado.status}`;
-        if (dado.status === 'parada' && isOverdue(dado.dataParada)) { classesLinha += ' linha-alerta'; }
-        const motivoDisplay = (dado.motivo || '').trim().toLowerCase() === 'peças' && dado.curvaPeca ? `Peças (Curva ${dado.curvaPeca})` : (dado.motivo || '-');
-        const linha = `<tr id="maquina-${dado.id}" class="${classesLinha}"><td>${formatarData(dado.dataParada)}</td><td>${dado.cliente||'-'}</td><td>${dado.chassis||'-'}</td><td>${dado.modelo||'-'}</td><td>${dado.horas||'-'}</td><td>${dado.os||'-'}</td><td>${dado.tecnico||'-'}</td><td>${motivoDisplay}</td><td><div class="acoes-botoes">${dado.status==='parada'?`<button class="btn-acao btn-concluir" onclick="abrirPopup('popup-concluir','${dado.id}')">Concluir</button><button class="btn-acao btn-cancelar" onclick="abrirPopup('popup-cancelar','${dado.id}')">Cancelar</button>`:`<span>${dado.status.charAt(0).toUpperCase()+dado.status.slice(1)}</span>`}</div></td></tr>`;
-        tabela.innerHTML += linha;
-    });
-  }
+          const motivoDisplay = (dado.motivo || '').trim().toLowerCase() === 'peças' && dado.curvaPeca ? `Peças (Curva ${dado.curvaPeca})` : (dado.motivo || '-');
+          
+          let acoesHTML = `<span>${dado.status.charAt(0).toUpperCase() + dado.status.slice(1)}</span>`;
+          if (dado.status === 'parada') {
+              acoesHTML = '';
+              if (podeAgir) {
+                  acoesHTML += `<button class="btn-row-action btn-edit" data-id="${dado.id}" title="Editar"><i data-lucide="pencil" style="pointer-events: none;"></i></button>`;
+                  acoesHTML += `<button class="btn-row-action btn-concluir" data-id="${dado.id}" title="Concluir"><i data-lucide="check" style="pointer-events: none;"></i></button>`;
+                  acoesHTML += `<button class="btn-row-action btn-cancelar" data-id="${dado.id}" title="Cancelar"><i data-lucide="x" style="pointer-events: none;"></i></button>`;
+              }
+              if (podeApagar) {
+                  acoesHTML += `<button class="btn-row-action btn-delete" data-id="${dado.id}" title="Apagar"><i data-lucide="trash-2" style="pointer-events: none;"></i></button>`;
+              }
+              if (!podeAgir && !podeApagar) {
+                  acoesHTML = `<span>Em Andamento</span>`;
+              }
+          }
 
-  function isOverdue(dataParadaStr) {
-      if (!dataParadaStr) return false;
-      const cincoDiasEmMs = 5 * 24 * 60 * 60 * 1000;
-      const dataParada = new Date(dataParadaStr + "T00:00:00");
-      return (new Date() - dataParada) > cincoDiasEmMs;
-  }
-  
-  function atualizarCards(dadosParaCalculo) {
-      const hoje = new Date(), mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
-      const trintaDiasAtras = new Date(hoje - 30 * 24 * 60 * 60 * 1000);
-      const totalAberto = dadosParaCalculo.filter(d => d.status === 'parada').length;
-      const abertasNoMes = dadosParaCalculo.filter(d => {
+          tr.innerHTML = `
+            <td>${formatarData(dado.dataParada)}</td>
+            <td>${dado.cliente||'-'}</td>
+            <td>${dado.chassis||'-'}</td>
+            <td>${dado.modelo||'-'}</td>
+            <td>${dado.horas||'-'}</td>
+            <td>${dado.os||'-'}</td>
+            <td>${dado.tecnico||'-'}</td>
+            <td>${motivoDisplay}</td>
+            <td><div class="acoes-botoes">${acoesHTML}</div></td>
+          `;
+          tabela.appendChild(tr);
+        });
+        lucide.createIcons();
+      }
+
+      function isOverdue(dataParadaStr) {
+        if (!dataParadaStr) return false;
+        const cincoDiasEmMs = 5 * 24 * 60 * 60 * 1000;
+        const dataParada = new Date(dataParadaStr + "T00:00:00");
+        return (new Date() - dataParada) > cincoDiasEmMs;
+      }
+      
+      function atualizarCards(dadosParaCalculo) {
+        const hoje = new Date(), mesAtual = hoje.getMonth(), anoAtual = hoje.getFullYear();
+        const trintaDiasAtras = new Date(hoje.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const totalAberto = dadosParaCalculo.filter(d => d.status === 'parada').length;
+        const abertasNoMes = dadosParaCalculo.filter(d => {
           if (d.status !== 'parada') return false;
           const dataAbertura = new Date((d.dataParada || "1970-01-01") + 'T12:00:00');
           return dataAbertura.getMonth() === mesAtual && dataAbertura.getFullYear() === anoAtual;
-      }).length;
-      const fechadasNoMes = dadosMaquinas.filter(d => {
+        }).length;
+        const fechadasNoMes = dadosMaquinas.filter(d => {
           if (!d.dataFinal) return false;
           const dataFechamento = new Date(d.dataFinal + 'T12:00:00');
           return (d.status === 'concluida' || d.status === 'cancelada') && dataFechamento.getMonth() === mesAtual && dataFechamento.getFullYear() === anoAtual;
-      }).length;
-      const concluidas30d = dadosMaquinas.filter(d => {
+        }).length;
+        const concluidas30d = dadosMaquinas.filter(d => {
           if (!d.dataFinal) return false;
           const dataFechamento = new Date(d.dataFinal + 'T12:00:00');
           return d.status === 'concluida' && dataFechamento >= trintaDiasAtras;
-      }).length;
-      document.getElementById('card-total-aberto').textContent = totalAberto;
-      document.getElementById('card-mes-aberto').textContent = abertasNoMes;
-      document.getElementById('card-mes-fechado').textContent = fechadasNoMes;
-      document.getElementById('card-concluido-30d').textContent = concluidas30d;
-  }
+        }).length;
+        document.getElementById('card-total-aberto').textContent = totalAberto;
+        document.getElementById('card-mes-aberto').textContent = abertasNoMes;
+        document.getElementById('card-mes-fechado').textContent = fechadasNoMes;
+        document.getElementById('card-concluido-30d').textContent = concluidas30d;
+      }
 
-  function formatarData(dataString) {
-    if (!dataString) return '-';
-    const partes = dataString.split('-');
-    if (partes.length !== 3) return dataString;
-    return `${partes[2]}/${partes[1]}/${partes[0]}`;
-  }
+      function formatarData(dataString) {
+        if (!dataString) return '-';
+        const partes = dataString.split('-');
+        return partes.length !== 3 ? dataString : `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
 
-  window.abrirPopup = (popupId, maquinaId) => {
-    if (maquinaId) { document.getElementById(`maquina-id-${popupId.split('-')[1]}`).value = maquinaId; }
-    document.getElementById(popupId).style.display = 'flex';
-  }
+      window.abrirModal = (modalId, maquinaId) => {
+        if (maquinaId) {
+          const action = modalId.split('-')[1];
+          if (action === 'editar') {
+            const maquina = dadosMaquinas.find(m => m.id === maquinaId);
+            if (maquina) {
+              document.getElementById('maquina-id-editar').value = maquina.id;
+              document.getElementById('editar-dataParada').value = maquina.dataParada || '';
+              document.getElementById('editar-cliente').value = maquina.cliente || '';
+              document.getElementById('editar-chassis').value = maquina.chassis || '';
+              document.getElementById('editar-modelo').value = maquina.modelo || '';
+              document.getElementById('editar-horas').value = maquina.horas || '';
+              document.getElementById('editar-os').value = maquina.os || '';
+              document.getElementById('editar-tecnico').value = maquina.tecnico || '';
+              document.getElementById('editar-motivo').value = maquina.motivo || '';
+              document.getElementById('editar-curva').value = maquina.curvaPeca || '';
+              verificarMotivoPecas(maquina.motivo || '', 'editar');
+            }
+          } else {
+            document.getElementById(`maquina-id-${action}`).value = maquinaId;
+          }
+        }
+        document.getElementById(modalId).style.display = 'flex';
+      };
 
-  window.fecharPopup = (popupId) => {
-    document.getElementById(popupId).style.display = 'none';
-    if (popupId === 'popup-adicionar') {
-        document.getElementById('novo-dataParada').value = ''; document.getElementById('novo-cliente').value = ''; document.getElementById('novo-chassis').value = ''; document.getElementById('novo-modelo').value = ''; document.getElementById('novo-horas').value = ''; document.getElementById('novo-os').value = ''; document.getElementById('novo-tecnico').value = ''; document.getElementById('novo-motivo').value = '';
-        document.getElementById('novo-curva').value = '';
-        verificarMotivoPecas('');
+            window.fecharModal = (modalId) => {
+        document.getElementById(modalId).style.display = 'none';
+        // Limpa o formulário de adicionar ao fechar
+        if (modalId === 'modal-adicionar') {
+          document.getElementById('novo-dataParada').value = '';
+          document.getElementById('novo-cliente').value = '';
+          document.getElementById('novo-chassis').value = '';
+          document.getElementById('novo-modelo').value = '';
+          document.getElementById('novo-horas').value = '';
+          document.getElementById('novo-os').value = '';
+          document.getElementById('novo-tecnico').value = '';
+          document.getElementById('novo-motivo').value = '';
+          document.getElementById('novo-curva').value = '';
+          verificarMotivoPecas('', 'novo');
+        }
+      };
+
+      document.getElementById('tabela-maquinas').addEventListener('click', async (event) => {
+          const button = event.target.closest('button');
+          if (!button) return;
+          
+          const id = button.dataset.id;
+          const row = button.closest('tr');
+
+          if (button.classList.contains('btn-edit')) {
+              abrirModal('modal-editar', id);
+          } else if (button.classList.contains('btn-concluir')) {
+              abrirModal('modal-concluir', id);
+          } else if (button.classList.contains('btn-cancelar')) {
+              abrirModal('modal-cancelar', id);
+          } else if (button.classList.contains('btn-delete')) {
+              const cliente = row.cells[1].textContent;
+              const chassis = row.cells[2].textContent;
+              if (confirm(`Tem certeza que deseja APAGAR a parada do cliente "${cliente}" (chassi: ${chassis})? Esta ação é irreversível.`)) {
+                  try {
+                      await deleteDoc(doc(db, "maquinasParadas", id));
+                      carregarDados(); // Recarrega os dados para refletir a exclusão
+                  } catch (error) { 
+                      console.error("Erro ao apagar registro:", error);
+                      alert("Falha ao apagar o registro.");
+                  }
+              }
+          }
+      });
+
+      async function salvarNovaMaquina() {
+        const motivoInput = document.getElementById('novo-motivo');
+        const dataParada = document.getElementById('novo-dataParada').value;
+        const cliente = document.getElementById('novo-cliente').value;
+        const chassis = document.getElementById('novo-chassis').value;
+        const motivo = motivoInput.value.trim();
+        const tecnico = document.getElementById('novo-tecnico').value;
+        if (!dataParada || !cliente || !chassis || !motivo || !tecnico) {
+          alert('Preencha todos os campos obrigatórios (*).');
+          return;
+        }
+        const curvaPeca = document.getElementById('novo-curva').value;
+        if (motivo.toLowerCase() === 'peças' && !curvaPeca) {
+          alert('Para o motivo "Peças", é obrigatório selecionar a Curva da Peça.');
+          return;
+        }
+        const filiaisLogadas = userData.filial || [];
+        if (filiaisLogadas.length === 0) {
+          alert("Não foi possível identificar a filial do usuário para salvar.");
+          return;
+        }
+        const novaMaquina = { 
+          dataParada, cliente, chassis, motivo, tecnico,
+          modelo: document.getElementById('novo-modelo').value, 
+          horas: parseInt(document.getElementById('novo-horas').value) || 0, 
+          os: document.getElementById('novo-os').value, 
+          status: 'parada', 
+          filial: filiaisLogadas[0]
+        };
+        if (motivo.toLowerCase() === 'peças') { novaMaquina.curvaPeca = curvaPeca; }
+
+        try {
+          await addDoc(maquinasCollection, novaMaquina);
+          fecharModal('modal-adicionar');
+          carregarDados();
+        } catch (error) { 
+            console.error("Erro ao salvar nova máquina:", error);
+            alert("Falha ao salvar a nova máquina.");
+        }
+      }
+
+      async function atualizarMaquina() {
+        const id = document.getElementById('maquina-id-editar').value;
+        const motivoInput = document.getElementById('editar-motivo');
+        const dataParada = document.getElementById('editar-dataParada').value;
+        const cliente = document.getElementById('editar-cliente').value;
+        const chassis = document.getElementById('editar-chassis').value;
+        const motivo = motivoInput.value.trim();
+        const tecnico = document.getElementById('editar-tecnico').value;
+
+        if (!dataParada || !cliente || !chassis || !motivo || !tecnico) {
+          alert('Preencha todos os campos obrigatórios (*).');
+          return;
+        }
+        const curvaPeca = document.getElementById('editar-curva').value;
+        if (motivo.toLowerCase() === 'peças' && !curvaPeca) {
+          alert('Para o motivo "Peças", é obrigatório selecionar a Curva da Peça.');
+          return;
+        }
+
+        const dadosAtualizados = {
+            dataParada, cliente, chassis, motivo, tecnico,
+            modelo: document.getElementById('editar-modelo').value,
+            horas: parseInt(document.getElementById('editar-horas').value) || 0,
+            os: document.getElementById('editar-os').value,
+            curvaPeca: motivo.toLowerCase() === 'peças' ? curvaPeca : ''
+        };
+
+        try {
+            await updateDoc(doc(db, "maquinasParadas", id), dadosAtualizados);
+            fecharModal('modal-editar');
+            carregarDados();
+        } catch (error) {
+            console.error("Erro ao atualizar máquina:", error);
+            alert("Falha ao atualizar os dados da máquina.");
+        }
+      }
+
+      async function salvarConclusao() {
+        const id = document.getElementById('maquina-id-concluir').value;
+        const dataResolucao = document.getElementById('data-resolucao').value;
+        if (!dataResolucao) { alert('Preencha a data de resolução.'); return; }
+        try {
+          await updateDoc(doc(db, "maquinasParadas", id), { status: 'concluida', dataFinal: dataResolucao });
+          fecharModal('modal-concluir');
+          carregarDados();
+        } catch (error) { 
+            console.error("Erro ao concluir:", error);
+            alert("Falha ao concluir a parada.");
+        }
+      }
+
+      async function salvarCancelamento() {
+        const id = document.getElementById('maquina-id-cancelar').value;
+        const motivo = document.getElementById('motivo-cancelamento').value;
+        if (!motivo.trim()) { alert('Descreva o motivo do cancelamento.'); return; }
+        try {
+          await updateDoc(doc(db, "maquinasParadas", id), { status: 'cancelada', motivoCancelamento: motivo, dataFinal: new Date().toISOString().split('T')[0] });
+          fecharModal('modal-cancelar');
+          carregarDados();
+        } catch (error) { 
+            console.error("Erro ao cancelar:", error);
+            alert("Falha ao cancelar a parada.");
+        }
+      }
+
+      // Listeners de eventos
+      document.getElementById('filtro-cliente').addEventListener('input', aplicarFiltros);
+      document.getElementById('filtro-status').addEventListener('change', aplicarFiltros);
+      document.getElementById('filtro-tecnico').addEventListener('input', aplicarFiltros);
+      document.getElementById('btn-add-maquina').addEventListener('click', () => abrirModal('modal-adicionar'));
+      document.getElementById('btn-save-maquina').addEventListener('click', salvarNovaMaquina);
+      document.getElementById('btn-update-maquina').addEventListener('click', atualizarMaquina);
+      document.getElementById('btn-save-conclusao').addEventListener('click', salvarConclusao);
+      document.getElementById('btn-save-cancelamento').addEventListener('click', salvarCancelamento);
+      
+      window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+          fecharModal(e.target.id);
+        }
+      });
+
+      // Inicialização da página
+      await carregarTecnicosDaFilial(userData.filial);
+      await carregarDados();
+
+    } catch (error) {
+      console.error("Falha na autenticação ou inicialização:", error);
+      document.body.innerHTML = `<div style="text-align: center; color: white; padding: 50px;">Falha ao carregar a página. Verifique o console para mais detalhes ou contate o suporte.</div>`;
     }
   }
 
-  window.salvarNovaMaquina = async () => {
-    const motivoInput = document.getElementById('novo-motivo');
-    const dataParada = document.getElementById('novo-dataParada').value, cliente = document.getElementById('novo-cliente').value, chassis = document.getElementById('novo-chassis').value, motivo = motivoInput.value.trim(), tecnico = document.getElementById('novo-tecnico').value;
-    
-    if (!dataParada || !cliente || !chassis || !motivo || !tecnico) { alert('Preencha todos os campos obrigatórios: Data, Cliente, Chassis, Técnico e Motivo.'); return; }
-    
-    const curvaPeca = document.getElementById('novo-curva').value;
-    if (motivo.toLowerCase() === 'peças' && !curvaPeca) {
-        alert('Por favor, selecione a Curva da Peça.');
-        return;
-    }
-
-    const filiaisLogadas = await getFiliaisDoGestor();
-    if (filiaisLogadas.length === 0) { alert("Não foi possível identificar a filial do gestor."); return; }
-    
-    const novaMaquina = { 
-        dataParada, 
-        cliente, 
-        chassis, 
-        modelo: document.getElementById('novo-modelo').value, 
-        horas: parseInt(document.getElementById('novo-horas').value) || 0, 
-        os: document.getElementById('novo-os').value, 
-        tecnico, 
-        motivo, 
-        status: 'parada', 
-        filial: filiaisLogadas[0] 
-    };
-
-    if (motivo.toLowerCase() === 'peças') {
-        novaMaquina.curvaPeca = curvaPeca;
-    }
-
-    try { await addDoc(maquinasCollection, novaMaquina); fecharPopup('popup-adicionar'); carregarDados(); } catch (error) { console.error("Erro ao salvar:", error); }
-  }
-
-  window.salvarConclusao = async () => {
-    const id = document.getElementById('maquina-id-concluir').value, dataResolucao = document.getElementById('data-resolucao').value;
-    if (!dataResolucao) { alert('Preencha a data de resolução.'); return; }
-    const docRef = doc(db, "maquinasParadas", id);
-    try { await updateDoc(docRef, { status: 'concluida', dataFinal: dataResolucao }); fecharPopup('popup-concluir'); carregarDados(); } catch (error) { console.error("Erro ao concluir:", error); }
-  }
-
-  window.salvarCancelamento = async () => {
-    const id = document.getElementById('maquina-id-cancelar').value, motivo = document.getElementById('motivo-cancelamento').value;
-    if (!motivo.trim()) { alert('Descreva o motivo do cancelamento.'); return; }
-    const paraISO = (data) => data.toISOString().split('T')[0];
-    const docRef = doc(db, "maquinasParadas", id);
-    try { await updateDoc(docRef, { status: 'cancelada', motivoCancelamento: motivo, dataFinal: paraISO(new Date()) }); fecharPopup('popup-cancelar'); carregarDados(); } catch (error) { console.error("Erro ao cancelar:", error); }
-  }
+  iniciarPagina();
 </script>
 
 </body>
 </html>
+
