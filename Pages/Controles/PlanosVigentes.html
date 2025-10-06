@@ -5,6 +5,10 @@
   <meta name="theme-color" content="#2c2f3f" />
   <title>Dashboard com Filtros</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- MODIFICAÇÃO: Adicionado o script de autenticação -->
+  <script type="module" src="/assets/js/auth-guard.js"></script>
+  
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -31,7 +35,7 @@
       font-weight: bold;
       color: #ffffff;
       letter-spacing: 1px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2 );
     }
 
     #dynamic-title {
@@ -472,7 +476,9 @@
 
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  // MODIFICAÇÃO: Importa a função de autenticação e funções do Firebase
+  import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+  import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getFirestore,
     collection,
@@ -488,53 +494,60 @@
   const tipoChecklist = "planosVigentes";
   window.tipoChecklist = tipoChecklist;
 
-  const app = initializeApp({
-    apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
-    authDomain: "agro-divel.firebaseapp.com",
-    projectId: "agro-divel"
-  });
-
-  const db = getFirestore(app);
+  // MODIFICAÇÃO: Variáveis globais para dados do usuário e do banco
+  let db;
+  let userData;
   let dadosTotais = [];
 
-  document.getElementById("dynamic-title").textContent =
-    tipoChecklist === "checklistComercial" ? "Comercial" :
-    tipoChecklist === "checklistRevisao" ? "Revisão" :
-    tipoChecklist === "checklistPecas" ? "Peças" : "Painel";
+  // MODIFICAÇÃO: Função principal que inicia a página
+  async function iniciarPagina( ) {
+    try {
+      // 1. Garante que o usuário está logado e pega seus dados
+      userData = await garantirAutenticacao();
+      
+      // Inicializa o Firestore
+      const app = getApp(); // Pega a instância do app já inicializada pelo auth-guard
+      db = getFirestore(app);
 
-  async function carregarFiliaisDoGestor() {
-    const emailGestor = localStorage.getItem("gestorEmail") || "";
-    if (!emailGestor) return;
+      // 2. Verifica se o usuário tem filiais associadas
+      if (!userData.filial || userData.filial.length === 0) {
+        document.body.innerHTML = `<div style="text-align: center; color: white; padding: 50px;">Acesso negado. Nenhuma filial associada a este usuário.</div>`;
+        return;
+      }
 
-    const gestoresRef = collection(db, "gestores");
-    const q = query(gestoresRef, where("email", "==", emailGestor));
-    const snapshot = await getDocs(q);
+      // 3. Atualiza o título da página com as filiais
+      document.getElementById("dynamic-title").textContent = `Filiais: ${userData.filial.join(", ")}`;
+      
+      // 4. Carrega os dados dos planos vigentes
+      await carregarDados();
 
-    if (!snapshot.empty) {
-      const dados = snapshot.docs[0].data();
-      const filiais = dados.filial || [];
-      localStorage.setItem("gestorFilial", JSON.stringify(filiais));
-      document.getElementById("dynamic-title").textContent = `Filiais: ${filiais.join(", ")}`;
-      carregarDados();
-    } else {
-      alert("Gestor não encontrado no banco.");
+      // 5. Configura os listeners e o restante da página
+      configurarPagina();
+
+    } catch (error) {
+      // Se garantirAutenticacao falhar, o auth-guard já redireciona para o login.
+      console.error("Falha na inicialização da página:", error);
+      document.body.innerHTML = `<div style="text-align: center; color: white; padding: 50px;">Ocorreu um erro ao carregar a página. Tente recarregar.</div>`;
     }
   }
 
   async function carregarDados() {
+    // MODIFICAÇÃO: Usa as filiais do `userData` em vez do localStorage
+    const filiaisLogadas = userData.filial || [];
+    if (filiaisLogadas.length === 0) return; // Segurança extra
+
     const querySnapshot = await getDocs(collection(db, tipoChecklist));
     dadosTotais = [];
 
-    const filiaisLogadas = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-
     querySnapshot.forEach(docItem => {
       const dados = docItem.data();
+      // Compara as filiais de forma segura (minúsculas e sem espaços extras)
       if (filiaisLogadas.map(f => f.toLowerCase().trim()).includes((dados.filial || "").toLowerCase().trim())) {
         dadosTotais.push({ id: docItem.id, ...dados });
       }
     });
 
-    console.log("Total encontrado:", dadosTotais.length, dadosTotais);
+    console.log("Total de planos encontrados para as filiais:", dadosTotais.length);
     aplicarFiltros();
   }
 
@@ -687,7 +700,7 @@ const checklistHtml = checklistOrdenado.map(item => {
   const label = isOleo ? `${iconeOleo}`: item;
 
   return `<button 
-    onclick="abrirDataChecklist('${d.id}','${item}','${infoChecklist?.data || infoChecklist || ''}', '${infoChecklist?.os || ''}')"
+    onclick="abrirDataChecklist('${d.id}','${item}','${infoChecklist?.data || infoChecklist || ''}', '${infoChecklist?.os || ''}' )"
     style="background:${corFundo}; color:${corTexto}; padding:3px 8px; border:none; border-radius:5px; margin:2px; font-size:10px; cursor:pointer; display:flex; align-items:center; gap:4px;"
     ${infoChecklist ? 'disabled' : ''}
   >${label}${osInfo}${dataFormatada ? ` - ${dataFormatada}` : ''}</button>`;
@@ -720,10 +733,9 @@ const checklistHtml = checklistOrdenado.map(item => {
   window.updateDoc = updateDoc;
   window.addDoc = addDoc;
   window.collection = collection;
-  window.carregarFiliaisDoGestor = carregarFiliaisDoGestor;
   window.carregarDados = carregarDados;
 
-  async function abrirPopup(id) {
+    async function abrirPopup(id) {
     document.getElementById("popup").style.display = "flex";
     document.getElementById("docIdSelecionado").value = id;
     const docRef = doc(db, tipoChecklist, id);
@@ -827,30 +839,32 @@ window.salvarConclusao = salvarConclusao;
 window.fecharPopupConclusao = fecharPopupConclusao;
 window.abrirPopup = abrirPopup;
 
+  // MODIFICAÇÃO: Nova função para configurar os listeners e elementos da página
+  function configurarPagina() {
+    lucide.createIcons();
+
+    document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
+    document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
+    document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
+
+    flatpickr("#filtro-periodo", {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      locale: "pt",
+      onChange: aplicarFiltros
+    });
+
+    // Atualizar automaticamente a cada 60 segundos
+    setInterval(() => {
+      console.log("Atualizando dados do painel...");
+      carregarDados();
+    }, 60000); // 1 minuto
+  }
+
+  // MODIFICAÇÃO: Chama a função principal para iniciar tudo
+  iniciarPagina();
     
-  document.addEventListener("DOMContentLoaded", () => {
-  carregarFiliaisDoGestor();
-  lucide.createIcons();
-
-  document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
-  document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
-  document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
-
-  flatpickr("#filtro-periodo", {
-    mode: "range",
-    dateFormat: "Y-m-d",
-    locale: "pt",
-    onChange: aplicarFiltros
-  });
-
-  // ⏱ Atualizar automaticamente a cada 60 segundos
-  setInterval(() => {
-    console.log("Atualizando dados do painel...");
-    carregarDados();
-  }, 60000); // 1 minuto
-});
 //Função exportar.
-
 document.getElementById("btn-exportar").addEventListener("click", () => {
   const headers = [
     "Data Início", "Data Fim", "Cliente", "Chassi", "Modelo",
@@ -937,19 +951,7 @@ document.getElementById("arquivo-importar").addEventListener("change", async (e)
 
 //fim import
 
-
-//fim type="module">
 </script>
-
-  <script>
-  if (localStorage.getItem("gestorLogado") !== "true") {
-    alert("Acesso restrito! Faça login como gestor.");
-    window.location.href = "index.html";
-  } else {
-    const filiais = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-    document.getElementById("dynamic-title").textContent = `Filiais: ${filiais.join(", ") || "Desconhecida"}`;
-  }
-</script> 
 
 <script>
 function abrirFormularioNovoPlano() {
@@ -961,38 +963,8 @@ function fecharNovoPlano() {
 }
 
 async function buscarPrimeiraFilialDoGestor() {
-  try {
-    // Pega o email salvo no login do gestor
-    const emailGestor = localStorage.getItem("gestorEmail") || "";
-
-    // Se não tiver email no localStorage, tenta o primeiro doc do Firestore via título/fluxo atual
-    if (!emailGestor) {
-      // fallback rápido para não travar: usa localStorage gestorFilial (se existir)
-      const filiaisLS = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-      return filiaisLS[0] || "Não informado";
-    }
-
-    // Busca no Firestore a coleção "gestores" pelo e-mail
-    const gestoresRef = collection(db, "gestores");
-    const q = query(gestoresRef, where("email", "==", emailGestor));
-    const snapshot = await getDocs(q);
-
-    if (!snapshot.empty) {
-      const dados = snapshot.docs[0].data();
-      const filiais = Array.isArray(dados.filial) ? dados.filial : [];
-      // guarda em localStorage para reuso
-      localStorage.setItem("gestorFilial", JSON.stringify(filiais));
-      return filiais[0] || "Não informado";
-    }
-
-    // se não encontrou no banco, tenta localStorage
-    const filiaisLS = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-    return filiaisLS[0] || "Não informado";
-  } catch (e) {
-    // fallback final
-    const filiaisLS = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-    return filiaisLS[0] || "Não informado";
-  }
+    // MODIFICAÇÃO: Usa diretamente os dados do usuário já carregados
+    return userData?.filial?.[0] || "Não informado";
 }
 
 async function salvarNovoPlano() {
@@ -1014,7 +986,7 @@ async function salvarNovoPlano() {
     return (v.toUpperCase() === "ÓLEO" || v.toUpperCase() === "OLEO") ? "ÓLEO" : v;
   });
 
-  // 🔑 filial: pega do Firestore (gestores) e usa sempre a PRIMEIRA
+  // 🔑 filial: pega do `userData`
   const filial = await buscarPrimeiraFilialDoGestor();
 
   const novoPlano = {
@@ -1089,7 +1061,7 @@ function adicionarChecklistManual() {
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
-    function abrirDataChecklist(id, valor, dataPreenchida, osPreenchida = "") {
+    function abrirDataChecklist(id, valor, dataPreenchida, osPreenchida = "" ) {
       document.getElementById('docIdChecklistData').value = id;
       document.getElementById('valorChecklistData').value = valor;
       document.getElementById('inputDataChecklist').value = dataPreenchida || "";
@@ -1241,4 +1213,4 @@ function formatarDataBR(data) {
 
 </body>
 
-</html> 
+</html>
