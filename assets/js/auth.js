@@ -1,96 +1,110 @@
-// /assets/js/auth.js
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agro Divel - 360</title>
+    
+    <!-- CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/assets/css/style.css">
 
-// Importa tudo que precisamos do nosso arquivo de configuração
-import { db, auth, onAuthStateChanged, signOut, doc, getDoc } from './firebase-config.js';
+</head>
+<body>
 
-// --- MAPA DE PERMISSÕES ---
-// Defina aqui quais grupos podem ver quais itens do menu.
-// A chave é o ID que colocamos no HTML (ex: 'dash-comercial').
-// O valor é um array com os nomes dos grupos (ex: ['admin', 'comercial']).
-const menuPermissions = {
-    'dash-geral':             ['admin', 'diretoria'],
-    'dash-comercial':         ['admin', 'diretoria', 'comercial'],
-    'dash-pecas':             ['admin', 'diretoria', 'pecas'],
-    'dash-servicos':          ['admin', 'diretoria', 'servicos'],
-    'dash-planos-manutencao': ['admin', 'diretoria', 'comercial'],
-    'dash-planos-vigentes':   ['admin', 'diretoria', 'comercial'],
-    'ctrl-Servicos':          ['admin', 'servicos'],
-    'ctrl-Pecas':       ['admin', 'pecas'],
-};
+    <nav class="sidebar">
+        <header>
+            <div class="image-text">
+                <span class="image-logo">
+                    <img src="/assets/images/logo.png" alt="logo">
+                </span>
+            </div>
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
 
-// Função principal que roda quando o estado de autenticação muda
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // 1. USUÁRIO ESTÁ LOGADO
-        console.log("Usuário logado:", user.uid);
-        // AINDA NÃO DEFINIMOS O NOME AQUI
+        <div class="text logo-text">
+            <span class="profession" style="color: var(--text-color  ); font-size: 16px; font-weight: 600;">Menu Principal</span>
+        </div>
 
-        // 2. BUSCAR OS DADOS DO USUÁRIO NO FIRESTORE
-        const userDocRef = doc(db, "gestores", user.uid);
-        const userDoc = await getDoc(userDocRef);
+        <div class="menu-bar">
+            <ul class="menu-links">
+                
+                <!-- Dashboards -->
+                <li class="nav-link submenu-parent" id="menu-dashboards">
+                    <a href="#">
+                        <i class='bx bx-bar-chart-square icon'></i>
+                        <span class="text nav-text">Dashboards</span>
+                        <i class='bx bx-chevron-right submenu-arrow'></i>
+                    </a>
+                    <ul class="submenu">
+                        <li id="dash-geral"><a href="/Pages/Dashboard/DashboardGeral.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Leads Geral</span></a></li>                        
+                        <li id="dash-comercial"><a href="/Pages/Dashboard/DashboardComercial.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Comercial</span></a></li>
+                        <li id="dash-pecas"><a href="/Pages/Dashboard/DashboardPecas.html"><i class='bx bx-wrench icon'></i><span class="text nav-text">Peças</span></a></li>
+                        <li id="dash-servicos"><a href="/Pages/Dashboard/DashboardServicos.html"><i class='bx bx-cog icon'></i><span class="text nav-text">Serviços</span></a></li>
+                        <li id="dash-planos-manutencao"><a href="/Pages/Dashboard/DashboardPlanoManutencao.html"><i class='bx bx-wifi icon'></i><span class="text nav-text">Planos de Manutenção</span></a></li>
+                    </ul>
+                </li>
 
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            const userGroup = userData.grupo; 
-            const userName = userData.nome; // <-- PEGAMOS O NOME DO FIRESTORE
+                <!-- Controles -->
+                <li class="nav-link submenu-parent" id="menu-controles">
+                    <a href="#">
+                        <i class='bx bx-slider-alt icon'></i>
+                        <span class="text nav-text">Controles</span>
+                        <i class='bx bx-chevron-right submenu-arrow'></i>
+                    </a>
+                    <ul class="submenu">
+                        <li id="ctrl-Servicos"><a href="/Pages/Controles/PlanosVigentes.html"><i class='bx bx-package icon'></i><span class="text nav-text">Planos Vigentes</span></a></li>
+                        <li id="ctrl-Servicos"><a href="/Pages/Controles/MaquinasParadas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Máquinas Paradas</span></a></li>
+                        <li id="ctrl-Pecas"><a href="/Pages/Controles/Kits50Horas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Kit 50Hr</span></a></li>
+                        <li id="ctrl-Pecas"><a href="/Pages/Controles/ContagemDiaria.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Contagem Diaria</span></a></li>
+                    </ul>
+                </li>
 
-            // AGORA ATUALIZAMOS O NOME NA PÁGINA
-            document.getElementById('user-name').textContent = userName || 'Usuário'; // <-- NOVA LINHA
+                <!-- Cadastros -->
+                <li class="nav-link submenu-parent" id="menu-cadastros">
+                    <a href="#">
+                        <i class='bx bx-file-blank icon'></i>
+                        <span class="text nav-text">Cadastros</span>
+                        <i class='bx bx-chevron-right submenu-arrow'></i>
+                    </a>
+                    <ul class="submenu">
+                        <li id="admin-geral"><a href="/Pages/Cadastros/CadastrarGestores.html"><i class='bx bx-edit icon'></i><span class="text nav-text">Formulário de Peças</span></a></li>
+                    </ul>
+                </li>
+                
+                <!-- Logout -->
+                <li class="nav-link" id="logout-button">
+                    <a href="#">
+                        <i class='bx bx-log-out icon'></i>
+                        <span class="text nav-text">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-            if (!userGroup) {
-                console.error("Campo 'grupo' não encontrado para o usuário no Firestore!");
-                alert("Erro de permissão. Contate o administrador.");
-                return;
-            }
-            
-            console.log("Grupo do usuário:", userGroup);
-            console.log("Nome do usuário:", userName);
+    <section class="home">
+        <div class="text">
+            <h1>Bem-vindo ao seu Painel, <span id="user-name"></span>!</h1>
+            <p>Acompanhe aqui as principais novidades da plataforma.</p>
+        </div>
 
-            // 3. APLICAR AS PERMISSÕES NO MENU
-            applyMenuPermissions(userGroup);
+        <div class="content-card">
+            <div class="content-card-header">
+                <h2>Novidades e Atualizações</h2>
+            </div>
+            <div class="content-card-body">
+                <!-- Seus itens de novidades aqui -->
+            </div>
+        </div>
+    </section>
 
-        } else {
-            console.error("Documento do usuário não encontrado no Firestore!");
-            alert("Seu usuário não foi encontrado na base de dados. Redirecionando para o login.");
-            window.location.href = 'Pages/Login.html';
-        }
+    <!-- Scripts do Firebase (precisam ser do tipo "module") -->
+    <script type="module" src="/assets/js/firebase-config.js"></script>
+    <script type="module" src="/assets/js/auth.js"></script>
+    
+    <!-- Script principal do menu -->
+    <script src="/assets/js/main.js"></script>
 
-    } else {
-        // 4. USUÁRIO NÃO ESTÁ LOGADO
-        console.log("Nenhum usuário logado. Redirecionando para a página de login.");
-        window.location.href = 'Pages/Login.html';
-    }
-});
-
-// Função que percorre o mapa de permissões e esconde os itens
-function applyMenuPermissions(userGroup) {
-    for (const menuItemId in menuPermissions) {
-        const allowedGroups = menuPermissions[menuItemId];
-        const element = document.getElementById(menuItemId);
-
-        if (element && !allowedGroups.includes(userGroup)) {
-            element.style.display = 'none'; // Esconde o item se o grupo não for permitido
-        }
-    }
-    // Bônus: Esconde os menus principais (Dashboards, Controles) se todos os filhos forem escondidos
-    document.querySelectorAll('.submenu-parent').forEach(menu => {
-        const visibleItems = menu.querySelectorAll('li[style*="display: none"]');
-        const totalItems = menu.querySelectorAll('ul.submenu li');
-        if (visibleItems.length === totalItems.length) {
-            menu.style.display = 'none';
-        }
-    });
-}
-
-// Lógica do botão de Logout
-const logoutButton = document.getElementById('logout-button');
-if (logoutButton) {
-    logoutButton.addEventListener('click', () => {
-        signOut(auth).then(() => {
-            console.log('Logout bem-sucedido.');
-            window.location.href = '/Pages/Login.html';
-        }).catch((error) => {
-            console.error('Erro ao fazer logout:', error);
-        });
-    });
-}
+</body>
+</html>
