@@ -11,68 +11,56 @@
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <!-- PASSO 1: Adicionado arquivo de tradução para Português -->
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
 
-    <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
-        header { background-color: #2c2f3f; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2  ); }
-        .header-content { display: flex; align-items: center; justify-content: space-between; }
-        .header-title { flex: 1; text-align: center; }
-        #dynamic-title { margin-top: 10px; font-size: 16px; font-weight: normal; color: #ccc; }
-        .logo { height: 80px; margin-left: 45px; margin-right: 15px; margin-top: 10px; }
-        .main { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 250px; background-color: #2c2f3f; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .card { padding: 15px; border-radius: 16px; color: white; background: linear-gradient(238deg, #193b7c, #193b7c00); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: left; display: flex; flex-direction: column; gap: 5px; }
-        .card h2 { font-size: 26px; margin: 0; }
-        .card p { font-size: 13px; color: #eee; margin: 0; display: flex; align-items: center; gap: 8px; }
-        .card .percentage { font-size: 12px; color: #aaa; font-weight: bold; margin-top: 4px; }
-        .content { flex: 1; padding: 30px; background-color: #262a3d; overflow-y: auto; }
-        .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
-        .filters input, .filters select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; min-width: 180px; height: 40px; background-color: #fff; color: #333; }
-        table { width: 100%; border-collapse: collapse; background-color: #2c2f3f; border-radius: 12px; overflow: hidden; }
-        th, td { font-size: 12px; padding: 10px 15px; text-align: left; border-bottom: 1px solid #444; vertical-align: middle; }
-        th { background-color: #ffffff; color: #00205b; }
-        .acoes-topo { margin-left: auto; display: flex; gap: 10px; }
-        .btn-acao { background: linear-gradient(145deg, #005c97, #363795); border: none; width: 40px; height: 40px; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: filter 0.2s, transform 0.2s; }
-        .btn-acao:hover { filter: brightness(1.1); transform: scale(1.05); }
-        .quantidade-input { background-color: transparent; color: white; border: 1px solid #555; border-radius: 4px; padding: 4px 6px; width: 80px; text-align: center; }
-        .quantidade-input:focus { outline: none; border-color: #009bd6; background-color: #3a3f5c; }
-        #loader-overlay { display: none; position: fixed; z-index: 9999; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); color: white; font-size: 20px; align-items: center; justify-content: center; font-weight: bold; }
-        .sobra-estoque { background-color: #2c4a3b !important; }
-        .falta-estoque { background-color: #4a2c2c !important; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-content {
-            background-color: #2c2f3f;
-            padding: 25px;
-            border-radius: 12px;
-            width: 95%;
-            max-width: 900px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            border: 1px solid #444;
-            /* --- ADICIONE ESTAS DUAS LINHAS --- */
-            max-height: 85vh; /* Limita a altura a 85% da altura da tela */
-            overflow-y: auto; /* Adiciona rolagem vertical se necessário */
-        }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .modal-header h3 { margin: 0; font-size: 20px; }
-        .close-button { cursor: pointer; font-size: 28px; font-weight: bold; transition: color 0.2s; }
-        .close-button:hover { color: #ff6b6b; }
-        #analise-info p { margin: 2px 0; font-size: 14px; color: #ccc; }
-        #analise-info strong { color: #fff; }
-        #analise-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-        .kpi-card { background-color: #262a3d; padding: 15px; border-radius: 8px; text-align: center; }
-        .kpi-card .value { font-size: 24px; font-weight: bold; }
-        .kpi-card .value.positive { color: #40c057; }
-        .kpi-card .value.negative { color: #fa5252; }
-        .kpi-card .label { font-size: 12px; color: #aaa; margin-top: 5px; }
-        #analise-tabela-container { max-height: 200px; overflow-y: auto; }
-        .highlight-row { background-color: #495057 !important; }
-    </style>
+<style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
+    header { background-color: #2c2f3f; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .header-content { display: flex; align-items: center; justify-content: space-between; }
+    .header-title { flex: 1; text-align: center; }
+    #dynamic-title { margin-top: 10px; font-size: 16px; font-weight: normal; color: #ccc; }
+    .logo { height: 80px; margin-left: 45px; margin-right: 15px; margin-top: 10px; }
+    .btn-voltar { background: linear-gradient(135deg, #00205b, #009bd6); border: none; padding: 10px 16px; border-radius: 8px; color: white; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; margin-right: 20px; font-size: 14px; }
+    .btn-voltar:hover { transform: scale(1.05); }
+    .main { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 250px; background-color: #2c2f3f; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+    .card { padding: 15px; border-radius: 16px; color: white; background: linear-gradient(238deg, #193b7c, #193b7c00); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: left; display: flex; flex-direction: column; gap: 5px; }
+    .card h2 { font-size: 26px; margin: 0; }
+    .card p { font-size: 13px; color: #eee; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .card .percentage { font-size: 12px; color: #aaa; font-weight: bold; margin-top: 4px; }
+    .content { flex: 1; padding: 30px; background-color: #262a3d; overflow-y: auto; }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+    .filters input, .filters select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; min-width: 180px; height: 40px; background-color: #fff; color: #333; }
+    table { width: 100%; border-collapse: collapse; background-color: #2c2f3f; border-radius: 12px; overflow: hidden; }
+    th, td { font-size: 12px; padding: 10px 15px; text-align: left; border-bottom: 1px solid #444; vertical-align: middle; }
+    th { background-color: #ffffff; color: #00205b; }
+    .acoes-topo { margin-left: auto; display: flex; gap: 10px; }
+    .btn-acao { background: linear-gradient(145deg, #005c97, #363795); border: none; width: 40px; height: 40px; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: filter 0.2s, transform 0.2s; }
+    .btn-acao:hover { filter: brightness(1.1); transform: scale(1.05); }
+    /* MODIFICAÇÃO: Estilo unificado para os inputs da tabela */
+    .tabela-input { background-color: transparent; color: white; border: 1px solid #555; border-radius: 4px; padding: 4px 6px; width: 80px; text-align: center; }
+    .tabela-input:focus { outline: none; border-color: #009bd6; background-color: #3a3f5c; }
+    #loader-overlay { display: none; position: fixed; z-index: 9999; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); color: white; font-size: 20px; align-items: center; justify-content: center; font-weight: bold; }
+    .sobra-estoque { background-color: #2c4a3b !important; }
+    .falta-estoque { background-color: #4a2c2c !important; }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+    .modal-content { background-color: #2c2f3f; padding: 25px; border-radius: 12px; width: 95%; max-width: 900px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 20px; border: 1px solid #444; max-height: 85vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; }
+    .modal-header h3 { margin: 0; font-size: 20px; }
+    .close-button { cursor: pointer; font-size: 28px; font-weight: bold; transition: color 0.2s; }
+    .close-button:hover { color: #ff6b6b; }
+    #analise-info p { margin: 2px 0; font-size: 14px; color: #ccc; }
+    #analise-info strong { color: #fff; }
+    #analise-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+    .kpi-card { background-color: #262a3d; padding: 15px; border-radius: 8px; text-align: center; }
+    .kpi-card .value { font-size: 24px; font-weight: bold; }
+    .kpi-card .value.positive { color: #40c057; }
+    .kpi-card .value.negative { color: #fa5252; }
+    .kpi-card .label { font-size: 12px; color: #aaa; margin-top: 5px; }
+    #analise-tabela-container { max-height: 200px; overflow-y: auto; }
+    .highlight-row { background-color: #495057 !important; }
+</style>
 </head>
 <body>
     <header>
@@ -82,26 +70,37 @@
                 <em>Dashboard Agro Divel 360</em>
                 <div id="dynamic-title">Controle e Análise de Estoque</div>
             </div>
-            <div style="width: 110px;"></div>
+            <!-- --- MODIFICAÇÃO: Botão Voltar adicionado --- -->
+            <button class="btn-voltar" title="Voltar" onclick="window.history.back()">
+                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Voltar
+            </button>
         </div>
     </header>
 
-    <div class="main">
+<div class="main">
         <div class="sidebar">
             <div class="card">
                 <h2 id="total-itens">0</h2>
                 <p><i data-lucide="package"></i> Total de Itens</p>
             </div>
-
             <div class="card">
                 <h2 id="sobra-estoque">0</h2>
-                <p><i data-lucide="arrow-up-circle"></i> Sobra de Estoque</p>
+                <p><i data-lucide="arrow-up-circle"></i> Sobra de Estoque (Qtd)</p>
                 <div class="percentage" id="sobra-percent"></div>
             </div>
             <div class="card">
                 <h2 id="falta-estoque">0</h2>
-                <p><i data-lucide="arrow-down-circle"></i> Falta de Estoque</p>
+                <p><i data-lucide="arrow-down-circle"></i> Falta de Estoque (Qtd)</p>
                 <div class="percentage" id="falta-percent"></div>
+            </div>
+            <!-- MODIFICAÇÃO: Novos cards de valores -->
+            <div class="card">
+                <h2 id="valor-sobra">R$ 0,00</h2>
+                <p><i data-lucide="trending-up"></i> Valor em Sobra</p>
+            </div>
+            <div class="card">
+                <h2 id="valor-falta">R$ 0,00</h2>
+                <p><i data-lucide="trending-down"></i> Valor em Falta</p>
             </div>
         </div>
 
@@ -126,7 +125,16 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Cód. Produto</th><th>Descrição</th><th>Prateleira</th><th>Estoque Sistema</th><th>Estoque Contado</th><th>Diferença</th><th>Ações</th>
+                        <th>Cód. Produto</th>
+                        <th>Descrição</th>
+                        <th>Prateleira</th>
+                        <th>Estoque Sistema</th>
+                        <th>Estoque Contado</th>
+                        <th>Diferença</th>
+                        <!-- MODIFICAÇÃO: Novas colunas na tabela -->
+                        <th>Valor Unitário</th>
+                        <th>Valor Diferença</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-estoque"></tbody>
@@ -139,20 +147,24 @@
             <div class="modal-header"><h3>Análise de Item</h3><span class="close-button">&times;</span></div>
             <div id="analise-info"></div>
             <div id="analise-kpis"></div>
-            
-            <!-- MODIFICAÇÃO AQUI: Adicione um div ao redor do canvas -->
             <div id="grafico-container" style="position: relative; height: 300px;">
                 <canvas id="analise-grafico"></canvas>
             </div>
-            
             <div id="analise-tabela-container"></div>
         </div>
     </div>
 
+    <!-- MODIFICAÇÃO: Adicionado o auth-guard.js para pegar os dados do usuário -->
+    <script type="module" src="/assets/js/auth-guard.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-    <script>
+    <script type="module">
+        // MODIFICAÇÃO: Importa a função de autenticação
+        import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+
         const firebaseConfig = {
             apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
             authDomain: "agro-divel.firebaseapp.com",
@@ -162,7 +174,7 @@
             appId: "1:583977436505:web:3754ec029aebb3d9d67848"
         };
 
-        firebase.initializeApp(firebaseConfig  );
+        firebase.initializeApp(firebaseConfig );
         const db = firebase.firestore();
         const inventarioCollection = db.collection('inventario');
 
@@ -171,17 +183,42 @@
         const fileInput = document.getElementById('file-input');
         let dadosLocais = {};
         let unsubscribe = null;
+        let userData = null; // MODIFICAÇÃO: Variável para guardar dados do usuário
+
+        // MODIFICAÇÃO: Função principal para iniciar a página após autenticação
+        async function iniciarPagina() {
+            try {
+                userData = await garantirAutenticacao();
+                if (!userData || !userData.filial || userData.filial.length === 0) {
+                    alert("Usuário não autenticado ou sem filial associada. Redirecionando para o login.");
+                    window.location.href = '/index.html';
+                    return;
+                }
+                
+                // Exibe a filial no título
+                document.getElementById('dynamic-title').textContent = `Controle de Estoque - Filial: ${userData.filial.join(', ')}`;
+
+                escutarAtualizacoesInventario();
+            } catch (error) {
+                console.error("Falha na autenticação:", error);
+                window.location.href = '/index.html';
+            }
+        }
         
         function escutarAtualizacoesInventario() {
             loaderOverlay.style.display = 'flex';
             if (unsubscribe) unsubscribe();
 
-            unsubscribe = inventarioCollection.onSnapshot(snapshot => {
+            // MODIFICAÇÃO: Filtra o inventário pela filial do usuário
+            const filiaisUsuario = userData.filial;
+            let query = inventarioCollection.where('info.filial', 'in', filiaisUsuario);
+
+            unsubscribe = query.onSnapshot(snapshot => {
                 dadosLocais = {};
                 snapshot.forEach(doc => {
                     dadosLocais[doc.id] = doc.data();
                 });
-                console.log("Dados sincronizados do Firebase.");
+                console.log("Dados sincronizados do Firebase para a(s) filial(is):", filiaisUsuario.join(', '));
                 popularFiltroData();
                 aplicarFiltros();
                 loaderOverlay.style.display = 'none';
@@ -193,6 +230,12 @@
         }
 
         fileInput.addEventListener('change', (event) => {
+            if (!userData) {
+                alert("Dados do usuário não carregados. Não é possível processar o arquivo.");
+                return;
+            }
+            const primeiraFilial = userData.filial[0]; // Pega a primeira filial do usuário
+
             const file = event.target.files[0];
             if (!file) return;
             
@@ -202,26 +245,16 @@
             reader.onload = async (e) => {
                 try {
                     let jsonData;
-                    if (file.name.endsWith('.csv')) {
-                        const text = e.target.result;
-                        const separador = text.includes(';') ? ';' : ',';
-                        const lines = text.split(/\r\n|\n/);
-                        const headers = lines[0].split(separador).map(h => h.trim());
-                        jsonData = [];
-                        for (let i = 1; i < lines.length; i++) {
-                            if (lines[i].trim()) {
-                                const values = lines[i].split(separador);
-                                const row = {};
-                                headers.forEach((header, index) => { row[header] = values[index] ? values[index].trim() : ''; });
-                                jsonData.push(row);
-                            }
-                        }
-                    } else {
-                        const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type: 'array' });
-                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                        jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    }
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    
+                    // MODIFICAÇÃO: Converte a planilha para um array de arrays, ignorando cabeçalhos.
+                    // A opção {header: 1} faz com que cada linha da planilha se torne um array.
+                    const sheetDataAsArray = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    // Remove a primeira linha (cabeçalho) para processar apenas os dados.
+                    const dataRows = sheetDataAsArray.slice(1);
 
                     const matchData = file.name.match(/(\d{2}-\d{2}-\d{4})/);
                     const dataContagem = matchData ? matchData[0].replace(/-/g, '/') : new Date().toLocaleDateString('pt-BR');
@@ -229,13 +262,29 @@
                     const batch = db.batch();
                     let totalItens = 0;
 
-                    jsonData.forEach(row => {
-                        const codigoOriginal = (row['Cod. produto'] || row['Código'] || '').toString().trim();
-                        const codigoSeguro = codigoOriginal.replace(/\//g, '-');
-                        if (!codigoSeguro) return;
+                    // MODIFICAÇÃO: Itera sobre as linhas (que agora são arrays)
+                    dataRows.forEach(rowArray => {
+                        // Pega os dados pela posição da coluna (índice do array)
+                        // Coluna B (Cod. produto) -> índice 1
+                        // Coluna C (Descrição) -> índice 2
+                        // Coluna D (Prateleira) -> índice 3 (opcional)
+                        // Coluna E (Estoque Hoje) -> índice 4 (opcional)
+                        
+                        const codigoOriginal = (rowArray[1] || '').toString().trim();
+                        if (!codigoOriginal) return; // Pula a linha se não houver código de produto
 
-                        const descricao = row['Descrição'] || row['Descricao'] || row['descrição'] || row['descricao'] || '';
-                        const estoqueSistema = parseFloat((row['Estoque Hoje Quantidade'] || '0').toString().replace(',', '.')) || 0;
+                        const codigoSeguro = codigoOriginal.replace(/\//g, '-');
+                        
+                        // Pega a descrição SEMPRE da terceira coluna (índice 2)
+                        const descricao = (rowArray[2] || '').toString().trim(); 
+                        
+                        // Tenta pegar o estoque de múltiplas colunas possíveis
+                        const estoqueSistemaStr = (rowArray[4] || rowArray[3] || '0').toString().replace(',', '.');
+                        const estoqueSistema = parseFloat(estoqueSistemaStr) || 0;
+
+                        // Tenta pegar a prateleira (se existir)
+                        const prateleira = (rowArray[3] || '').toString().trim();
+
                         const docRef = inventarioCollection.doc(codigoSeguro);
                         
                         const itemLocal = dadosLocais[codigoSeguro];
@@ -247,16 +296,18 @@
                             );
                             batch.update(docRef, { 
                                 'info.descricao': descricao, 
-                                'info.prateleira': (row['Prateleira'] || '').toString().trim(),
+                                'info.prateleira': prateleira,
                                 'info.codigoOriginal': codigoOriginal,
+                                'info.filial': primeiraFilial,
                                 historico: novoHistorico 
                             });
                         } else {
                             batch.set(docRef, {
                                 info: {
                                     descricao: descricao,
-                                    prateleira: (row['Prateleira'] || '').toString().trim(),
-                                    codigoOriginal: codigoOriginal
+                                    prateleira: prateleira,
+                                    codigoOriginal: codigoOriginal,
+                                    filial: primeiraFilial
                                 },
                                 historico: firebase.firestore.FieldValue.arrayUnion({
                                     data: dataContagem,
@@ -270,7 +321,7 @@
                     });
 
                     await batch.commit();
-                    alert(`${totalItens} itens foram processados para a data ${dataContagem}.`);
+                    alert(`${totalItens} itens foram processados para a data ${dataContagem} na filial ${primeiraFilial}.`);
 
                 } catch (error) {
                     console.error("Erro ao processar o arquivo:", error);
@@ -281,24 +332,66 @@
                 }
             };
 
+            // MODIFICAÇÃO: Sempre lê o arquivo como ArrayBuffer, pois funciona tanto para XLSX quanto para CSV com a nova lógica.
+            reader.readAsArrayBuffer(file);
+
+
             if (file.name.endsWith('.csv')) { reader.readAsText(file, 'UTF-8'); } 
             else { reader.readAsArrayBuffer(file); }
         });
         
+        // MODIFICAÇÃO: Listener de eventos para os inputs da tabela
         tabelaBody.addEventListener('change', (e) => {
-            if (e.target.classList.contains('quantidade-input')) {
+            if (e.target.classList.contains('tabela-input')) {
                 const codigoSeguro = e.target.dataset.codigo;
                 const dataContagem = e.target.dataset.data;
-                const novoValor = parseInt(e.target.value) || 0;
                 const item = dadosLocais[codigoSeguro];
                 if (!item) return;
-                const novoHistorico = item.historico.map(h => 
-                    h.data === dataContagem ? { ...h, estoqueContado: novoValor, user: 'manual' } : h
-                );
-                inventarioCollection.doc(codigoSeguro).update({ historico: novoHistorico })
-                    .catch(err => console.error("Erro ao atualizar contagem:", err));
+
+                // Encontra o registro específico no histórico
+                const registroIndex = item.historico.findIndex(h => h.data === dataContagem);
+                if (registroIndex === -1) return;
+
+                const registro = item.historico[registroIndex];
+
+                // Pega os valores atuais da linha da tabela
+                const linha = e.target.closest('tr');
+                const quantidadeInput = linha.querySelector('.quantidade-input');
+                const valorInput = linha.querySelector('.valor-input');
+
+                const novaQuantidade = parseInt(quantidadeInput.value) || 0;
+                const novoValorUnitario = parseFloat(valorInput.value) || 0;
+
+                // Atualiza o objeto do registro
+                registro.estoqueContado = novaQuantidade;
+                registro.valorUnitario = novoValorUnitario;
+                registro.user = userData.nome || 'manual';
+
+                // Atualiza o histórico no objeto local
+                item.historico[registroIndex] = registro;
+
+                // Salva no Firebase
+                inventarioCollection.doc(codigoSeguro).update({ historico: item.historico })
+                    .then(() => {
+                        // Após salvar, atualiza a exibição da linha e os cards
+                        const diferenca = novaQuantidade - registro.estoqueSistema;
+                        const valorDiferenca = diferenca * novoValorUnitario;
+                        
+                        linha.querySelector('.diferenca-valor').textContent = formatarMoeda(valorDiferenca);
+                        linha.querySelector('.diferenca-qtd').textContent = `${diferenca > 0 ? '+' : ''}${diferenca}`;
+                        
+                        // Re-aplica classes de cor
+                        linha.classList.remove('sobra-estoque', 'falta-estoque');
+                        if (diferenca > 0) linha.classList.add('sobra-estoque');
+                        else if (diferenca < 0) linha.classList.add('falta-estoque');
+
+                        // Atualiza os cards globais
+                        aplicarFiltros();
+                    })
+                    .catch(err => console.error("Erro ao atualizar contagem/valor:", err));
             }
         });
+
 
         const filtroCodigo = document.getElementById('filtro-codigo');
         const filtroDescricao = document.getElementById('filtro-descricao');
@@ -313,16 +406,19 @@
         const closeModalButton = analiseModal.querySelector('.close-button');
         let graficoAnalise = null;
 
-        // PASSO 2: Ativada a tradução na inicialização do Flatpickr
         flatpickr(filtroData, {
-            locale: "pt", // Ativa a localização para português
+            locale: "pt",
             dateFormat: "d/m/Y",
-            mode: "range", // Permite seleção de período
+            mode: "range",
             onChange: function(selectedDates, dateStr, instance) {
                 aplicarFiltros();
             }
         });
 
+        // --- O restante do seu script (funções de filtro, renderização, modais, etc.) permanece o mesmo ---
+        // Nenhuma alteração necessária nas funções abaixo, pois elas já operam sobre `dadosLocais`,
+        // que agora é pré-filtrado pela filial do usuário.
+        
         function popularFiltroData() {
             const datas = new Set();
             Object.values(dadosLocais).forEach(item => {
@@ -360,7 +456,6 @@
 
             let dadosParaFiltrar = [];
             if (periodoSelecionado) {
-                // Se for um período (contém " até "), dividir as datas
                 if (periodoSelecionado.includes(" até ")) {
                     const [dataInicio, dataFim] = periodoSelecionado.split(" até ");
                     
@@ -368,11 +463,8 @@
                         const item = dadosLocais[codigoSeguro];
                         if (!item.historico) return null;
                         
-                        // Filtrar registros dentro do período
                         const registrosDoPeriodo = item.historico.filter(h => {
                             const dataRegistro = h.data;
-                            
-                            // Converter datas para formato comparável
                             const [dReg, mReg, aReg] = dataRegistro.split('/').map(Number);
                             const [dIni, mIni, aIni] = dataInicio.split('/').map(Number);
                             const [dFim, mFim, aFim] = dataFim.split('/').map(Number);
@@ -386,7 +478,6 @@
                         
                         if (registrosDoPeriodo.length === 0) return null;
                         
-                        // Usar o registro mais recente do período
                         const registroMaisRecente = registrosDoPeriodo.sort((a, b) => {
                             const [da, ma, aa] = a.data.split('/').map(Number);
                             const [db, mb, ab] = b.data.split('/').map(Number);
@@ -396,7 +487,6 @@
                         return { codigoSeguro, ...item.info, ...registroMaisRecente };
                     }).filter(Boolean);
                 } else {
-                    // Se for uma data única
                     dadosParaFiltrar = Object.keys(dadosLocais).map(codigoSeguro => {
                         const item = dadosLocais[codigoSeguro];
                         if (!item.historico) return null;
@@ -424,23 +514,33 @@
             atualizarCards(dadosFiltrados);
         }
 
-        function renderizarTabela(dados) {
+            function renderizarTabela(dados) {
             tabelaBody.innerHTML = '';
             dados.forEach(item => {
                 const tr = document.createElement('tr');
                 const diferenca = item.estoqueContado - item.estoqueSistema;
+                const valorUnitario = item.valorUnitario || 0;
+                const valorDiferenca = diferenca * valorUnitario;
+
                 let classeCor = '';
                 if (diferenca > 0) classeCor = 'sobra-estoque';
                 else if (diferenca < 0) classeCor = 'falta-estoque';
+                
+                tr.className = classeCor; // Aplica a classe na linha inteira
+
                 tr.innerHTML = `
                     <td>${item.codigoOriginal}</td>
                     <td>${item.descricao}</td>
                     <td>${item.prateleira}</td>
                     <td style="text-align: center;">${item.estoqueSistema}</td>
-                    <td style="text-align: center;" class="${classeCor}">
-                        <input type="number" class="quantidade-input" value="${item.estoqueContado}" min="0" data-codigo="${item.codigoSeguro}" data-data="${item.data}">
+                    <td style="text-align: center;">
+                        <input type="number" class="tabela-input quantidade-input" value="${item.estoqueContado}" min="0" data-codigo="${item.codigoSeguro}" data-data="${item.data}">
                     </td>
-                    <td style="text-align: center; font-weight: bold;">${diferenca > 0 ? '+' : ''}${diferenca}</td>
+                    <td class="diferenca-qtd" style="text-align: center; font-weight: bold;">${diferenca > 0 ? '+' : ''}${diferenca}</td>
+                    <td style="text-align: center;">
+                        <input type="number" class="tabela-input valor-input" value="${valorUnitario.toFixed(2)}" step="0.01" min="0" data-codigo="${item.codigoSeguro}" data-data="${item.data}">
+                    </td>
+                    <td class="diferenca-valor" style="text-align: center; font-weight: bold;">${formatarMoeda(valorDiferenca)}</td>
                     <td style="text-align: center;">
                         <button class="btn-acao analise-btn" title="Analisar Histórico" data-codigo="${item.codigoSeguro}"><i data-lucide="area-chart"></i></button>
                     </td>`;
@@ -449,11 +549,30 @@
             lucide.createIcons();
         }
 
-        function atualizarCards(dadosExibidos) {
+
+                function atualizarCards(dadosExibidos) {
             const totalItens = dadosExibidos.length;
             
             const sobras = dadosExibidos.filter(p => p.estoqueContado > p.estoqueSistema).length;
             const faltas = dadosExibidos.filter(p => p.estoqueContado < p.estoqueSistema).length;
+
+            // MODIFICAÇÃO: Cálculos de valores
+            const totalValorSobra = dadosExibidos.reduce((acc, item) => {
+                const diferenca = item.estoqueContado - item.estoqueSistema;
+                if (diferenca > 0) {
+                    return acc + (diferenca * (item.valorUnitario || 0));
+                }
+                return acc;
+            }, 0);
+
+            const totalValorFalta = dadosExibidos.reduce((acc, item) => {
+                const diferenca = item.estoqueContado - item.estoqueSistema;
+                if (diferenca < 0) {
+                    // O valor da falta é a diferença negativa * o valor, resultando em um prejuízo positivo
+                    return acc + (Math.abs(diferenca) * (item.valorUnitario || 0));
+                }
+                return acc;
+            }, 0);
 
             totalItensEl.textContent = totalItens;
             sobraEstoqueEl.textContent = sobras;
@@ -464,6 +583,15 @@
 
             sobraPercentEl.textContent = `${sobraPercent}% do total`;
             faltaPercentEl.textContent = `${faltaPercent}% do total`;
+
+            // MODIFICAÇÃO: Atualiza os novos cards de valor
+            document.getElementById('valor-sobra').textContent = formatarMoeda(totalValorSobra);
+            document.getElementById('valor-falta').textContent = formatarMoeda(totalValorFalta);
+        }
+
+        // MODIFICAÇÃO: Nova função para formatar moeda
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
         document.getElementById('btn-download-modelo').addEventListener('click', () => {
@@ -494,23 +622,23 @@
 
             const analiseInfo = document.getElementById('analise-info');
             const analiseKpis = document.getElementById('analise-kpis');
-            const analiseTabelaContainer = document.getElementById('analise-tabela-container'); // Corrigido para pegar o container da tabela
+            const analiseTabelaContainer = document.getElementById('analise-tabela-container');
 
             analiseInfo.innerHTML = `
                 <p><strong>Código:</strong> ${item.info.codigoOriginal}</p>
                 <p><strong>Descrição:</strong> ${item.info.descricao}</p>
                 <p><strong>Prateleira:</strong> ${item.info.prateleira}</p>
+                <p><strong>Filial:</strong> ${item.info.filial || 'Não informada'}</p> <!-- MODIFICAÇÃO: Exibe a filial -->
             `;
 
-            // Ordena o histórico do mais antigo para o mais recente para o gráfico e KPIs
-            const historico = item.historico.sort((a, b) => {
+                        const historico = item.historico.sort((a, b) => {
                 const [da, ma, aa] = a.data.split('/').map(Number);
                 const [db, mb, ab] = b.data.split('/').map(Number);
                 return new Date(aa, ma - 1, da) - new Date(ab, mb - 1, db);
             });
 
             const totalRegistros = historico.length;
-            const ultimoRegistro = historico[historico.length - 1]; // Pega o registro mais recente
+            const ultimoRegistro = historico[historico.length - 1];
             const diferencaAtual = ultimoRegistro.estoqueContado - ultimoRegistro.estoqueSistema;
             const mediaEstoqueSistema = (historico.reduce((sum, h) => sum + h.estoqueSistema, 0) / totalRegistros).toFixed(1);
 
@@ -529,8 +657,6 @@
                 </div>
             `;
 
-            // --- INÍCIO DA SEÇÃO DA TABELA DE HISTÓRICO ---
-            // Ordena o histórico do mais recente para o mais antigo para exibição na tabela
             const historicoParaTabela = [...historico].sort((a, b) => {
                 const [da, ma, aa] = a.data.split('/').map(Number);
                 const [db, mb, ab] = b.data.split('/').map(Number);
@@ -566,42 +692,36 @@
 
             tabelaHtml += '</tbody></table>';
             analiseTabelaContainer.innerHTML = tabelaHtml;
-            // --- FIM DA SEÇÃO DA TABELA DE HISTÓRICO ---
 
-            // --- INÍCIO DA SEÇÃO DO GRÁFICO DE PIZZA ---
             const ctx = document.getElementById('analise-grafico').getContext('2d');
             if (graficoAnalise) {
                 graficoAnalise.destroy();
             }
 
             graficoAnalise = new Chart(ctx, {
-                type: 'pie', // MUDANÇA: tipo de gráfico para 'pie'
+                type: 'pie',
                 data: {
                     labels: ['Estoque Sistema', 'Estoque Contado'],
                     datasets: [{
                         label: 'Comparativo de Estoque (Último Registro)',
-                        // Usando os dados do último registro para o gráfico de pizza
                         data: [ultimoRegistro.estoqueSistema, ultimoRegistro.estoqueContado],
-                        backgroundColor: [
-                            '#36a2eb', // Cor para 'Estoque Sistema'
-                            '#ff6384'  // Cor para 'Estoque Contado'
-                        ],
+                        backgroundColor: ['#36a2eb', '#ff6384'],
                         borderColor: '#2c2f3f',
                         borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // Permite que o gráfico se ajuste melhor ao container
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top', // Posição da legenda
+                            position: 'top',
                             labels: { 
                                 color: 'white',
                                 font: { size: 14 }
                             }
                         },
-                        title: { // Adiciona um título ao gráfico
+                        title: {
                             display: true,
                             text: `Análise do dia ${ultimoRegistro.data}`,
                             color: 'white',
@@ -610,7 +730,6 @@
                     }
                 }
             });
-            // --- FIM DA SEÇÃO DO GRÁFICO DE PIZZA ---
 
             analiseModal.style.display = 'flex';
         }
@@ -629,7 +748,8 @@
         filtroDescricao.addEventListener('input', aplicarFiltros);
         filtroStatus.addEventListener('change', aplicarFiltros);
 
-        escutarAtualizacoesInventario();
+        // MODIFICAÇÃO: Inicia a página após verificar a autenticação
+        iniciarPagina();
         lucide.createIcons();
     </script>
 </body>
