@@ -8,7 +8,7 @@ import { db, auth, onAuthStateChanged, signOut, doc, getDoc } from './firebase-c
 // A chave é o ID que colocamos no HTML (ex: 'dash-comercial').
 // O valor é um array com os nomes dos grupos (ex: ['admin', 'comercial']).
 const menuPermissions = {
-    'admin-geral':             ['admin'],
+    'admin-geral':            ['admin'],
     'dash-geral':             ['admin', 'diretoria'],
     'dash-comercial':         ['admin', 'diretoria', 'comercial'],
     'dash-pecas':             ['admin', 'diretoria', 'pecas'],
@@ -16,7 +16,7 @@ const menuPermissions = {
     'dash-planos-manutencao': ['admin', 'diretoria', 'comercial'],
     'dash-planos-vigentes':   ['admin', 'diretoria', 'comercial'],
     'ctrl-Servicos':          ['admin', 'diretoria', 'servicos' ],
-    'ctrl-Pecas':       ['admin', 'diretoria', 'pecas'],
+    'ctrl-Pecas':             ['admin', 'diretoria', 'pecas'],
 };
 
 // Função principal que roda quando o estado de autenticação muda
@@ -95,5 +95,6 @@ if (logoutButton) {
         });
     });
 }
+
 
 
