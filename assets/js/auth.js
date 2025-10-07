@@ -15,8 +15,10 @@ const menuPermissions = {
     'dash-servicos':          ['admin', 'diretoria', 'servicos'],
     'dash-planos-manutencao': ['admin', 'diretoria', 'comercial'],
     'dash-planos-vigentes':   ['admin', 'diretoria', 'comercial'],
-    'ctrl-Servicos':          ['admin', 'diretoria', 'servicos' ],
-    'ct-Pecas':               ['admin', 'diretoria', 'pecas'],
+    'ctrl-PlanosVigentes':    ['admin', 'diretoria', 'servicos'],
+    'ctrl-MaquinaParada':     ['admin', 'diretoria', 'servicos'],
+    'ctrl-Kit50':             ['admin', 'diretoria', 'pecas'],
+    'ctrl-ContagemDiaria':    ['admin', 'diretoria', 'pecas'],
 };
 
 // Função principal que roda quando o estado de autenticação muda
@@ -95,6 +97,7 @@ if (logoutButton) {
         });
     });
 }
+
 
 
 
