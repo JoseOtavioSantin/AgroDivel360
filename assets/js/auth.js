@@ -53,13 +53,13 @@ onAuthStateChanged(auth, async (user) => {
         } else {
             console.error("Documento do usuário não encontrado no Firestore!");
             alert("Seu usuário não foi encontrado na base de dados. Redirecionando para o login.");
-            window.location.href = 'Pages/Login.html';
+            window.location.href = '/Pages/Login.html';
         }
 
     } else {
         // 4. USUÁRIO NÃO ESTÁ LOGADO
         console.log("Nenhum usuário logado. Redirecionando para a página de login.");
-        window.location.href = 'Pages/Login.html';
+        window.location.href = '/Pages/Login.html';
     }
 });
 
@@ -95,4 +95,5 @@ if (logoutButton) {
         });
     });
 }
+
 
