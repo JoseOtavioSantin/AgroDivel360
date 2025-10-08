@@ -1,20 +1,15 @@
-// /assets/js/auth.js
-
 // Importa tudo que precisamos do nosso arquivo de configuração
 import { db, auth, onAuthStateChanged, signOut, doc, getDoc } from './firebase-config.js';
 
 // --- MAPA DE PERMISSÕES ---
-// Defina aqui quais grupos podem ver quais itens do menu.
-// A chave é o ID que colocamos no HTML (ex: 'dash-comercial').
-// O valor é um array com os nomes dos grupos (ex: ['admin', 'comercial']).
 const menuPermissions = {
-    'admin-geral':            ['admin'],
+    'admin-CadastroGestores': ['admin'],
+    'admin-CadastroTecnicos': ['admin'],
     'dash-geral':             ['admin', 'diretoria'],
     'dash-comercial':         ['admin', 'diretoria', 'comercial'],
     'dash-pecas':             ['admin', 'diretoria', 'pecas'],
     'dash-servicos':          ['admin', 'diretoria', 'servicos'],
     'dash-planos-manutencao': ['admin', 'diretoria', 'comercial'],
-    'dash-planos-vigentes':   ['admin', 'diretoria', 'comercial'],
     'ctrl-PlanosVigentes':    ['admin', 'diretoria', 'servicos'],
     'ctrl-MaquinaParada':     ['admin', 'diretoria', 'servicos'],
     'ctrl-Kit50':             ['admin', 'diretoria', 'pecas'],
@@ -24,21 +19,21 @@ const menuPermissions = {
 // Função principal que roda quando o estado de autenticação muda
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // 1. USUÁRIO ESTÁ LOGADO
         console.log("Usuário logado:", user.uid);
-        // AINDA NÃO DEFINIMOS O NOME AQUI
 
-        // 2. BUSCAR OS DADOS DO USUÁRIO NO FIRESTORE
         const userDocRef = doc(db, "gestores", user.uid);
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
             const userData = userDoc.data();
             const userGroup = userData.grupo; 
-            const userName = userData.nome; // <-- PEGAMOS O NOME DO FIRESTORE
+            const userName = userData.nome;
 
-            // AGORA ATUALIZAMOS O NOME NA PÁGINA
-            document.getElementById('user-name').textContent = userName || 'Usuário'; // <-- NOVA LINHA
+            const userNameElement = document.getElementById('user-name');
+
+            if (userNameElement) {
+                userNameElement.textContent = userName || 'Usuário';
+            }
 
             if (!userGroup) {
                 console.error("Campo 'grupo' não encontrado para o usuário no Firestore!");
@@ -49,7 +44,6 @@ onAuthStateChanged(auth, async (user) => {
             console.log("Grupo do usuário:", userGroup);
             console.log("Nome do usuário:", userName);
 
-            // 3. APLICAR AS PERMISSÕES NO MENU
             applyMenuPermissions(userGroup);
 
         } else {
@@ -59,7 +53,7 @@ onAuthStateChanged(auth, async (user) => {
         }
 
     } else {
-        // 4. USUÁRIO NÃO ESTÁ LOGADO
+
         console.log("Nenhum usuário logado. Redirecionando para a página de login.");
         window.location.href = '/Pages/Login.html';
     }
@@ -67,19 +61,22 @@ onAuthStateChanged(auth, async (user) => {
 
 // Função que percorre o mapa de permissões e esconde os itens
 function applyMenuPermissions(userGroup) {
+
     for (const menuItemId in menuPermissions) {
         const allowedGroups = menuPermissions[menuItemId];
         const element = document.getElementById(menuItemId);
 
         if (element && !allowedGroups.includes(userGroup)) {
-            element.style.display = 'none'; // Esconde o item se o grupo não for permitido
+            element.style.display = 'none';
         }
     }
-    // Bônus: Esconde os menus principais (Dashboards, Controles) se todos os filhos forem escondidos
+
     document.querySelectorAll('.submenu-parent').forEach(menu => {
-        const visibleItems = menu.querySelectorAll('li[style*="display: none"]');
-        const totalItems = menu.querySelectorAll('ul.submenu li');
-        if (visibleItems.length === totalItems.length) {
+        const totalItems = menu.querySelectorAll('ul.submenu > li');
+
+        const visibleItems = Array.from(totalItems).filter(item => item.style.display !== 'none');
+
+        if (visibleItems.length === 0 && totalItems.length > 0) {
             menu.style.display = 'none';
         }
     });
@@ -97,8 +94,3 @@ if (logoutButton) {
         });
     });
 }
-
-
-
-
-
