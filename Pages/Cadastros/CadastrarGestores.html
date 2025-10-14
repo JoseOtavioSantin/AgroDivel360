@@ -3,59 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Cadastro de Gestores</title>
-    <!-- Adicione aqui seu CSS para estilizar a página -->
-    <link rel="stylesheet" href="/assets/css/Pages/Cadastros/style.css"> 
+    <title>Gerenciar Gestores - Agro Divel 360</title>
+    
+    <!-- CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <!-- Reutilizando o CSS da página de técnicos -->
+    <link rel="stylesheet" href="/assets/css/Pages/Cadastros/CadastroTecnico.css">
 </head>
 <body>
 
-    <div class="container">
-        <h1>Cadastro de Novos Gestores</h1>
-        <p>Preencha os dados abaixo para criar um novo usuário e associá-lo a um grupo.</p>
-
-        <form id="form-cadastro-gestor">
-            <div class="form-group">
-                <label for="nome">Nome Completo:</label>
-                <input type="text" id="nome" required>
+    <!-- Menu Lateral (Sidebar ) -->
+    <nav class="sidebar">
+        <header>
+            <div class="image-text">
+                <span class="image-logo">
+                    <img src="/assets/images/logo.png" alt="logo">
+                </span>
             </div>
+            <i class='bx bx-chevron-right toggle'></i>
+        </header>
+        <div class="text logo-text">
+            <span class="profession" style="color: var(--text-color); font-size: 16px; font-weight: 600;">Menu Principal</span>
+        </div>
+        <div class="menu-bar">
+            <ul class="menu-links">
+                <!-- Dashboards -->
+                <li class="nav-link submenu-parent" id="menu-dashboards">
+                    <a href="#"><i class='bx bx-bar-chart-square icon'></i><span class="text nav-text">Dashboards</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
+                    <ul class="submenu">
+                        <li id="dash-geral"><a href="/Pages/Dashboard/DashboardGeral.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Leads Geral</span></a></li>                        
+                        <li id="dash-comercial"><a href="/Pages/Dashboard/DashboardComercial.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Comercial</span></a></li>
+                        <li id="dash-pecas"><a href="/Pages/Dashboard/DashboardPecas.html"><i class='bx bx-wrench icon'></i><span class="text nav-text">Peças</span></a></li>
+                        <li id="dash-servicos"><a href="/Pages/Dashboard/DashboardServicos.html"><i class='bx bx-cog icon'></i><span class="text nav-text">Serviços</span></a></li>
+                        <li id="dash-planos-manutencao"><a href="/Pages/Dashboard/DashboardPlanoManutencao.html"><i class='bx bx-wifi icon'></i><span class="text nav-text">Planos de Manutenção</span></a></li>
+                    </ul>
+                </li>
+                <!-- Controles -->
+                <li class="nav-link submenu-parent" id="menu-controles">
+                    <a href="#"><i class='bx bx-slider-alt icon'></i><span class="text nav-text">Controles</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
+                    <ul class="submenu">
+                        <li id="ctrl-PlanosVigentes"><a href="/Pages/Controles/PlanosVigentes.html"><i class='bx bx-package icon'></i><span class="text nav-text">Planos Vigentes</span></a></li>
+                        <li id="ctrl-MaquinaParada"><a href="/Pages/Controles/MaquinasParadas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Máquinas Paradas</span></a></li>
+                        <li id="ctrl-Kit50"><a href="/Pages/Controles/Kits50Horas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Kit 50Hr</span></a></li>
+                        <li id="ctrl-ContagemDiaria"><a href="/Pages/Controles/ContagemDiaria.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Contagem Diaria</span></a></li>
+                    </ul>
+                </li>
+                <!-- Cadastros -->
+                <li class="nav-link submenu-parent" id="menu-cadastros">
+                    <a href="#"><i class='bx bx-file-blank icon'></i><span class="text nav-text">Cadastros</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
+                    <ul class="submenu">
+                        <li id="admin-CadastroGestores"><a href="/Pages/Cadastros/CadastrarGestores.html"><i class='bx bx-edit icon'></i><span class="text nav-text">Gestores</span></a></li>
+                        <li id="admin-CadastroTecnicos"><a href="/Pages/Cadastros/CadastrarTecnicos.html"><i class='bx bx-edit icon'></i><span class="text nav-text">Técnico</span></a></li>
+                    </ul>
+                </li>
+                <!-- Logout -->
+                <li class="nav-link" id="logout-button">
+                    <a href="#"><i class='bx bx-log-out icon'></i><span class="text nav-text">Logout</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" required>
-            </div>
+    <!-- Conteúdo Principal da Página -->
+    <section class="home">
+        <div class="text">
+            <h1>Gerenciar Gestores</h1>
+            <p>Adicione, edite ou remova gestores do sistema.</p>
+        </div>
 
-            <div class="form-group">
-                <label for="senha">Senha Provisória:</label>
-                <input type="password" id="senha" required>
-            </div>
-
-            <div class="form-group">
-                <label for="grupo">Grupo de Permissão:</label>
-                <select id="grupo" required>
-                    <option value="">Selecione um grupo</option>
-                    <option value="admin">Admin</option>
-                    <option value="diretoria">Diretoria</option>
-                    <option value="comercial">Comercial</option>
-                    <option value="pecas">Peças</option>
-                    <option value="servicos">Serviços</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="filial">Filial:</label>
-                <input type="text" id="filial" placeholder="Ex: Campos Novos" required>
-            </div>
-            
-            <button type="submit">Cadastrar Gestor</button>
-        </form>
-        
-        <div id="status-message" style="margin-top: 20px;"></div>
+        <!-- CARD PARA CADASTRO E EDIÇÃO DE GESTORES -->
+<div class="content-card">
+    <div class="content-card-header">
+        <h2 id="form-title">Novo Gestor</h2>
     </div>
+    <div class="content-card-body">
+        <form id="form-cadastro-gestor" class="form-layout">
+            <!-- Campo oculto para guardar o ID em edição (não vamos mais usar para cadastro) -->
+            <input type="hidden" id="gestor-id">
+            
+            <!-- ================================================== -->
+            <!--            NOVO CAMPO PARA O UID                   -->
+            <!-- ================================================== -->
+            <div class="form-group">
+                <label for="uid-gestor">UID do Usuário (ID do Documento)</label>
+                <input type="text" id="uid-gestor" placeholder="Cole aqui o UID do Firebase Authentication" required>
+            </div>
+            <!-- ================================================== -->
 
-    <!-- Importe os scripts do Firebase e o seu script de lógica -->
-    <!-- ATENÇÃO: Use o type="module" para que os 'imports' funcionem -->
+            <div class="form-group">
+                <label for="nome-gestor">Nome do Gestor</label>
+                <input type="text" id="nome-gestor" placeholder="Ex: João da Silva" required>
+            </div>
+                    <div class="form-group">
+                        <label for="email-gestor">Email (para login)</label>
+                        <input type="email" id="email-gestor" placeholder="Ex: joao.silva@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="grupo-gestor">Grupo de Permissão</label>
+                        <select id="grupo-gestor" required>
+                            <option value="" disabled selected>Selecione um grupo</option>
+                            <option value="admin">Admin</option>
+                            <option value="diretoria">Diretoria</option>
+                            <option value="comercial">Comercial</option>
+                            <option value="pecas">Peças</option>
+                            <option value="servicos">Serviços</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Filiais de Acesso</label>
+                        <div id="filiais-checkboxes" class="checkbox-group">
+                            <label><input type="checkbox" name="filial" value="Campos Novos"> Campos Novos</label>
+                            <label><input type="checkbox" name="filial" value="Rio do Sul"> Rio do Sul</label>
+                            <label><input type="checkbox" name="filial" value="Lages"> Lages</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="flex-direction: row; gap: 10px;">
+                        <button type="submit" class="btn-submit">Cadastrar Gestor</button>
+                        <button type="button" id="btn-cancel-edit" class="btn-delete" style="display: none;">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- CONTAINER DA LISTA DE GESTORES -->
+        <div class="content-card technician-list-container">
+            <div class="content-card-header">
+                <h2>Gestores Cadastrados</h2>
+            </div>
+            <div class="content-card-body">
+                <table class="technician-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Grupo</th>
+                            <th>Filiais</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gestor-table-body">
+                        <!-- Os dados serão inseridos aqui pelo JavaScript -->
+                    </tbody>
+                </table>
+                <div id="loading-message">Carregando gestores...</div>
+                <div id="empty-message" style="display: none;">Nenhum gestor cadastrado.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SCRIPT DE GERENCIAMENTO DA PÁGINA (COM CORREÇÃO) -->
+   <script type="module">
+        import { db } from '/assets/js/firebase-config.js';
+        import { collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        // --- Elementos do DOM ---
+        const form = document.getElementById('form-cadastro-gestor' );
+        const formTitle = document.getElementById('form-title');
+        const submitButton = form.querySelector('.btn-submit');
+        const cancelButton = document.getElementById('btn-cancel-edit');
+        const tableBody = document.getElementById('gestor-table-body');
+        const loadingMessage = document.getElementById('loading-message');
+        const emptyMessage = document.getElementById('empty-message');
+        
+        const gestorIdInput = document.getElementById('gestor-id'); // Usado para saber se estamos editando
+        const uidInput = document.getElementById('uid-gestor'); // Nosso novo campo
+        const nomeInput = document.getElementById('nome-gestor');
+        const emailInput = document.getElementById('email-gestor');
+        const grupoSelect = document.getElementById('grupo-gestor');
+        const filiaisCheckboxes = document.querySelectorAll('input[name="filial"]');
+
+        // --- Funções (renderTable continua igual) ---
+        const renderTable = (gestores) => {
+            tableBody.innerHTML = '';
+            loadingMessage.style.display = 'none';
+            if (gestores.length === 0) {
+                emptyMessage.style.display = 'block';
+                return;
+            }
+            emptyMessage.style.display = 'none';
+            gestores.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+            gestores.forEach(gestor => {
+                const row = document.createElement('tr');
+                row.dataset.id = gestor.id;
+                row.innerHTML = `
+                    <td>${gestor.nome || 'N/A'}</td>
+                    <td>${gestor.email || 'N/A'}</td>
+                    <td>${gestor.grupo || 'N/A'}</td>
+                    <td>${Array.isArray(gestor.filial) ? gestor.filial.join(', ') : 'N/A'}</td>
+                    <td class="action-buttons">
+                        <button class="btn-edit">Editar</button>
+                        <button class="btn-delete">Excluir</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        };
+
+        // --- Função de Edição (setupEditForm) ---
+        const setupEditForm = async (id) => {
+            const docRef = doc(db, "gestores", id);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                gestorIdInput.value = id;
+                uidInput.value = id; // Preenche o campo UID com o ID do documento
+                uidInput.disabled = true; // Bloqueia a edição do UID no modo de edição
+                nomeInput.value = data.nome || '';
+                nomeInput.disabled = false; // Permite editar o nome
+                emailInput.value = data.email || '';
+                emailInput.disabled = true; // Mantém email bloqueado
+                grupoSelect.value = data.grupo || '';
+                filiaisCheckboxes.forEach(cb => cb.checked = false);
+                if (Array.isArray(data.filial)) {
+                    data.filial.forEach(f => {
+                        const checkbox = document.querySelector(`input[name="filial"][value="${f}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+                formTitle.textContent = 'Editando Gestor';
+                submitButton.textContent = 'Salvar Alterações';
+                cancelButton.style.display = 'inline-block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        };
+
+        // --- Função para Resetar o Formulário ---
+        const resetForm = () => {
+            form.reset();
+            gestorIdInput.value = '';
+            uidInput.disabled = false; // Libera o campo UID para o próximo cadastro
+            nomeInput.disabled = false;
+            emailInput.disabled = false;
+            formTitle.textContent = 'Novo Gestor';
+            submitButton.textContent = 'Cadastrar Gestor';
+            cancelButton.style.display = 'none';
+        };
+
+        // --- Listener Principal do Formulário (Agora faz CADASTRO e EDIÇÃO) ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const isEditing = gestorIdInput.value !== '';
+            
+            // Pega o UID do campo de texto. Este será o ID do nosso documento.
+            const docId = uidInput.value.trim();
+            
+            const nome = nomeInput.value.trim();
+            const email = emailInput.value.trim();
+            const grupo = grupoSelect.value;
+            const filiaisSelecionadas = Array.from(filiaisCheckboxes)
+                                            .filter(cb => cb.checked)
+                                            .map(cb => cb.value);
+
+            if (!docId || !nome || !email || !grupo) {
+                alert('Por favor, preencha todos os campos: UID, Nome, Email e Grupo.');
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
+
+            try {
+                // Usa o UID fornecido como ID do documento
+                const docRef = doc(db, "gestores", docId);
+                
+                const dados = { nome, email, grupo, filial: filiaisSelecionadas };
+
+                // setDoc irá criar o documento se não existir, ou sobrescrever se existir.
+                // Usamos { merge: true } na edição para não apagar outros campos por acidente.
+                await setDoc(docRef, dados, { merge: isEditing });
+                
+                alert(`Gestor "${nome}" ${isEditing ? 'atualizado' : 'cadastrado'} com sucesso!`);
+                resetForm();
+
+            } catch (error) {
+                console.error("Erro ao salvar gestor: ", error);
+                alert("Ocorreu um erro ao salvar o gestor.");
+            } finally {
+                submitButton.disabled = false;
+            }
+        });
+
+        // --- Outros Listeners (sem alterações) ---
+        tableBody.addEventListener('click', async (e) => {
+            const button = e.target.closest('button');
+            if (!button) return;
+            const row = button.closest('tr');
+            const id = row.dataset.id;
+            if (button.classList.contains('btn-delete')) {
+                const nome = row.cells[0].textContent;
+                if (confirm(`Tem certeza que deseja excluir o gestor "${nome}"?`)) {
+                    try {
+                        await deleteDoc(doc(db, "gestores", id));
+                        alert('Gestor excluído com sucesso!');
+                        resetForm();
+                    } catch (error) {
+                        console.error("Erro ao excluir gestor: ", error);
+                        alert("Ocorreu um erro ao excluir.");
+                    }
+                }
+            }
+            if (button.classList.contains('btn-edit')) {
+                setupEditForm(id);
+            }
+        });
+
+        cancelButton.addEventListener('click', resetForm);
+
+        // --- Carregamento em tempo real (sem alterações) ---
+        onSnapshot(collection(db, "gestores"), (querySnapshot) => {
+            const gestores = [];
+            querySnapshot.forEach((doc) => {
+                gestores.push({ id: doc.id, ...doc.data() });
+            });
+            renderTable(gestores);
+        }, (error) => {
+            console.error("Erro ao buscar gestores: ", error);
+            loadingMessage.textContent = 'Erro ao carregar dados.';
+        });
+    </script>
+
+    <!-- Scripts Globais -->
     <script type="module" src="/assets/js/firebase-config.js"></script>
-    <script type="module" src="/assets/js/Cadastros/CadastroGestores.js"></script>
+    <script type="module" src="/assets/js/auth.js"></script>
+    <script src="/assets/js/main.js"></script>
 
 </body>
 </html>
