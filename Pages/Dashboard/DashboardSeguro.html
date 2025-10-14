@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#2c2f3f" />
+  <title>Dashboard Seguro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SCRIPTS E ESTILOS EXTERNOS -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <style>
+    /* CSS idêntico ao do Dashboard Comercial */
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
+    header { background-color: #2c2f3f; padding: 20px; text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 1px; box-shadow: 0 2px 4px rgba(0,0,0,0.2  ); }
+    #dynamic-title { margin-top: 10px; font-size: 16px; font-weight: normal; color: #ccc; }
+    .main { display: flex; flex: 1; overflow: hidden; }
+    .sidebar { width: 250px; background-color: #2c2f3f; padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+    .card { padding: 20px; border-radius: 16px; color: white; background: linear-gradient(135deg, #2e2f4f, #1e1e2f); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: transform 0.2s, box-shadow 0.2s; text-align: left; display: flex; flex-direction: column; gap: 5px; }
+    .card:hover { transform: scale(1.02); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); }
+    .card h2 { font-size: 28px; margin: 0; }
+    .card p { font-size: 14px; color: #eee; margin: 0; display: flex; align-items: center; gap: 8px; }
+    .pink-card { background: linear-gradient(238deg, #193b7c, #193b7c00); }
+    .orange-card { background: linear-gradient(238deg, #193b7c, #193b7c00); }
+    .blue-card { background: linear-gradient(238deg, #193b7c, #193b7c00); }
+    .purple-card { background: linear-gradient(358deg, #626262, #62626259); }
+    .content { flex: 1; padding: 30px; background-color: #262a3d; overflow-y: auto; }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+    .filters input, .filters select { padding: 8px; border-radius: 6px; border: none; min-width: 180px; }
+    table { width: 100%; border-collapse: collapse; background-color: #2c2f3f; border-radius: 12px; overflow: hidden; }
+    th, td { font-size: 12px; padding: 10px 15px; text-align: left; border-bottom: 1px solid #444; }
+    th { background-color: #ffffff; color: #00205b; }
+    .status-em-andamento { background-color: #c67903; }
+    .status-concluido { background-color: #193b7c; }
+    .status-cancelado { background-color: #626262; }
+    #btn-exportar { display: flex; align-items: center; justify-content: center; height: 40px; padding: 0 10px; background: linear-gradient(135deg, #00205b, #009bd6); border: none; border-radius: 6px; color: white; cursor: pointer; }
+    .logo { height: 80px; margin-left: 45px; margin-right: 15px; }
+    td.acoes-cell { display: flex; align-items: center; justify-content: flex-start; }
+    .btn-row-action { background: transparent; border: none; width: 32px; height: 32px; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .btn-update { background-color: #3498db; }
+    .btn-update:hover { background-color: #2980b9; transform: scale(1.1); }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 10000; opacity: 0; transition: opacity 0.3s ease; }
+    .modal-overlay.visible { display: flex; opacity: 1; }
+    .modal-container { background: #2c2f3f; padding: 30px; border-radius: 16px; width: 90%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; }
+    .modal-overlay.visible .modal-container { transform: scale(1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #444; padding-bottom: 15px; }
+    .modal-header h3 { margin: 0; font-size: 22px; color: #ffffff; }
+    .modal-close-btn { background: none; border: none; color: #aaa; font-size: 28px; cursor: pointer; transition: color 0.2s; }
+    .modal-close-btn:hover { color: #fff; }
+    .modal-body { display: flex; flex-direction: column; gap: 20px; }
+    .info-section { background-color: #262a3d; padding: 15px; border-radius: 8px; }
+    .info-section h4 { margin: 0 0 10px 0; color: #009bd6; font-size: 16px; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-size: 14px; }
+    .info-item { color: #ccc; }
+    .info-item strong { color: #fff; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-group label { font-size: 14px; color: #ccc; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 8px; background-color: #1e1e2f; color: #fff; font-size: 14px; }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
+    .modal-btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.2s; }
+    .modal-btn:hover { transform: translateY(-2px); }
+    .btn-save { background: linear-gradient(135deg, #00205b, #009bd6); color: white; box-shadow: 0 4px 12px rgba(0, 155, 214, 0.3); }
+    .btn-cancel { background: #444; color: white; }
+    .status-buttons { display: flex; gap: 10px; }
+    .status-btn { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid #444; background-color: transparent; color: #ccc; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
+    .status-btn:hover { background-color: #3a3e52; }
+    .status-btn.active { color: #fff; }
+    .status-btn.active.status-em-andamento { border-color: #c67903; background-color: #c67903; }
+    .status-btn.active.status-concluido { border-color: #193b7c; background-color: #193b7c; }
+    .status-btn.active.status-cancelado { border-color: #626262; background-color: #626262; }
+    #valor-group { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-top 0.4s ease-out; margin-top: 0; }
+    #valor-group.visible { max-height: 100px; opacity: 1; margin-top: 20px; }
+    .swal2-container.swal2-top-end.swal2-backdrop-show { z-index: 10001 !important; }
+    .swal2-toast { background-color: #2c2f3f !important; color: #ffffff !important; border-left: 5px solid; border-radius: 8px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important; }
+    .swal2-toast .swal2-title { color: #ffffff !important; font-size: 1em !important; }
+    .swal2-toast-success { border-left-color: #28a745 !important; }
+    .swal2-toast-warning { border-left-color: #ffc107 !important; }
+    .swal2-toast-error { border-left-color: #dc3545 !important; }
+    .swal2-timer-progress-bar { background: rgba(255,255,255,0.5) !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <img src="/assets/images/logo.png" alt="Logo" class="logo">
+      <div style="flex: 1; text-align: center;">
+        <em>Dashboard Agro Divel 360 - Seguro</em>
+        <div id="dynamic-title" style="font-style: italic;">Aguardando autenticação...</div>
+      </div>
+      <div style="width: 65px;"></div>
+    </div>
+  </header>
+  <button onclick="window.history.back()" title="Voltar" style="position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #00205b, #009bd6); color: white; border: none; margin-right; 10px; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 9999;">
+    ← Voltar
+  </button>
+  <div class="main">
+    <div class="sidebar">
+      <div class="card pink-card"><h2 id="total-clientes">0</h2><p><i data-lucide="users"></i> Total Clientes</p></div>
+      <div class="card orange-card"><h2 id="total-concluidos">0</h2><p><i data-lucide="check-circle"></i> Concluídos</p></div>
+      <div class="card blue-card"><h2 id="valor-total">R$ 0,00</h2><p><i data-lucide="dollar-sign"></i> Valor Total (R$)</p></div>
+      <div class="card purple-card"><h2 id="cancelados">0</h2><p><i data-lucide="x-octagon"></i> Cancelados</p></div>
+    </div>
+    <div class="content">
+      <div class="filters">
+        <input id="filtro-cliente" type="text" placeholder="Buscar cliente..." />
+        <input id="filtro-municipio" type="text" placeholder="Buscar municipio..." />
+        <input id="filtro-consultor" type="text" placeholder="Buscar consultor..." />
+        <select id="filtro-status">
+          <option value="">Todos os status</option>
+          <option value="Concluído">Concluído</option>
+          <option value="Em andamento">Em andamento</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+        <input id="filtro-periodo" placeholder="Selecione o período" />
+        
+        <!-- LINHA CORRIGIDA ABAIXO -->
+        <button id="btn-exportar" title="Exportar para Excel" style="margin-left: auto;">
+          <i data-lucide="download" style="width: 20px; height: 20px;"></i>
+        </button>
+        
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Data da Visita</th><th>Cliente</th><th>Fazenda</th><th>Município</th><th>Consultor</th><th>Modelo</th><th>Horímetro</th><th>Telefone</th><th>Observações</th><th>Checklist</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="painel-detalhes"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal principal de atualização -->
+  <div id="custom-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Atualizar informações - Seguro</h3>
+        <button class="modal-close-btn" onclick="fecharPopup()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="docIdSelecionado">
+        <div class="info-section">
+          <h4><i data-lucide="user-round" style="width:16px; height:16px; vertical-align: -2px;"></i> Detalhes do Cliente</h4>
+          <div class="info-grid">
+            <div class="info-item"><strong>Cliente:</strong> <span id="modal-cliente-nome"></span></div>
+            <div class="info-item"><strong>Município:</strong> <span id="modal-cliente-municipio"></span></div>
+            <div class="info-item"><strong>Telefone:</strong> <span id="modal-cliente-telefone"></span></div>
+            <div class="info-item"><strong>Fazenda:</strong> <span id="modal-cliente-fazenda"></span></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="comentario">Comentário do Responsável</label>
+          <textarea id="comentario"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <div class="status-buttons">
+            <button class="status-btn status-em-andamento" data-status="Em andamento">Em Andamento</button>
+            <button class="status-btn status-concluido" data-status="Concluído">Concluído</button>
+            <button class="status-btn status-cancelado" data-status="Cancelado">Cancelado</button>
+          </div>
+        </div>
+        <div id="valor-group" class="form-group">
+          <label for="valorNegociado">Valor Negociado (R$)</label>
+          <input type="number" id="valorNegociado" placeholder="0.00">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn btn-cancel" onclick="fecharPopup()">Cancelar</button>
+        <button class="modal-btn btn-save" onclick="salvarPopup()">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // 1. Importa a função de guarda e as funções do Firebase
+    import { garantirAutenticacao } from '/assets/js/auth-guard.js?v=2';
+    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Função principal assíncrona para iniciar a página
+    async function iniciarPagina( ) {
+      try {
+        // 2. ESPERA a autenticação ser confirmada.
+        await garantirAutenticacao();
+        console.log("Autenticação confirmada. Iniciando o dashboard de Seguro...");
+
+        // 3. Agora que a autenticação passou, podemos configurar o Firebase e a página
+        const app = getApp();
+        const db = getFirestore(app);
+        const tipoChecklist = "checklistSeguro"; // Fixo para esta página - Seguro
+        let dadosTotais = [];
+
+        function setupPage() {
+          lucide.createIcons();
+          document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
+          document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
+          document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
+          document.getElementById("filtro-municipio").addEventListener("input", aplicarFiltros);
+          document.getElementById("btn-exportar").addEventListener("click", exportarParaExcel);
+          flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
+          document.querySelectorAll('.status-btn').forEach(btn => {
+            btn.addEventListener('click', () => handleStatusClick(btn.dataset.status));
+          });
+          setInterval(() => { console.log("Atualizando dados do painel..."); carregarDados(); }, 60000);
+        }
+
+        async function carregarDados() {
+          const filiaisLogadas = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
+          const tituloBase = "Seguro";
+          document.getElementById("dynamic-title").textContent = `${tituloBase} | Filiais: ${filiaisLogadas.join(", ")}`;
+          const querySnapshot = await getDocs(collection(db, tipoChecklist));
+          dadosTotais = [];
+          querySnapshot.forEach(docItem => {
+            const dados = docItem.data();
+            if (filiaisLogadas.map(f => f.toLowerCase().trim()).includes((dados.filial || "").toLowerCase().trim())) {
+              dadosTotais.push({ id: docItem.id, ...dados });
+            }
+          });
+          aplicarFiltros();
+        }
+
+        function aplicarFiltros() {
+          const clienteFiltro = document.getElementById("filtro-cliente").value.toLowerCase();
+          const statusFiltro = document.getElementById("filtro-status").value;
+          const consultorFiltro = document.getElementById("filtro-consultor").value.toLowerCase();
+          const municipioFiltro = document.getElementById("filtro-municipio").value.toLowerCase();
+          const instance = document.getElementById("filtro-periodo")._flatpickr;
+          const selectedDates = instance.selectedDates;
+          let dataInicio = "", dataFim = "";
+          if (selectedDates.length === 2) {
+            dataInicio = selectedDates[0].toISOString().slice(0, 10);
+            dataFim = selectedDates[1].toISOString().slice(0, 10);
+          } else if (selectedDates.length === 1) {
+            dataInicio = dataFim = selectedDates[0].toISOString().slice(0, 10);
+          }
+          const painel = document.getElementById("painel-detalhes");
+          painel.innerHTML = "";
+          const filtrados = dadosTotais.filter(d => {
+            const clienteOk = (d.nomeCliente || "").toLowerCase().includes(clienteFiltro);
+            const statusOk = statusFiltro === "" || (d.statusChecklist || "") === statusFiltro;
+            const consultorOk = (d.consultor || "").toLowerCase().includes(consultorFiltro);
+            const municipioOk = (d.municipio || "").toLowerCase().includes(municipioFiltro);
+            const dentroDoPeriodo = (!dataInicio || (d.dataVisita || "") >= dataInicio) && (!dataFim || (d.dataVisita || "") <= dataFim);
+            return clienteOk && statusOk && consultorOk && municipioOk && dentroDoPeriodo;
+          });
+          document.getElementById("total-clientes").textContent = filtrados.length;
+          document.getElementById("total-concluidos").textContent = filtrados.filter(d => d.statusChecklist === "Concluído").length;
+          document.getElementById("cancelados").textContent = filtrados.filter(d => d.statusChecklist === "Cancelado").length;
+          let totalValor = 0;
+          filtrados.forEach(d => {
+            if (!isNaN(d.valorNegociado)) totalValor += Number(d.valorNegociado);
+            const statusClass = d.statusChecklist === "Concluído" ? "status-concluido" : d.statusChecklist === "Cancelado" ? "status-cancelado" : d.statusChecklist === "Em andamento" ? "status-em-andamento" : "";
+            painel.innerHTML += `
+              <tr class="${statusClass}" id="row-${d.id}">
+                <td>${d.dataVisita || "-"}</td><td>${d.nomeCliente || "-"}</td><td>${d.nomeFazenda || "-"}</td><td>${d.municipio || "-"}</td><td>${d.consultor || "-"}</td><td>${d.modelo || "-"}</td><td>${d.horimetro || "-"}</td>
+                <td style="text-align: center;">${d.telefone ? `<a href="https://wa.me/55${d.telefone.replace(/\D/g, ''  )}" target="_blank" title="Chamar no WhatsApp" style="color: #25D366; font-size: 22px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i></a>` : "-"}</td>
+                <td data-comentario="${d.comentarioResponsavel || ''}" data-valor="${d.valorNegociado || 0}">${d.observacoes || "-"}</td>
+                <td>${(d.checklist || []).map(item => `<span style="background:#fff; color:#00205b; padding:3px 8px; border-radius:5px; margin:2px; display:inline-block; font-size:10px">${item}</span>`).join("")}</td>
+                <td class="acoes-cell">
+                    <button class="btn-row-action btn-update" data-id="${d.id}" title="Atualizar Checklist">
+                        <i data-lucide="circle-check-big" style="width: 16px; pointer-events: none;"></i>
+                    </button>
+                </td>
+              </tr>`;
+          });
+          document.getElementById("valor-total").textContent = `R$ ${totalValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+          document.querySelectorAll(".btn-update").forEach(btn => btn.addEventListener("click", () => window.abrirPopup(btn.dataset.id)));
+          lucide.createIcons();
+        }
+
+        function handleStatusClick(status) { 
+          document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('active')); 
+          const clickedButton = document.querySelector(`.status-btn[data-status="${status}"]`); 
+          if (clickedButton) clickedButton.classList.add('active'); 
+          document.getElementById('valor-group').classList.toggle('visible', status === 'Concluído'); 
+        }
+        
+        async function abrirPopup(id) { 
+          const modal = document.getElementById("custom-modal"); 
+          document.getElementById("docIdSelecionado").value = id; 
+          const docRef = doc(db, tipoChecklist, id); 
+          const docSnap = await getDoc(docRef); 
+          if (docSnap.exists()) { 
+            const dados = docSnap.data(); 
+            document.getElementById("modal-cliente-nome").textContent = dados.nomeCliente || "Não informado"; 
+            document.getElementById("modal-cliente-municipio").textContent = dados.municipio || "Não informado"; 
+            document.getElementById("modal-cliente-telefone").textContent = dados.telefone || "Não informado"; 
+            document.getElementById("modal-cliente-fazenda").textContent = dados.nomeFazenda || "Não informado"; 
+            document.getElementById("comentario").value = dados.comentarioResponsavel || ""; 
+            document.getElementById("valorNegociado").value = dados.valorNegociado || ""; 
+            const status = dados.statusChecklist || "Em andamento"; 
+            handleStatusClick(status); 
+          } 
+          modal.classList.add("visible"); 
+          lucide.createIcons(); 
+        }
+        
+        function fecharPopup() { 
+          document.getElementById("custom-modal").classList.remove("visible"); 
+        }
+        
+        async function salvarPopup() { 
+          const id = document.getElementById("docIdSelecionado").value; 
+          const docRef = doc(db, tipoChecklist, id); 
+          const saveBtn = document.querySelector('.btn-save'); 
+          saveBtn.textContent = 'Salvando...'; 
+          saveBtn.disabled = true; 
+          const activeStatusBtn = document.querySelector('.status-btn.active'); 
+          const status = activeStatusBtn ? activeStatusBtn.dataset.status : 'Em andamento'; 
+          const valor = parseFloat(document.getElementById("valorNegociado").value) || 0; 
+          const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } }); 
+          if (status === 'Concluído' && valor <= 0) { 
+            Toast.fire({ icon: 'warning', title: 'Valor obrigatório para concluído!' }); 
+            saveBtn.textContent = 'Salvar Alterações'; 
+            saveBtn.disabled = false; 
+            return; 
+          } 
+          try { 
+            await updateDoc(docRef, { 
+              comentarioResponsavel: document.getElementById("comentario").value, 
+              statusChecklist: status, 
+              valorNegociado: valor 
+            }); 
+            fecharPopup(); 
+            await carregarDados(); 
+            Toast.fire({ icon: 'success', title: 'Informações Atualizadas!' }); 
+          } catch (error) { 
+            console.error("Erro ao salvar:", error); 
+            Toast.fire({ icon: 'error', title: 'Erro ao salvar!' }); 
+          } finally { 
+            saveBtn.textContent = 'Salvar Alterações'; 
+            saveBtn.disabled = false; 
+          } 
+        }
+        
+        function exportarParaExcel() { 
+          const headers = ["Data da Visita", "Cliente", "Fazenda", "Município", "Consultor", "Modelo", "Horímetro", "Telefone", "Observações", "Checklist", "Comentário", "Valor (R$)", "Status"]; 
+          const linhas = Array.from(document.querySelectorAll("#painel-detalhes tr")).map(tr => { 
+            const tds = tr.querySelectorAll("td"); 
+            const status = tr.classList.contains("status-concluido") ? "Concluído" : tr.classList.contains("status-cancelado") ? "Cancelado" : tr.classList.contains("status-em-andamento") ? "Em andamento" : ""; 
+            return [ 
+              tds[0]?.textContent.trim(), 
+              tds[1]?.textContent.trim(), 
+              tds[2]?.textContent.trim(), 
+              tds[3]?.textContent.trim(), 
+              tds[4]?.textContent.trim(), 
+              tds[5]?.textContent.trim(), 
+              tds[6]?.textContent.trim(), 
+              tds[7]?.textContent.trim(), 
+              tds[8]?.textContent.trim(), 
+              tds[9]?.innerText.trim(), 
+              tds[8]?.dataset.comentario || "", 
+              tds[8]?.dataset.valor || "", 
+              status 
+            ]; 
+          }); 
+          const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]); 
+          const wb = XLSX.utils.book_new(); 
+          XLSX.utils.book_append_sheet(wb, planilha, "Checklist Seguro"); 
+          XLSX.writeFile(wb, "checklists_seguro_filtrados.xlsx"); 
+        }
+
+        window.abrirPopup = abrirPopup;
+        window.fecharPopup = fecharPopup;
+        window.salvarPopup = salvarPopup;
+
+        // Finalmente, chamamos as funções para montar a página
+        setupPage();
+        await carregarDados();
+
+      } catch (error) {
+        console.error("Falha na autenticação:", error);
+        window.location.href = '/login.html';
+      }
+    }
+
+    // Inicia todo o processo
+    iniciarPagina();
+  </script>
+</body>
+</html>
