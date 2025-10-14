@@ -93,7 +93,7 @@
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <img src="/assets/images/logo.png" alt="Logo" class="logo">
       <div style="flex: 1; text-align: center;">
-        <em>Dashboard Agro Divel 360</em>
+        <em>Dashboard Agro Divel 360 - Comercial</em>
         <div id="dynamic-title" style="font-style: italic;">Aguardando autenticação...</div>
       </div>
       <div style="width: 65px;"></div>
@@ -208,7 +208,7 @@
 
             async function carregarDados() {
                 const filiaisLogadas = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
-                const tituloBase = "Dashboard Agro Divel 360";
+                const tituloBase = "Comercial";
                 document.getElementById("dynamic-title").textContent = `${tituloBase} | Filiais: ${filiaisLogadas.join(", ")}`;
                 const querySnapshot = await getDocs(collection(db, tipoChecklist));
                 dadosTotais = [];
