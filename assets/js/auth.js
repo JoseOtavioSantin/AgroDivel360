@@ -9,6 +9,7 @@ const menuPermissions = {
     'dash-comercial':         ['admin', 'diretoria', 'comercial'],
     'dash-pecas':             ['admin', 'diretoria', 'pecas'],
     'dash-servicos':          ['admin', 'diretoria', 'servicos'],
+    'dash-PLM':               ['admin', 'diretoria', 'servicos'],
     'dash-planos-manutencao': ['admin', 'diretoria', 'comercial'],
     'ctrl-PlanosVigentes':    ['admin', 'diretoria', 'servicos'],
     'ctrl-MaquinaParada':     ['admin', 'diretoria', 'servicos'],
@@ -94,3 +95,4 @@ if (logoutButton) {
         });
     });
 }
+
