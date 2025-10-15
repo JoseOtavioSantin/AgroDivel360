@@ -132,56 +132,7 @@
 </head>
 <body>
 
-<nav class="sidebar">
-    <header>
-      <div class="image-text">
-        <span class="image-logo">
-          <img src="/assets/images/logo.png" alt="logo">
-        </span>
-      </div>
-      <i class='bx bx-chevron-right toggle'></i>
-    </header>
-    <div class="text logo-text">
-      <span class="profession" style="color: var(--text-color); font-size: 16px; font-weight: 600;">Menu Principal</span>
-    </div>
-    <div class="menu-bar">
-      <ul class="menu-links">
-        <!-- Dashboards -->
-        <li class="nav-link submenu-parent" id="menu-dashboards">
-          <a href="#"><i class='bx bx-bar-chart-square icon'></i><span class="text nav-text">Dashboards</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
-          <ul class="submenu">
-            <li id="dash-geral"><a href="/Pages/Dashboard/DashboardGeral.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Leads Geral</span></a></li>                        
-            <li id="dash-comercial"><a href="/Pages/Dashboard/DashboardComercial.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Comercial</span></a></li>
-            <li id="dash-pecas"><a href="/Pages/Dashboard/DashboardPecas.html"><i class='bx bx-wrench icon'></i><span class="text nav-text">Peças</span></a></li>
-            <li id="dash-servicos"><a href="/Pages/Dashboard/DashboardServicos.html"><i class='bx bx-cog icon'></i><span class="text nav-text">Serviços</span></a></li>
-            <li id="dash-planos-manutencao"><a href="/Pages/Dashboard/DashboardPlanoManutencao.html"><i class='bx bx-wifi icon'></i><span class="text nav-text">Planos de Manutenção</span></a></li>
-          </ul>
-        </li>
-        <!-- Controles -->
-        <li class="nav-link submenu-parent" id="menu-controles">
-          <a href="#"><i class='bx bx-slider-alt icon'></i><span class="text nav-text">Controles</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
-          <ul class="submenu">
-            <li id="ctrl-PlanosVigentes"><a href="/Pages/Controles/PlanosVigentes.html"><i class='bx bx-package icon'></i><span class="text nav-text">Planos Vigentes</span></a></li>
-            <li id="ctrl-MaquinaParada"><a href="/Pages/Controles/MaquinasParadas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Máquinas Paradas</span></a></li>
-            <li id="ctrl-Kit50"><a href="/Pages/Controles/Kits50Horas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Kit 50Hr</span></a></li>
-            <li id="ctrl-ContagemDiaria"><a href="/Pages/Controles/ContagemDiaria.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Contagem Diaria</span></a></li>
-          </ul>
-        </li>
-        <!-- Cadastros -->
-        <li class="nav-link submenu-parent" id="menu-cadastros">
-          <a href="#"><i class='bx bx-file-blank icon'></i><span class="text nav-text">Cadastros</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
-          <ul class="submenu">
-            <li id="admin-CadastroGestores"><a href="/Pages/Cadastros/CadastrarGestores.html"><i class='bx bx-edit icon'></i><span class="text nav-text">Gestores</span></a></li>
-            <li id="admin-CadastroTecnicos"><a href="/Pages/Cadastros/CadastrarTecnicos.html"><i class='bx bx-edit icon'></i><span class="text nav-text">Técnico</span></a></li>
-          </ul>
-        </li>
-        <!-- Logout -->
-        <li class="nav-link" id="logout-button">
-          <a href="#"><i class='bx bx-log-out icon'></i><span class="text nav-text">Logout</span></a>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <div id="sidebar-placeholder"></div>
 
   <!-- Conteúdo Principal da Página -->
   <section class="home">
@@ -537,7 +488,10 @@
   <!-- Scripts Globais -->
   <script type="module" src="/assets/js/firebase-config.js"></script>
   <script type="module" src="/assets/js/auth.js"></script>
-  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/components/Sidebar.js"></script>
 
 </body>
 </html>
+   
+
+        
