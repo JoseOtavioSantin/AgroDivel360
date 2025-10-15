@@ -9,8 +9,9 @@ const menuPermissions = {
     'dash-comercial':         ['admin', 'diretoria', 'comercial'],
     'dash-pecas':             ['admin', 'diretoria', 'pecas'],
     'dash-servicos':          ['admin', 'diretoria', 'servicos'],
-    'dash-PLM':               ['admin', 'diretoria', 'servicos'],
     'dash-planos-manutencao': ['admin', 'diretoria', 'comercial'],
+    'dash-Seguro':            ['admin', 'diretoria', 'comercial'],
+    'dash-Consorcio':         ['admin', 'diretoria', 'comercial'],
     'ctrl-PlanosVigentes':    ['admin', 'diretoria', 'servicos'],
     'ctrl-MaquinaParada':     ['admin', 'diretoria', 'servicos'],
     'ctrl-Kit50':             ['admin', 'diretoria', 'pecas'],
@@ -95,4 +96,5 @@ if (logoutButton) {
         });
     });
 }
+
 
