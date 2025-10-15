@@ -6,7 +6,7 @@
   <title>Dashboard de Peças</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- SCRIPTS E ESTILOS EXTERNOS -->
+  <!-- LIBS EXTERNAS -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -15,37 +15,72 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+  <!-- CSS -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/Pages/Cadastros/CadastroTecnico.css">
+
   <style>
-    /* CSS idêntico ao do Dashboard Comercial */
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
-    header { background-color: #2c2f3f; padding: 20px; text-align: center; font-size: 20px; font-weight: bold; color: #ffffff; letter-spacing: 1px; box-shadow: 0 2px 4px rgba(0,0,0,0.2  ); }
-    #dynamic-title { margin-top: 10px; font-size: 16px; font-weight: normal; color: #ccc; }
-    .main { display: flex; flex: 1; overflow: hidden; }
-    .sidebar { width: 250px; background-color: #2c2f3f; padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
-    .card { padding: 20px; border-radius: 16px; color: white; background: linear-gradient(135deg, #2e2f4f, #1e1e2f); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); transition: transform 0.2s, box-shadow 0.2s; text-align: left; display: flex; flex-direction: column; gap: 5px; }
-    .card:hover { transform: scale(1.02); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); }
-    .card h2 { font-size: 28px; margin: 0; }
-    .card p { font-size: 14px; color: #eee; margin: 0; display: flex; align-items: center; gap: 8px; }
-    .pink-card { background: linear-gradient(238deg, #193b7c, #193b7c00); }
-    .orange-card { background: linear-gradient(238deg, #193b7c, #193b7c00); }
-    .blue-card { background: linear-gradient(238deg, #193b7c, #193b7c00); }
-    .purple-card { background: linear-gradient(358deg, #626262, #62626259); }
-    .content { flex: 1; padding: 30px; background-color: #262a3d; overflow-y: auto; }
-    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
-    .filters input, .filters select { padding: 8px; border-radius: 6px; border: none; min-width: 180px; }
-    table { width: 100%; border-collapse: collapse; background-color: #2c2f3f; border-radius: 12px; overflow: hidden; }
+    /* ESTILOS UNIFICADOS DO DASHBOARD GERAL */
+    .dashboard-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr ));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .dashboard-card {
+      padding: 20px; border-radius: 8px; color: white; background: #2c2f3f;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1); transition: transform .2s, box-shadow .2s;
+      display: flex; flex-direction: column; gap: 6px; border-left: 4px solid;
+    }
+    .dashboard-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.2); }
+    .dashboard-card h2 { margin: 0; font-size: 28px; font-weight: bold; }
+    .dashboard-card p { margin: 0; font-size: 14px; color: #eee; display: flex; align-items: center; gap: 8px; }
+
+    /* Cores dos cards */
+    .pink-card { border-left-color: #193b7c; }
+    .orange-card { border-left-color: #c67903; }
+    .blue-card { border-left-color: #009bd6; }
+    .green-card { border-left-color: #047857; }
+    .red-card { border-left-color: #b91c1c; }
+    .purple-card { border-left-color: #626262; }
+
+    .filters {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center;
+      background: #2c2f3f; padding: 15px; border-radius: 8px;
+    }
+    .filters input, .filters select {
+      padding: 8px 12px; border-radius: 6px; border: 1px solid #444;
+      min-width: 180px; background: #1e1e2f; color: white;
+    }
+    table {
+      width: 100%; border-collapse: collapse; background-color: #2c2f3f;
+      border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    }
     th, td { font-size: 12px; padding: 10px 15px; text-align: left; border-bottom: 1px solid #444; }
-    th { background-color: #ffffff; color: #00205b; }
-    .status-em-andamento { background-color: #c67903; }
-    .status-concluido { background-color: #193b7c; }
-    .status-cancelado { background-color: #626262; }
-    #btn-exportar { display: flex; align-items: center; justify-content: center; height: 40px; padding: 0 10px; background: linear-gradient(135deg, #00205b, #009bd6); border: none; border-radius: 6px; color: white; cursor: pointer; }
-    .logo { height: 80px; margin-left: 45px; margin-right: 15px; }
-    td.acoes-cell { display: flex; align-items: center; justify-content: flex-start; }
-    .btn-row-action { background: transparent; border: none; width: 32px; height: 32px; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .btn-update { background-color: #3498db; }
-    .btn-update:hover { background-color: #2980b9; transform: scale(1.1); }
+    th { background-color: #ffffff; color: #00205b; font-weight: 600; }
+    td { background: #2c2f3f; color: #e5e7eb; }
+
+    /* CORES DE STATUS PADRONIZADAS */
+    tr.status-em-andamento { background-color: #c67903 !important; }
+    tr.status-em-andamento td { background-color: #c67903 !important; color: white !important; }
+    tr.status-concluido { background-color: #193b7c !important; }
+    tr.status-concluido td { background-color: #193b7c !important; color: white !important; }
+    tr.status-cancelado { background-color: #626262 !important; }
+    tr.status-cancelado td { background-color: #626262 !important; color: white !important; }
+
+    .btn-acao {
+      background: #00205b; border: none; padding: 6px 10px; border-radius: 6px;
+      color: #fff; font-size: 16px; cursor: pointer; transition: background .2s;
+    }
+    .btn-acao:hover { background: #00308a; }
+
+    .content-card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.1); margin-bottom: 20px; overflow: hidden; }
+    .content-card-header { background: #00205b; color: white; padding: 15px 20px; }
+    .content-card-header h3 { margin: 0; font-size: 18px; font-weight: 600; }
+    .content-card-body { padding: 20px; }
+
+    /* ESTILOS DO MODAL (POPUP) */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 10000; opacity: 0; transition: opacity 0.3s ease; }
     .modal-overlay.visible { display: flex; opacity: 1; }
     .modal-container { background: #2c2f3f; padding: 30px; border-radius: 16px; width: 90%; max-width: 550px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; }
@@ -78,69 +113,146 @@
     .status-btn.active.status-cancelado { border-color: #626262; background-color: #626262; }
     #valor-group { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-top 0.4s ease-out; margin-top: 0; }
     #valor-group.visible { max-height: 100px; opacity: 1; margin-top: 20px; }
-    .swal2-container.swal2-top-end.swal2-backdrop-show { z-index: 10001 !important; }
+    .swal2-container { z-index: 10001 !important; }
     .swal2-toast { background-color: #2c2f3f !important; color: #ffffff !important; border-left: 5px solid; border-radius: 8px !important; box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important; }
     .swal2-toast .swal2-title { color: #ffffff !important; font-size: 1em !important; }
     .swal2-toast-success { border-left-color: #28a745 !important; }
     .swal2-toast-warning { border-left-color: #ffc107 !important; }
     .swal2-toast-error { border-left-color: #dc3545 !important; }
     .swal2-timer-progress-bar { background: rgba(255,255,255,0.5) !important; }
+    
+    @media (max-width: 768px) {
+      .dashboard-cards { grid-template-columns: 1fr 1fr; }
+      .dashboard-card { padding: 12px; }
+      .dashboard-card h2 { font-size: 22px; }
+      .filters { flex-direction: column; align-items: stretch; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-      <img src="/assets/images/logo.png" alt="Logo" class="logo">
-      <div style="flex: 1; text-align: center;">
-        <em>Dashboard Agro Divel 360 - Peças</em>
-        <div id="dynamic-title" style="font-style: italic;">Aguardando autenticação...</div>
+
+<nav class="sidebar">
+    <header>
+      <div class="image-text">
+        <span class="image-logo">
+          <img src="/assets/images/logo.png" alt="logo">
+        </span>
       </div>
-      <div style="width: 65px;"></div>
+      <i class='bx bx-chevron-right toggle'></i>
+    </header>
+    <div class="text logo-text">
+      <span class="profession" style="color: var(--text-color); font-size: 16px; font-weight: 600;">Menu Principal</span>
     </div>
-  </header>
-  <button onclick="window.history.back()" title="Voltar" style="position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #00205b, #009bd6); color: white; border: none; margin-right; 10px; padding: 10px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 9999;">
-    ← Voltar
-  </button>
-  <div class="main">
-    <div class="sidebar">
-      <div class="card pink-card"><h2 id="total-clientes">0</h2><p><i data-lucide="users"></i> Total Clientes</p></div>
-      <div class="card orange-card"><h2 id="total-concluidos">0</h2><p><i data-lucide="check-circle"></i> Concluídos</p></div>
-      <div class="card blue-card"><h2 id="valor-total">R$ 0,00</h2><p><i data-lucide="dollar-sign"></i> Valor Total (R$)</p></div>
-      <div class="card purple-card"><h2 id="cancelados">0</h2><p><i data-lucide="x-octagon"></i> Cancelados</p></div>
+    <div class="menu-bar">
+      <ul class="menu-links">
+        <!-- Dashboards -->
+        <li class="nav-link submenu-parent" id="menu-dashboards">
+          <a href="#"><i class='bx bx-bar-chart-square icon'></i><span class="text nav-text">Dashboards</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
+          <ul class="submenu">
+            <li id="dash-geral"><a href="/Pages/Dashboard/DashboardGeral.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Leads Geral</span></a></li>                        
+            <li id="dash-comercial"><a href="/Pages/Dashboard/DashboardComercial.html"><i class='bx bx-bar-chart-alt-2 icon'></i><span class="text nav-text">Comercial</span></a></li>
+            <li id="dash-pecas"><a href="/Pages/Dashboard/DashboardPecas.html"><i class='bx bx-wrench icon'></i><span class="text nav-text">Peças</span></a></li>
+            <li id="dash-servicos"><a href="/Pages/Dashboard/DashboardServicos.html"><i class='bx bx-cog icon'></i><span class="text nav-text">Serviços</span></a></li>
+            <li id="dash-planos-manutencao"><a href="/Pages/Dashboard/DashboardPlanoManutencao.html"><i class='bx bx-wifi icon'></i><span class="text nav-text">Planos de Manutenção</span></a></li>
+          </ul>
+        </li>
+        <!-- Controles -->
+        <li class="nav-link submenu-parent" id="menu-controles">
+          <a href="#"><i class='bx bx-slider-alt icon'></i><span class="text nav-text">Controles</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
+          <ul class="submenu">
+            <li id="ctrl-PlanosVigentes"><a href="/Pages/Controles/PlanosVigentes.html"><i class='bx bx-package icon'></i><span class="text nav-text">Planos Vigentes</span></a></li>
+            <li id="ctrl-MaquinaParada"><a href="/Pages/Controles/MaquinasParadas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Máquinas Paradas</span></a></li>
+            <li id="ctrl-Kit50"><a href="/Pages/Controles/Kits50Horas.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Kit 50Hr</span></a></li>
+            <li id="ctrl-ContagemDiaria"><a href="/Pages/Controles/ContagemDiaria.html"><i class='bx bx-cabinet icon'></i><span class="text nav-text">Contagem Diaria</span></a></li>
+          </ul>
+        </li>
+        <!-- Cadastros -->
+        <li class="nav-link submenu-parent" id="menu-cadastros">
+          <a href="#"><i class='bx bx-file-blank icon'></i><span class="text nav-text">Cadastros</span><i class='bx bx-chevron-right submenu-arrow'></i></a>
+          <ul class="submenu">
+            <li id="admin-CadastroGestores"><a href="/Pages/Cadastros/CadastrarGestores.html"><i class='bx bx-edit icon'></i><span class="text nav-text">Gestores</span></a></li>
+            <li id="admin-CadastroTecnicos"><a href="/Pages/Cadastros/CadastrarTecnicos.html"><i class='bx bx-edit icon'></i><span class="text nav-text">Técnico</span></a></li>
+          </ul>
+        </li>
+        <!-- Logout -->
+        <li class="nav-link" id="logout-button">
+          <a href="#"><i class='bx bx-log-out icon'></i><span class="text nav-text">Logout</span></a>
+        </li>
+      </ul>
     </div>
-    <div class="content">
-      <div class="filters">
-        <input id="filtro-cliente" type="text" placeholder="Buscar cliente..." />
-        <input id="filtro-municipio" type="text" placeholder="Buscar municipio..." />
-        <input id="filtro-consultor" type="text" placeholder="Buscar consultor..." />
-        <select id="filtro-status">
-          <option value="">Todos os status</option>
-          <option value="Concluído">Concluído</option>
-          <option value="Em andamento">Em andamento</option>
-          <option value="Cancelado">Cancelado</option>
-        </select>
-        <input id="filtro-periodo" placeholder="Selecione o período" />
-        
-        <!-- LINHA CORRIGIDA ABAIXO -->
-        <button id="btn-exportar" title="Exportar para Excel" style="margin-left: auto;">
-          <i data-lucide="download" style="width: 20px; height: 20px;"></i>
-        </button>
-        
+  </nav>
+
+  <!-- Conteúdo Principal da Página -->
+  <section class="home">
+    <div class="text">
+      <h1>Dashboard de Peças</h1>
+      <p id="dynamic-title">Aguardando autenticação...</p>
+    </div>
+
+    <!-- CARDS DE RESUMO -->
+    <div class="dashboard-cards">
+      <div class="dashboard-card pink-card">
+        <h2 id="total-exibidos">0</h2>
+        <p><i data-lucide="list-checks"></i> Itens no painel</p>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Data da Visita</th><th>Cliente</th><th>Fazenda</th><th>Município</th><th>Consultor</th><th>Modelo</th><th>Horímetro</th><th>Telefone</th><th>Observações</th><th>Checklist</th><th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="painel-detalhes"></tbody>
-      </table>
+      <div class="dashboard-card orange-card">
+        <h2 id="total-andamento">0</h2>
+        <p><i data-lucide="clock-6"></i> Em andamento</p>
+      </div>
+      <div class="dashboard-card green-card">
+        <h2 id="total-concluido">0</h2>
+        <p><i data-lucide="check-circle-2"></i> Concluídos</p>
+      </div>
+      <div class="dashboard-card purple-card">
+        <h2 id="total-cancelado">0</h2>
+        <p><i data-lucide="x-octagon"></i> Cancelados</p>
+      </div>
+      <div class="dashboard-card blue-card">
+        <h2 id="valor-total">R$ 0,00</h2>
+        <p><i data-lucide="dollar-sign"></i> Valor Total (R$)</p>
+      </div>
     </div>
-  </div>
+
+    <!-- CONTAINER PRINCIPAL DO DASHBOARD -->
+    <div class="content-card">
+      <div class="content-card-header">
+        <h3>Acompanhamento de Peças</h3>
+      </div>
+      <div class="content-card-body">
+        <div class="filters">
+          <input id="filtro-cliente" type="text" placeholder="Buscar cliente..." />
+          <input id="filtro-municipio" type="text" placeholder="Buscar município..." />
+          <input id="filtro-consultor" type="text" placeholder="Buscar consultor..." />
+          <select id="filtro-status">
+            <option value="">Todos os status</option>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Concluído">Concluído</option>
+            <option value="Cancelado">Cancelado</option>
+          </select>
+          <input id="filtro-periodo" placeholder="Selecione o período" />
+          <button id="btn-exportar" class="btn-acao" style="margin-left:auto;" title="Exportar para Excel">
+            <i data-lucide="download" style="width: 20px; height: 20px;"></i>
+          </button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Data da Visita</th><th>Cliente</th><th>Fazenda</th><th>Município</th><th>Consultor</th><th>Modelo</th><th>Horímetro</th><th>Telefone</th><th>Observações</th><th>Checklist</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="painel-detalhes"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL (POPUP) DE EDIÇÃO -->
   <div id="custom-modal" class="modal-overlay">
     <div class="modal-container">
       <div class="modal-header">
-        <h3>Atualizar informações</h3>
+        <h3>Atualizar Checklist de Peças</h3>
         <button class="modal-close-btn" onclick="fecharPopup()">&times;</button>
       </div>
       <div class="modal-body">
@@ -178,22 +290,18 @@
   </div>
 
   <script type="module">
-    // 1. Importa a função de guarda e as funções do Firebase
     import { garantirAutenticacao } from '/assets/js/auth-guard.js?v=2';
     import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Função principal assíncrona para iniciar a página
     async function iniciarPagina( ) {
       try {
-        // 2. ESPERA a autenticação ser confirmada.
         await garantirAutenticacao();
         console.log("Autenticação confirmada. Iniciando o dashboard de Peças...");
 
-        // 3. Agora que a autenticação passou, podemos configurar o Firebase e a página
         const app = getApp();
         const db = getFirestore(app);
-        const tipoChecklist = "checklistPecas"; // Fixo para esta página
+        const tipoChecklist = "checklistPecas";
         let dadosTotais = [];
 
         function setupPage() {
@@ -213,12 +321,15 @@
         async function carregarDados() {
           const filiaisLogadas = JSON.parse(localStorage.getItem("gestorFilial") || "[]");
           const tituloBase = "Peças";
-          document.getElementById("dynamic-title").textContent = `${tituloBase} | Filiais: ${filiaisLogadas.join(", ")}`;
+          document.getElementById("dynamic-title").textContent = filiaisLogadas.length ? `${tituloBase} | Filiais: ${filiaisLogadas.join(", ")}` : `${tituloBase} | Visualizando todas as filiais`;
+          
           const querySnapshot = await getDocs(collection(db, tipoChecklist));
           dadosTotais = [];
           querySnapshot.forEach(docItem => {
             const dados = docItem.data();
-            if (filiaisLogadas.map(f => f.toLowerCase().trim()).includes((dados.filial || "").toLowerCase().trim())) {
+            const filialDoc = (dados.filial || "").toLowerCase().trim();
+            const filiaisPermitidas = filiaisLogadas.map(f => f.toLowerCase().trim());
+            if (filiaisPermitidas.length === 0 || filiaisPermitidas.includes(filialDoc)) {
               dadosTotais.push({ id: docItem.id, ...dados });
             }
           });
@@ -239,38 +350,50 @@
           } else if (selectedDates.length === 1) {
             dataInicio = dataFim = selectedDates[0].toISOString().slice(0, 10);
           }
-          const painel = document.getElementById("painel-detalhes");
-          painel.innerHTML = "";
+          
           const filtrados = dadosTotais.filter(d => {
             const clienteOk = (d.nomeCliente || "").toLowerCase().includes(clienteFiltro);
-            const statusOk = statusFiltro === "" || (d.statusChecklist || "") === statusFiltro;
+            const statusOk = statusFiltro === "" || (d.statusChecklist || "Em andamento") === statusFiltro;
             const consultorOk = (d.consultor || "").toLowerCase().includes(consultorFiltro);
             const municipioOk = (d.municipio || "").toLowerCase().includes(municipioFiltro);
             const dentroDoPeriodo = (!dataInicio || (d.dataVisita || "") >= dataInicio) && (!dataFim || (d.dataVisita || "") <= dataFim);
             return clienteOk && statusOk && consultorOk && municipioOk && dentroDoPeriodo;
           });
-          document.getElementById("total-clientes").textContent = filtrados.length;
-          document.getElementById("total-concluidos").textContent = filtrados.filter(d => d.statusChecklist === "Concluído").length;
-          document.getElementById("cancelados").textContent = filtrados.filter(d => d.statusChecklist === "Cancelado").length;
+
+          // Atualizar cards de resumo
           let totalValor = 0;
           filtrados.forEach(d => {
-            if (!isNaN(d.valorNegociado)) totalValor += Number(d.valorNegociado);
-            const statusClass = d.statusChecklist === "Concluído" ? "status-concluido" : d.statusChecklist === "Cancelado" ? "status-cancelado" : d.statusChecklist === "Em andamento" ? "status-em-andamento" : "";
+            if (d.statusChecklist === 'Concluído' && !isNaN(d.valorNegociado)) {
+              totalValor += Number(d.valorNegociado);
+            }
+          });
+          document.getElementById("total-exibidos").textContent = filtrados.length;
+          document.getElementById("total-andamento").textContent = filtrados.filter(d => (d.statusChecklist || "Em andamento") === "Em andamento").length;
+          document.getElementById("total-concluido").textContent = filtrados.filter(d => d.statusChecklist === "Concluído").length;
+          document.getElementById("total-cancelado").textContent = filtrados.filter(d => d.statusChecklist === "Cancelado").length;
+          document.getElementById("valor-total").textContent = `R$ ${totalValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+          // Renderizar tabela
+          const painel = document.getElementById("painel-detalhes");
+          painel.innerHTML = "";
+          filtrados.forEach(d => {
+            const status = d.statusChecklist || "Em andamento";
+            const statusClass = status === "Concluído" ? "status-concluido" : status === "Cancelado" ? "status-cancelado" : "status-em-andamento";
+            
             painel.innerHTML += `
               <tr class="${statusClass}" id="row-${d.id}">
                 <td>${d.dataVisita || "-"}</td><td>${d.nomeCliente || "-"}</td><td>${d.nomeFazenda || "-"}</td><td>${d.municipio || "-"}</td><td>${d.consultor || "-"}</td><td>${d.modelo || "-"}</td><td>${d.horimetro || "-"}</td>
-                <td style="text-align: center;">${d.telefone ? `<a href="https://wa.me/55${d.telefone.replace(/\D/g, ''  )}" target="_blank" title="Chamar no WhatsApp" style="color: #25D366; font-size: 22px; display: inline-block;"><i class="fa-brands fa-whatsapp"></i></a>` : "-"}</td>
+                <td style="text-align: center;">${d.telefone ? `<a href="https://wa.me/55${String(d.telefone ).replace(/\D/g, '')}" target="_blank" title="Chamar no WhatsApp" style="color: #25D366; font-size: 22px;"><i class="fa-brands fa-whatsapp"></i></a>` : "-"}</td>
                 <td data-comentario="${d.comentarioResponsavel || ''}" data-valor="${d.valorNegociado || 0}">${d.observacoes || "-"}</td>
                 <td>${(d.checklist || []).map(item => `<span style="background:#fff; color:#00205b; padding:3px 8px; border-radius:5px; margin:2px; display:inline-block; font-size:10px">${item}</span>`).join("")}</td>
                 <td class="acoes-cell">
-                    <button class="btn-row-action btn-update" data-id="${d.id}" title="Atualizar Checklist">
-                        <i data-lucide="circle-check-big" style="width: 16px; pointer-events: none;"></i>
+                    <button class="btn-acao" data-id="${d.id}" title="Atualizar Checklist">
+                        <i data-lucide="circle-check-big" style="width: 15px; pointer-events: none;"></i>
                     </button>
                 </td>
               </tr>`;
           });
-          document.getElementById("valor-total").textContent = `R$ ${totalValor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-          document.querySelectorAll(".btn-update").forEach(btn => btn.addEventListener("click", () => window.abrirPopup(btn.dataset.id)));
+          document.querySelectorAll(".btn-acao[data-id]").forEach(btn => btn.addEventListener("click", () => window.abrirPopup(btn.dataset.id)));
           lucide.createIcons();
         }
 
@@ -315,7 +438,7 @@
           const valor = parseFloat(document.getElementById("valorNegociado").value) || 0; 
           const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2500, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } }); 
           if (status === 'Concluído' && valor <= 0) { 
-            Toast.fire({ icon: 'warning', title: 'Valor obrigatório para concluído!' }); 
+            Toast.fire({ icon: 'warning', title: 'Valor negociado é obrigatório para concluir!' }); 
             saveBtn.textContent = 'Salvar Alterações'; 
             saveBtn.disabled = false; 
             return; 
@@ -324,11 +447,11 @@
             await updateDoc(docRef, { 
               comentarioResponsavel: document.getElementById("comentario").value, 
               statusChecklist: status, 
-              valorNegociado: valor 
+              valorNegociado: status === 'Concluído' ? valor : 0
             }); 
             fecharPopup(); 
             await carregarDados(); 
-            Toast.fire({ icon: 'success', title: 'Informações Atualizado!' }); 
+            Toast.fire({ icon: 'success', title: 'Checklist atualizado!' }); 
           } catch (error) { 
             console.error("Erro ao salvar:", error); 
             Toast.fire({ icon: 'error', title: 'Erro ao salvar!' }); 
@@ -337,50 +460,84 @@
             saveBtn.disabled = false; 
           } 
         }
-        
-        function exportarParaExcel() { 
-          const headers = ["Data da Visita", "Cliente", "Fazenda", "Município", "Consultor", "Modelo", "Horímetro", "Telefone", "Observações", "Checklist", "Comentário", "Valor (R$)", "Status"]; 
-          const linhas = Array.from(document.querySelectorAll("#painel-detalhes tr")).map(tr => { 
-            const tds = tr.querySelectorAll("td"); 
-            const status = tr.classList.contains("status-concluido") ? "Concluído" : tr.classList.contains("status-cancelado") ? "Cancelado" : tr.classList.contains("status-em-andamento") ? "Em andamento" : ""; 
-            return [ 
-              tds[0]?.textContent.trim(), 
-              tds[1]?.textContent.trim(), 
-              tds[2]?.textContent.trim(), 
-              tds[3]?.textContent.trim(), 
-              tds[4]?.textContent.trim(), 
-              tds[5]?.textContent.trim(), 
-              tds[6]?.textContent.trim(), 
-              tds[7]?.textContent.trim(), 
-              tds[8]?.textContent.trim(), 
-              tds[9]?.innerText.trim(), 
-              tds[8]?.dataset.comentario || "", 
-              tds[8]?.dataset.valor || "", 
-              status 
-            ]; 
-          }); 
-          const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]); 
-          const wb = XLSX.utils.book_new(); 
-          XLSX.utils.book_append_sheet(wb, planilha, "Checklist Peças"); 
-          XLSX.writeFile(wb, "checklists_pecas_filtrados.xlsx"); 
+
+        function exportarParaExcel() {
+          const headers = ["Data da Visita", "Cliente", "Fazenda", "Município", "Consultor", "Modelo", "Horímetro", "Telefone", "Observações", "Checklist", "Comentário do Responsável", "Valor Negociado (R$)", "Status"];
+          
+          // Pega as linhas filtradas atualmente na tabela
+          const linhas = Array.from(document.querySelectorAll("#painel-detalhes tr")).map(tr => {
+            const tds = tr.querySelectorAll("td");
+            const status = tr.classList.contains("status-concluido") ? "Concluído" :
+                           tr.classList.contains("status-cancelado") ? "Cancelado" :
+                           "Em andamento";
+            
+            // Extrai os dados de cada célula
+            const dataVisita = tds[0]?.textContent.trim() || "";
+            const cliente = tds[1]?.textContent.trim() || "";
+            const fazenda = tds[2]?.textContent.trim() || "";
+            const municipio = tds[3]?.textContent.trim() || "";
+            const consultor = tds[4]?.textContent.trim() || "";
+            const modelo = tds[5]?.textContent.trim() || "";
+            const horimetro = tds[6]?.textContent.trim() || "";
+            const telefone = tds[7]?.querySelector('a') ? tds[7].querySelector('a').href.replace('https://wa.me/55', '' ) : "";
+            const observacoes = tds[8]?.textContent.trim() || "";
+            const checklist = tds[9]?.innerText.trim().replace(/\s+/g, ', ') || ""; // Itens do checklist separados por vírgula
+            
+            // Pega os dados adicionais do atributo 'data-'
+            const comentario = tds[8]?.dataset.comentario || "";
+            const valor = tds[8]?.dataset.valor || "0";
+
+            return [dataVisita, cliente, fazenda, municipio, consultor, modelo, horimetro, telefone, observacoes, checklist, comentario, parseFloat(valor), status];
+          });
+
+          const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]);
+          
+          // Ajustar a largura das colunas
+          planilha['!cols'] = [
+              { wch: 15 }, // Data da Visita
+              { wch: 30 }, // Cliente
+              { wch: 25 }, // Fazenda
+              { wch: 20 }, // Município
+              { wch: 25 }, // Consultor
+              { wch: 15 }, // Modelo
+              { wch: 12 }, // Horímetro
+              { wch: 15 }, // Telefone
+              { wch: 40 }, // Observações
+              { wch: 40 }, // Checklist
+              { wch: 40 }, // Comentário
+              { wch: 20 }, // Valor
+              { wch: 15 }  // Status
+          ];
+
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, planilha, "Checklist Peças");
+          XLSX.writeFile(wb, "agrodivel_checklist_pecas.xlsx");
         }
 
+        // Disponibiliza funções globalmente para serem chamadas pelo HTML (onclick)
         window.abrirPopup = abrirPopup;
         window.fecharPopup = fecharPopup;
         window.salvarPopup = salvarPopup;
 
-        // Finalmente, chamamos as funções para montar a página
+        // --- INÍCIO DA EXECUÇÃO ---
         setupPage();
         await carregarDados();
 
       } catch (error) {
-        console.error("Falha na autenticação:", error);
+        console.error("Falha na autenticação ou inicialização:", error);
+        // Redireciona para a página de login se houver erro
         window.location.href = '/login.html';
       }
     }
 
-    // Inicia todo o processo
+    // Inicia todo o processo da página
     iniciarPagina();
   </script>
+
+  <!-- Scripts Globais -->
+  <script type="module" src="/assets/js/firebase-config.js"></script>
+  <script type="module" src="/assets/js/auth.js"></script>
+  <script src="/assets/js/main.js"></script>
+
 </body>
 </html>
