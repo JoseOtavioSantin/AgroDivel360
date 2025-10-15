@@ -318,3 +318,35 @@
         }
 
 
+/* /assets/css/style.css */
+
+/* --- CÓDIGO PARA FAZER OS SUBMENUS APARECEREM --- */
+
+/* 1. Esconde o submenu por padrão */
+.sidebar .submenu {
+    display: none; /* Garante que ele comece escondido */
+    padding-left: 30px; /* Adiciona um recuo para os itens do submenu */
+    background-color: rgba(0, 0, 0, 0.1); /* Um fundo sutil para diferenciar */
+}
+
+/* 2. MOSTRA o submenu quando o <li> pai tem a classe .open */
+.sidebar .nav-link.submenu-parent.open .submenu {
+    display: block; /* A MÁGICA ACONTECE AQUI! */
+}
+
+/* 3. Gira a setinha (ícone de chevron) quando o submenu está aberto */
+.sidebar .nav-link.submenu-parent .submenu-arrow {
+    transition: transform 0.3s ease; /* Animação suave da seta */
+}
+
+.sidebar .nav-link.submenu-parent.open .submenu-arrow {
+    transform: rotate(90deg); /* Gira a seta para baixo */
+}
+
+/* Opcional: Estilo para o item de menu ativo */
+.sidebar .nav-link.submenu-parent.open > a {
+    background-color: var(--primary-color-light); /* Destaca o menu pai quando aberto */
+    color: var(--primary-color);
+}
+
+
