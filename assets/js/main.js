@@ -1,23 +1,20 @@
-// /assets/js/main.js (VERSÃO CORRIGIDA)
+// /assets/js/main.js (VERSÃO COM SUBMENU CORRIGIDO)
 
 function inicializarInterface() {
 
-    // Adicionei este log para termos 100% de certeza que a função foi chamada
     console.log("SUCESSO: A função inicializarInterface() foi chamada e está executando!");
 
-    // 1. A busca pelos elementos foi movida para DENTRO da função.
-    // Isso garante que eles serão procurados no momento certo.
     const body = document.querySelector('body');
     const sidebar = body.querySelector('nav.sidebar');
     const toggle = body.querySelector(".toggle");
     const submenuParents = document.querySelectorAll(".submenu-parent");
 
-    // 2. Verificação de segurança: só adiciona eventos se os elementos existirem.
     if (toggle && sidebar) {
         toggle.addEventListener("click", () => {
             sidebar.classList.toggle("close");
             localStorage.setItem("sidebarState", sidebar.classList.contains("close") ? "closed" : "open");
 
+            // Ao fechar o menu principal, também fecha todos os submenus
             if (sidebar.classList.contains("close")) {
                 submenuParents.forEach(parent => {
                     parent.classList.remove("open");
@@ -26,44 +23,49 @@ function inicializarInterface() {
         });
     } else {
         console.error("Elemento '.toggle' ou 'nav.sidebar' não encontrado!");
-        return; // Para a execução se a sidebar não foi carregada corretamente.
+        return;
     }
 
-    // 3. Lógica dos submenus, também dentro da função.
+    // --- AJUSTE NOS SUBMENUS COMEÇA AQUI ---
     submenuParents.forEach(parent => {
         const linkPai = parent.querySelector('a');
         if (linkPai) {
             linkPai.addEventListener("click", (e) => {
-                e.preventDefault();
+                e.preventDefault(); // Impede a navegação, permitindo que o clique abra o submenu
 
+                // Se a sidebar estiver fechada, a primeira ação é sempre abri-la.
                 if (sidebar.classList.contains("close")) {
                     sidebar.classList.remove("close");
                     localStorage.setItem("sidebarState", "open");
-                    return;
+                    return; // Não faz mais nada neste clique, o próximo clique abrirá o submenu.
                 }
 
                 const clickedParent = e.currentTarget.parentElement;
                 const isOpen = clickedParent.classList.contains("open");
 
-                // Fecha outros submenus
+                // Fecha todos os OUTROS submenus para manter a interface limpa
                 submenuParents.forEach(p => {
                     if (p !== clickedParent) {
                         p.classList.remove("open");
                     }
                 });
 
-                // Abre/fecha o submenu atual
-                clickedParent.classList.toggle("open", !isOpen);
+                // Abre ou fecha o submenu que foi clicado.
+                // A classe 'open' é adicionada/removida APENAS no elemento pai (o <li>).
+                // O CSS fará o resto.
+                if (isOpen) {
+                    clickedParent.classList.remove("open");
+                } else {
+                    clickedParent.classList.add("open");
+                }
             });
         }
     });
+    // --- FIM DO AJUSTE NOS SUBMENUS ---
 
-    // 4. Lógica que verifica o estado salvo do menu.
-    // Não precisa mais do "DOMContentLoaded" aqui, pois a função já roda depois do carregamento.
+    // Lógica que verifica o estado salvo do menu (continua igual)
     if (localStorage.getItem("sidebarState") === "closed") {
         sidebar.classList.add("close");
     }
 
-} // <-- FIM DA FUNÇÃO inicializarInterface
-
-// GARANTA QUE NÃO HÁ NENHUM CÓDIGO FORA DA FUNÇÃO AQUI EMBAIXO.
+} // Fim da função
