@@ -5,17 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Gestores - Agro Divel 360</title>
     
-    <!-- CSS -->
+
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <!-- MANTENDO O CSS ORIGINAL DA PÁGINA -->
+
     <link rel="stylesheet" href="/assets/css/Pages/Cadastros/CadastroTecnico.css">
 
-    <!-- ================================================== -->
-    <!--            BLOCO DE CSS PARA CORREÇÕES             -->
-    <!-- ================================================== -->
     <style>
-        /* 1. Aplica o mesmo estilo do input de texto para o input de email */
+    
         .form-group input[type="email"] {
             width: 100%;
             padding: 12px 15px;
@@ -34,12 +31,11 @@
             box-shadow: 0 0 5px rgba(0, 51, 102, 0.4);
         }
 
-        /* 2. Ajusta a cor do texto do select para ser consistente */
+
         .form-group select {
             color: #343a40;
         }
 
-        /* 3. Garante que o texto dos checkboxes tenha a cor correta */
         .checkbox-group label {
             color: #343a40; /* Cor escura para o texto */
             display: flex;
@@ -47,14 +43,13 @@
             gap: 8px; /* Espaço entre o checkbox e o texto */
         }
     </style>
-    <!-- ================================================== -->
+
 
 </head>
 <body>
 
     <nav id="sidebar-placeholder"></nav>
 
-    <!-- Conteúdo Principal da Página (Estrutura Original Mantida) -->
     <section class="home">
         <div class="text">
             <h1>Gerenciar Gestores</h1>
@@ -113,7 +108,7 @@
             </div>
         </div>
 
-        <!-- CONTAINER DA LISTA DE GESTORES -->
+
         <div class="content-card technician-list-container">
             <div class="content-card-header">
                 <h2>Gestores Cadastrados</h2>
@@ -130,7 +125,6 @@
                         </tr>
                     </thead>
                     <tbody id="gestor-table-body">
-                        <!-- Os dados serão inseridos aqui pelo JavaScript -->
                     </tbody>
                 </table>
                 <div id="loading-message">Carregando gestores...</div>
@@ -139,7 +133,6 @@
         </div>
     </section>
 
-     <!-- SCRIPT DE GERENCIAMENTO DA PÁGINA (COM CORREÇÃO) -->
    <script type="module">
         import { db } from '/assets/js/firebase-config.js';
         import { collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
@@ -153,14 +146,13 @@
         const loadingMessage = document.getElementById('loading-message');
         const emptyMessage = document.getElementById('empty-message');
         
-        const gestorIdInput = document.getElementById('gestor-id'); // Usado para saber se estamos editando
-        const uidInput = document.getElementById('uid-gestor'); // Nosso novo campo
+        const gestorIdInput = document.getElementById('gestor-id'); 
+        const uidInput = document.getElementById('uid-gestor'); 
         const nomeInput = document.getElementById('nome-gestor');
         const emailInput = document.getElementById('email-gestor');
         const grupoSelect = document.getElementById('grupo-gestor');
         const filiaisCheckboxes = document.querySelectorAll('input[name="filial"]');
 
-        // --- Funções (renderTable continua igual) ---
         const renderTable = (gestores) => {
             tableBody.innerHTML = '';
             loadingMessage.style.display = 'none';
@@ -187,7 +179,6 @@
             });
         };
 
-        // --- Função de Edição (setupEditForm) ---
         const setupEditForm = async (id) => {
             const docRef = doc(db, "gestores", id);
             const docSnap = await getDoc(docRef);
@@ -318,3 +309,4 @@
     
 </body>
 </html>
+
