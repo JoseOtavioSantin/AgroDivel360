@@ -8,47 +8,82 @@
     <!-- CSS -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <!-- Reutilizando o CSS da página de técnicos -->
+    <!-- MANTENDO O CSS ORIGINAL DA PÁGINA -->
     <link rel="stylesheet" href="/assets/css/Pages/Cadastros/CadastroTecnico.css">
+
+    <!-- ================================================== -->
+    <!--            BLOCO DE CSS PARA CORREÇÕES             -->
+    <!-- ================================================== -->
+    <style>
+        /* 1. Aplica o mesmo estilo do input de texto para o input de email */
+        .form-group input[type="email"] {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color );
+            background-color: #CDCED0;
+            color: #343a40;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input[type="email"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(0, 51, 102, 0.4);
+        }
+
+        /* 2. Ajusta a cor do texto do select para ser consistente */
+        .form-group select {
+            color: #343a40;
+        }
+
+        /* 3. Garante que o texto dos checkboxes tenha a cor correta */
+        .checkbox-group label {
+            color: #343a40; /* Cor escura para o texto */
+            display: flex;
+            align-items: center;
+            gap: 8px; /* Espaço entre o checkbox e o texto */
+        }
+    </style>
+    <!-- ================================================== -->
+
 </head>
 <body>
 
- <nav id="sidebar-placeholder"></nav>
+    <nav id="sidebar-placeholder"></nav>
 
-    <!-- Conteúdo Principal da Página -->
+    <!-- Conteúdo Principal da Página (Estrutura Original Mantida) -->
     <section class="home">
         <div class="text">
             <h1>Gerenciar Gestores</h1>
             <p>Adicione, edite ou remova gestores do sistema.</p>
         </div>
 
-        <!-- CARD PARA CADASTRO E EDIÇÃO DE GESTORES -->
-<div class="content-card">
-    <div class="content-card-header">
-        <h2 id="form-title">Novo Gestor</h2>
-    </div>
-    <div class="content-card-body">
-        <form id="form-cadastro-gestor" class="form-layout">
-            <!-- Campo oculto para guardar o ID em edição (não vamos mais usar para cadastro) -->
-            <input type="hidden" id="gestor-id">
-            
-            <!-- ================================================== -->
-            <!--            NOVO CAMPO PARA O UID                   -->
-            <!-- ================================================== -->
-            <div class="form-group">
-                <label for="uid-gestor">UID do Usuário (ID do Documento)</label>
-                <input type="text" id="uid-gestor" placeholder="Cole aqui o UID do Firebase Authentication" required>
+        <div class="content-card">
+            <div class="content-card-header">
+                <h2 id="form-title">Novo Gestor</h2>
             </div>
-            <!-- ================================================== -->
+            <div class="content-card-body">
+                <form id="form-cadastro-gestor" class="form-layout">
+                    <input type="hidden" id="gestor-id">
+                    
+                    <div class="form-group">
+                        <label for="uid-gestor">UID do Usuário (ID do Documento)</label>
+                        <input type="text" id="uid-gestor" placeholder="Cole aqui o UID do Firebase Authentication" required>
+                    </div>
 
-            <div class="form-group">
-                <label for="nome-gestor">Nome do Gestor</label>
-                <input type="text" id="nome-gestor" placeholder="Ex: João da Silva" required>
-            </div>
+                    <div class="form-group">
+                        <label for="nome-gestor">Nome do Gestor</label>
+                        <input type="text" id="nome-gestor" placeholder="Ex: João da Silva" required>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="email-gestor">Email (para login)</label>
                         <input type="email" id="email-gestor" placeholder="Ex: joao.silva@email.com" required>
                     </div>
+                    
                     <div class="form-group">
                         <label for="grupo-gestor">Grupo de Permissão</label>
                         <select id="grupo-gestor" required>
@@ -60,6 +95,7 @@
                             <option value="servicos">Serviços</option>
                         </select>
                     </div>
+                    
                     <div class="form-group">
                         <label>Filiais de Acesso</label>
                         <div id="filiais-checkboxes" class="checkbox-group">
@@ -68,6 +104,7 @@
                             <label><input type="checkbox" name="filial" value="Lages"> Lages</label>
                         </div>
                     </div>
+                    
                     <div class="form-group" style="flex-direction: row; gap: 10px;">
                         <button type="submit" class="btn-submit">Cadastrar Gestor</button>
                         <button type="button" id="btn-cancel-edit" class="btn-delete" style="display: none;">Cancelar</button>
@@ -102,7 +139,7 @@
         </div>
     </section>
 
-    <!-- SCRIPT DE GERENCIAMENTO DA PÁGINA (COM CORREÇÃO) -->
+     <!-- SCRIPT DE GERENCIAMENTO DA PÁGINA (COM CORREÇÃO) -->
    <script type="module">
         import { db } from '/assets/js/firebase-config.js';
         import { collection, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
@@ -281,5 +318,3 @@
     
 </body>
 </html>
-
-
