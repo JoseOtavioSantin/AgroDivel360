@@ -5,199 +5,152 @@
     <title>Controle e Análise de Estoque</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#2c2f3f" />
+
+    <!-- LIBS EXTERNAS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+    
+    <!-- CSS -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css">
 
-<style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background-color: #1e1e2f; color: white; display: flex; flex-direction: column; height: 100vh; }
-    header { background-color: #2c2f3f; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    .header-content { display: flex; align-items: center; justify-content: space-between; }
-    .header-title { flex: 1; text-align: center; }
-    #dynamic-title { margin-top: 10px; font-size: 16px; font-weight: normal; color: #ccc; }
-    .logo { height: 80px; margin-left: 45px; margin-right: 15px; margin-top: 10px; }
-    .btn-voltar { background: linear-gradient(135deg, #00205b, #009bd6); border: none; padding: 10px 16px; border-radius: 8px; color: white; cursor: pointer; transition: transform 0.2s; display: flex; align-items: center; gap: 8px; margin-right: 20px; font-size: 14px; }
-    .btn-voltar:hover { transform: scale(1.05); }
-    .main { display: flex; flex: 1; overflow: hidden; }
-    .sidebar { width: 250px; background-color: #2c2f3f; padding: 20px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-    .card { padding: 15px; border-radius: 16px; color: white; background: linear-gradient(238deg, #193b7c, #193b7c00); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); text-align: left; display: flex; flex-direction: column; gap: 5px; }
-    .card h2 { font-size: 26px; margin: 0; }
-    .card p { font-size: 13px; color: #eee; margin: 0; display: flex; align-items: center; gap: 8px; }
-    .card .percentage { font-size: 12px; color: #aaa; font-weight: bold; margin-top: 4px; }
-    .content { flex: 1; padding: 30px; background-color: #262a3d; overflow-y: auto; }
-    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
-    .filters input, .filters select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; min-width: 180px; height: 40px; background-color: #fff; color: #333; }
-    table { width: 100%; border-collapse: collapse; background-color: #2c2f3f; border-radius: 12px; overflow: hidden; }
-    th, td { font-size: 12px; padding: 10px 15px; text-align: left; border-bottom: 1px solid #444; vertical-align: middle; }
-    th { background-color: #ffffff; color: #00205b; }
-    .acoes-topo { margin-left: auto; display: flex; gap: 10px; }
-    .btn-acao { background: linear-gradient(145deg, #005c97, #363795); border: none; width: 40px; height: 40px; border-radius: 8px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: filter 0.2s, transform 0.2s; }
-    .btn-acao:hover { filter: brightness(1.1); transform: scale(1.05); }
-    /* MODIFICAÇÃO: Estilo unificado para os inputs da tabela */
-    .tabela-input { background-color: transparent; color: white; border: 1px solid #555; border-radius: 4px; padding: 4px 6px; width: 80px; text-align: center; }
-    .tabela-input:focus { outline: none; border-color: #009bd6; background-color: #3a3f5c; }
-    #loader-overlay { display: none; position: fixed; z-index: 9999; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); color: white; font-size: 20px; align-items: center; justify-content: center; font-weight: bold; }
-    .sobra-estoque { background-color: #2c4a3b !important; }
-    .falta-estoque { background-color: #4a2c2c !important; }
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-    .modal-content { background-color: #2c2f3f; padding: 25px; border-radius: 12px; width: 95%; max-width: 900px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 20px; border: 1px solid #444; max-height: 85vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 10px; }
-    .modal-header h3 { margin: 0; font-size: 20px; }
-    .close-button { cursor: pointer; font-size: 28px; font-weight: bold; transition: color 0.2s; }
-    .close-button:hover { color: #ff6b6b; }
-    #analise-info p { margin: 2px 0; font-size: 14px; color: #ccc; }
-    #analise-info strong { color: #fff; }
-    #analise-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
-    .kpi-card { background-color: #262a3d; padding: 15px; border-radius: 8px; text-align: center; }
-    .kpi-card .value { font-size: 24px; font-weight: bold; }
-    .kpi-card .value.positive { color: #40c057; }
-    .kpi-card .value.negative { color: #fa5252; }
-    .kpi-card .label { font-size: 12px; color: #aaa; margin-top: 5px; }
-    #analise-tabela-container { max-height: 200px; overflow-y: auto; }
-    .highlight-row { background-color: #495057 !important; }
-</style>
+    <style>
+        /* Estilos específicos da página */
+        .sobra-estoque td { background-color: #2c4a3b !important; }
+        .falta-estoque td { background-color: #4a2c2c !important; }
+
+        .tabela-input {
+            background-color: transparent; color: white; border: 1px solid #555;
+            border-radius: 4px; padding: 4px 6px; width: 80px; text-align: center;
+        }
+        .tabela-input:focus { outline: none; border-color: #009bd6; background-color: #3a3f5c; }
+
+        /* Estilos para o modal de análise */
+        #analise-kpis {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr ));
+            gap: 15px; margin-bottom: 20px;
+        }
+        .kpi-card { background-color: #1e1e2f; padding: 15px; border-radius: 8px; text-align: center; }
+        .kpi-card .value { font-size: 24px; font-weight: bold; }
+        .kpi-card .value.positive { color: #40c057; }
+        .kpi-card .value.negative { color: #fa5252; }
+        .kpi-card .label { font-size: 12px; color: #aaa; margin-top: 5px; }
+
+        /* --- CORREÇÃO 1: Alinhamento do cabeçalho --- */
+        .content-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="header-content">
-            <img src="/assets/images/logo.png" alt="Logo" class="logo">
-            <div class="header-title">
-                <em>Dashboard Agro Divel 360</em>
-                <div id="dynamic-title">Controle e Análise de Estoque</div>
-            </div>
-            <!-- --- MODIFICAÇÃO: Botão Voltar adicionado --- -->
-            <button class="btn-voltar" title="Voltar" onclick="window.history.back()">
-                <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Voltar
-            </button>
-        </div>
-    </header>
 
-<div class="main">
-        <div class="sidebar">
-            <div class="card">
-                <h2 id="total-itens">0</h2>
-                <p><i data-lucide="package"></i> Total de Itens</p>
-            </div>
-            <div class="card">
-                <h2 id="sobra-estoque">0</h2>
-                <p><i data-lucide="arrow-up-circle"></i> Sobra de Estoque (Qtd)</p>
-                <div class="percentage" id="sobra-percent"></div>
-            </div>
-            <div class="card">
-                <h2 id="falta-estoque">0</h2>
-                <p><i data-lucide="arrow-down-circle"></i> Falta de Estoque (Qtd)</p>
-                <div class="percentage" id="falta-percent"></div>
-            </div>
-            <!-- MODIFICAÇÃO: Novos cards de valores -->
-            <div class="card">
-                <h2 id="valor-sobra">R$ 0,00</h2>
-                <p><i data-lucide="trending-up"></i> Valor em Sobra</p>
-            </div>
-            <div class="card">
-                <h2 id="valor-falta">R$ 0,00</h2>
-                <p><i data-lucide="trending-down"></i> Valor em Falta</p>
-            </div>
+    <nav id="sidebar-placeholder"></nav>
+
+    <!-- Conteúdo Principal da Página -->
+    <section class="home">
+        <div class="text">
+            <h1>Controle e Análise de Estoque</h1>
+            <p id="dynamic-title">Carregando...</p>
         </div>
 
-        <div class="content">
-            <div id="loader-overlay"><div style="margin: auto;">Carregando dados...</div></div>
-            <div class="filters">
-                <input id="filtro-codigo" type="text" placeholder="Buscar código..." />
-                <input id="filtro-descricao" type="text" placeholder="Buscar descrição..." />
-                <select id="filtro-status">
-                    <option value="">Todos os Status</option>
-                    <option value="ok">Contagem OK</option>
-                    <option value="sobra">Sobra de Estoque (+)</option>
-                    <option value="falta">Falta de Estoque (-)</option>
-                </select>
-                <input type="text" id="filtro-data" placeholder="Selecione o período">
-                <div class="acoes-topo">
-                    <button class="btn-acao" id="btn-download-modelo" title="Baixar modelo"><i data-lucide="download"></i></button>
+        <!-- CARDS DE RESUMO -->
+        <div class="dashboard-cards">
+            <div class="dashboard-card blue-card"><h2 id="total-itens">0</h2><p><i data-lucide="package"></i> Total de Itens</p></div>
+            <div class="dashboard-card green-card"><h2 id="sobra-estoque">0</h2><p><i data-lucide="arrow-up-circle"></i> Itens com Sobra</p></div>
+            <div class="dashboard-card red-card"><h2 id="falta-estoque">0</h2><p><i data-lucide="arrow-down-circle"></i> Itens com Falta</p></div>
+            <div class="dashboard-card green-card"><h2 id="valor-sobra">R$ 0,00</h2><p><i data-lucide="trending-up"></i> Valor em Sobra</p></div>
+            <div class="dashboard-card red-card"><h2 id="valor-falta">R$ 0,00</h2><p><i data-lucide="trending-down"></i> Valor em Falta</p></div>
+        </div>
+
+        <!-- CONTAINER PRINCIPAL DO DASHBOARD -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <h3>Contagem Diária</h3>
+                <div class="header-actions">
+                    <button class="btn-acao" id="btn-download-modelo" title="Baixar modelo de planilha"><i data-lucide="download"></i></button>
                     <label for="file-input" class="btn-acao" title="Carregar Planilha"><i data-lucide="upload"></i></label>
                     <input type="file" id="file-input" accept=".csv, .xlsx, .xls" style="display:none;">
                 </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Cód. Produto</th>
-                        <th>Descrição</th>
-                        <th>Prateleira</th>
-                        <th>Estoque Sistema</th>
-                        <th>Estoque Contado</th>
-                        <th>Diferença</th>
-                        <!-- MODIFICAÇÃO: Novas colunas na tabela -->
-                        <th>Valor Unitário</th>
-                        <th>Valor Diferença</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-estoque"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="analise-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3>Análise de Item</h3><span class="close-button">&times;</span></div>
-            <div id="analise-info"></div>
-            <div id="analise-kpis"></div>
-            <div id="grafico-container" style="position: relative; height: 300px;">
-                <canvas id="analise-grafico"></canvas>
+            <div class="content-card-body">
+                <div id="loader-overlay" class="loader-overlay"><div class="loader"></div></div>
+                <div class="filters">
+                    <input id="filtro-codigo" type="text" placeholder="Buscar código..." />
+                    <input id="filtro-descricao" type="text" placeholder="Buscar descrição..." />
+                    <select id="filtro-status">
+                        <option value="">Todos os Status</option>
+                        <option value="ok">Contagem OK</option>
+                        <option value="sobra">Sobra de Estoque (+)</option>
+                        <option value="falta">Falta de Estoque (-)</option>
+                    </select>
+                    <input type="text" id="filtro-data" placeholder="Selecione a data ou período">
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cód. Produto</th><th>Descrição</th><th>Prateleira</th><th>Estoque Sistema</th>
+                                <th>Estoque Contado</th><th>Diferença</th><th>Valor Unitário</th><th>Valor Diferença</th><th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-estoque"></tbody>
+                    </table>
+                </div>
             </div>
-            <div id="analise-tabela-container"></div>
+        </div>
+    </section>
+
+    <!-- MODAL DE ANÁLISE -->
+    <div id="analise-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Análise de Item</h3>
+                <button class="modal-close-btn" onclick="fecharModal('analise-modal')">&times;</button>
+            </div>
+            <!-- --- CORREÇÃO 2: Adicionada barra de rolagem ao corpo do modal --- -->
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 15px;">
+                <div id="analise-info"></div>
+                <div id="analise-kpis"></div>
+                <div id="grafico-container" style="position: relative; height: 300px; margin-bottom: 20px;">
+                    <canvas id="analise-grafico"></canvas>
+                </div>
+                <div id="analise-tabela-container" class="table-wrapper" style="max-height: 250px; overflow-y: auto;"></div>
+            </div>
         </div>
     </div>
-
-    <!-- MODIFICAÇÃO: Adicionado o auth-guard.js para pegar os dados do usuário -->
-    <script type="module" src="/assets/js/auth-guard.js"></script>
     
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-
     <script type="module">
-        // MODIFICAÇÃO: Importa a função de autenticação
+        // Seu script JavaScript completo aqui (o mesmo da resposta anterior, já corrigido)
         import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+        import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, where, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
-            authDomain: "agro-divel.firebaseapp.com",
-            projectId: "agro-divel",
-            storageBucket: "agro-divel.appspot.com",
-            messagingSenderId: "583977436505",
-            appId: "1:583977436505:web:3754ec029aebb3d9d67848"
-        };
-
-        firebase.initializeApp(firebaseConfig );
-        const db = firebase.firestore();
-        const inventarioCollection = db.collection('inventario');
+        const app = getApp( );
+        const db = getFirestore(app);
+        const inventarioCollection = collection(db, 'inventario');
 
         const loaderOverlay = document.getElementById('loader-overlay');
         const tabelaBody = document.getElementById('tabela-estoque');
-        const fileInput = document.getElementById('file-input');
         let dadosLocais = {};
         let unsubscribe = null;
-        let userData = null; // MODIFICAÇÃO: Variável para guardar dados do usuário
+        let userData = null;
+        let graficoAnalise = null;
 
-        // MODIFICAÇÃO: Função principal para iniciar a página após autenticação
         async function iniciarPagina() {
             try {
                 userData = await garantirAutenticacao();
-                if (!userData || !userData.filial || userData.filial.length === 0) {
-                    alert("Usuário não autenticado ou sem filial associada. Redirecionando para o login.");
-                    window.location.href = '/index.html';
-                    return;
-                }
+                if (!userData?.filial?.length) throw new Error("Usuário não autenticado ou sem filial.");
                 
-                // Exibe a filial no título
-                document.getElementById('dynamic-title').textContent = `Controle de Estoque - Filial: ${userData.filial.join(', ')}`;
-
+                document.getElementById('dynamic-title').textContent = `Filial: ${userData.filial.join(', ')}`;
+                setupListeners();
                 escutarAtualizacoesInventario();
             } catch (error) {
                 console.error("Falha na autenticação:", error);
@@ -205,553 +158,280 @@
             }
         }
         
+        function setupListeners() {
+            flatpickr("#filtro-data", { locale: "pt", dateFormat: "d/m/Y", mode: "range", onChange: aplicarFiltros });
+            document.getElementById('filtro-codigo').addEventListener('input', aplicarFiltros);
+            document.getElementById('filtro-descricao').addEventListener('input', aplicarFiltros);
+            document.getElementById('filtro-status').addEventListener('change', aplicarFiltros);
+            document.getElementById('file-input').addEventListener('change', handleFileUpload);
+            document.getElementById('btn-download-modelo').addEventListener('click', () => {
+                const csvContent = "Cod. produto,Descrição,Prateleira,Estoque Hoje Quantidade\n001,Produto Exemplo,A1,10\n002,Outro Produto,B2,5";
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", "modelo_inventario.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            tabelaBody.addEventListener('change', handleTableInputChange);
+            tabelaBody.addEventListener('click', handleTableClick);
+        }
+
+        window.fecharModal = (modalId) => document.getElementById(modalId).classList.remove('visible');
+
         function escutarAtualizacoesInventario() {
             loaderOverlay.style.display = 'flex';
             if (unsubscribe) unsubscribe();
 
-            // MODIFICAÇÃO: Filtra o inventário pela filial do usuário
-            const filiaisUsuario = userData.filial;
-            let query = inventarioCollection.where('info.filial', 'in', filiaisUsuario);
-
-            unsubscribe = query.onSnapshot(snapshot => {
+            const q = query(inventarioCollection, where('info.filial', 'in', userData.filial));
+            unsubscribe = onSnapshot(q, (snapshot) => {
                 dadosLocais = {};
-                snapshot.forEach(doc => {
-                    dadosLocais[doc.id] = doc.data();
-                });
-                console.log("Dados sincronizados do Firebase para a(s) filial(is):", filiaisUsuario.join(', '));
+                snapshot.forEach(doc => { dadosLocais[doc.id] = doc.data(); });
+                console.log("Dados sincronizados para a(s) filial(is):", userData.filial.join(', '));
                 popularFiltroData();
                 aplicarFiltros();
                 loaderOverlay.style.display = 'none';
-            }, error => {
+            }, (error) => {
                 console.error("Erro ao escutar atualizações:", error);
-                alert("Não foi possível conectar ao banco de dados.");
                 loaderOverlay.style.display = 'none';
             });
         }
 
-        fileInput.addEventListener('change', (event) => {
-            if (!userData) {
-                alert("Dados do usuário não carregados. Não é possível processar o arquivo.");
-                return;
-            }
-            const primeiraFilial = userData.filial[0]; // Pega a primeira filial do usuário
-
+        async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             
             loaderOverlay.style.display = 'flex';
             const reader = new FileReader();
-
             reader.onload = async (e) => {
                 try {
-                    let jsonData;
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    
-                    // MODIFICAÇÃO: Converte a planilha para um array de arrays, ignorando cabeçalhos.
-                    // A opção {header: 1} faz com que cada linha da planilha se torne um array.
-                    const sheetDataAsArray = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-                    // Remove a primeira linha (cabeçalho) para processar apenas os dados.
-                    const dataRows = sheetDataAsArray.slice(1);
+                    const dataRows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }).slice(1);
 
                     const matchData = file.name.match(/(\d{2}-\d{2}-\d{4})/);
                     const dataContagem = matchData ? matchData[0].replace(/-/g, '/') : new Date().toLocaleDateString('pt-BR');
                     
-                    const batch = db.batch();
-                    let totalItens = 0;
-
-                    // MODIFICAÇÃO: Itera sobre as linhas (que agora são arrays)
-                    dataRows.forEach(rowArray => {
-                        // Pega os dados pela posição da coluna (índice do array)
-                        // Coluna B (Cod. produto) -> índice 1
-                        // Coluna C (Descrição) -> índice 2
-                        // Coluna D (Prateleira) -> índice 3 (opcional)
-                        // Coluna E (Estoque Hoje) -> índice 4 (opcional)
-                        
-                        const codigoOriginal = (rowArray[1] || '').toString().trim();
-                        if (!codigoOriginal) return; // Pula a linha se não houver código de produto
-
+                    const batch = writeBatch(db);
+                    dataRows.forEach(row => {
+                        const codigoOriginal = (row[1] || '').toString().trim();
+                        if (!codigoOriginal) return;
                         const codigoSeguro = codigoOriginal.replace(/\//g, '-');
-                        
-                        // Pega a descrição SEMPRE da terceira coluna (índice 2)
-                        const descricao = (rowArray[2] || '').toString().trim(); 
-                        
-                        // Tenta pegar o estoque de múltiplas colunas possíveis
-                        const estoqueSistemaStr = (rowArray[4] || rowArray[3] || '0').toString().replace(',', '.');
-                        const estoqueSistema = parseFloat(estoqueSistemaStr) || 0;
-
-                        // Tenta pegar a prateleira (se existir)
-                        const prateleira = (rowArray[3] || '').toString().trim();
-
-                        const docRef = inventarioCollection.doc(codigoSeguro);
+                        const docRef = doc(inventarioCollection, codigoSeguro);
                         
                         const itemLocal = dadosLocais[codigoSeguro];
-                        const registroExistente = itemLocal?.historico.find(h => h.data === dataContagem);
+                        const historico = itemLocal?.historico || [];
+                        const registroIndex = historico.findIndex(h => h.data === dataContagem);
 
-                        if (registroExistente) {
-                            const novoHistorico = itemLocal.historico.map(h => 
-                                h.data === dataContagem ? { ...h, estoqueSistema: estoqueSistema, user: 'upload' } : h
-                            );
-                            batch.update(docRef, { 
-                                'info.descricao': descricao, 
-                                'info.prateleira': prateleira,
-                                'info.codigoOriginal': codigoOriginal,
-                                'info.filial': primeiraFilial,
-                                historico: novoHistorico 
-                            });
+                        const novoRegistro = {
+                            data: dataContagem,
+                            estoqueSistema: parseFloat(String(row[4] || row[3] || '0').replace(',', '.')) || 0,
+                            estoqueContado: parseFloat(String(row[4] || row[3] || '0').replace(',', '.')) || 0,
+                            user: 'upload'
+                        };
+
+                        if (registroIndex > -1) {
+                            historico[registroIndex] = { ...historico[registroIndex], ...novoRegistro };
                         } else {
-                            batch.set(docRef, {
-                                info: {
-                                    descricao: descricao,
-                                    prateleira: prateleira,
-                                    codigoOriginal: codigoOriginal,
-                                    filial: primeiraFilial
-                                },
-                                historico: firebase.firestore.FieldValue.arrayUnion({
-                                    data: dataContagem,
-                                    estoqueSistema: estoqueSistema,
-                                    estoqueContado: estoqueSistema,
-                                    user: 'upload'
-                                })
-                            }, { merge: true });
+                            historico.push(novoRegistro);
                         }
-                        totalItens++;
+
+                        batch.set(docRef, {
+                            info: {
+                                descricao: (row[2] || '').toString().trim(),
+                                prateleira: (row[3] || '').toString().trim(),
+                                codigoOriginal: codigoOriginal,
+                                filial: userData.filial[0]
+                            },
+                            historico: historico
+                        }, { merge: true });
                     });
 
                     await batch.commit();
-                    alert(`${totalItens} itens foram processados para a data ${dataContagem} na filial ${primeiraFilial}.`);
-
+                    Swal.fire('Sucesso', `${dataRows.length} itens foram processados para a data ${dataContagem}.`, 'success');
                 } catch (error) {
-                    console.error("Erro ao processar o arquivo:", error);
-                    alert("Ocorreu um erro ao processar o arquivo. Verifique o console para mais detalhes.");
+                    Swal.fire('Erro', `Ocorreu um erro ao processar o arquivo: ${error.message}`, 'error');
                 } finally {
                     loaderOverlay.style.display = 'none';
-                    fileInput.value = '';
+                    event.target.value = '';
                 }
             };
-
-            // MODIFICAÇÃO: Sempre lê o arquivo como ArrayBuffer, pois funciona tanto para XLSX quanto para CSV com a nova lógica.
             reader.readAsArrayBuffer(file);
-
-
-            if (file.name.endsWith('.csv')) { reader.readAsText(file, 'UTF-8'); } 
-            else { reader.readAsArrayBuffer(file); }
-        });
+        }
         
-        // MODIFICAÇÃO: Listener de eventos para os inputs da tabela
-        tabelaBody.addEventListener('change', (e) => {
-            if (e.target.classList.contains('tabela-input')) {
-                const codigoSeguro = e.target.dataset.codigo;
-                const dataContagem = e.target.dataset.data;
-                const item = dadosLocais[codigoSeguro];
-                if (!item) return;
+        async function handleTableInputChange(e) {
+            if (!e.target.classList.contains('tabela-input')) return;
+            const codigoSeguro = e.target.dataset.codigo;
+            const dataContagem = e.target.dataset.data;
+            const item = dadosLocais[codigoSeguro];
+            if (!item) return;
 
-                // Encontra o registro específico no histórico
-                const registroIndex = item.historico.findIndex(h => h.data === dataContagem);
-                if (registroIndex === -1) return;
+            const registroIndex = item.historico.findIndex(h => h.data === dataContagem);
+            if (registroIndex === -1) return;
 
-                const registro = item.historico[registroIndex];
+            const linha = e.target.closest('tr');
+            const novoEstoqueContado = parseInt(linha.querySelector('.quantidade-input').value) || 0;
+            const novoValorUnitario = parseFloat(linha.querySelector('.valor-input').value) || 0;
 
-                // Pega os valores atuais da linha da tabela
-                const linha = e.target.closest('tr');
-                const quantidadeInput = linha.querySelector('.quantidade-input');
-                const valorInput = linha.querySelector('.valor-input');
-
-                const novaQuantidade = parseInt(quantidadeInput.value) || 0;
-                const novoValorUnitario = parseFloat(valorInput.value) || 0;
-
-                // Atualiza o objeto do registro
-                registro.estoqueContado = novaQuantidade;
-                registro.valorUnitario = novoValorUnitario;
-                registro.user = userData.nome || 'manual';
-
-                // Atualiza o histórico no objeto local
-                item.historico[registroIndex] = registro;
-
-                // Salva no Firebase
-                inventarioCollection.doc(codigoSeguro).update({ historico: item.historico })
-                    .then(() => {
-                        // Após salvar, atualiza a exibição da linha e os cards
-                        const diferenca = novaQuantidade - registro.estoqueSistema;
-                        const valorDiferenca = diferenca * novoValorUnitario;
-                        
-                        linha.querySelector('.diferenca-valor').textContent = formatarMoeda(valorDiferenca);
-                        linha.querySelector('.diferenca-qtd').textContent = `${diferenca > 0 ? '+' : ''}${diferenca}`;
-                        
-                        // Re-aplica classes de cor
-                        linha.classList.remove('sobra-estoque', 'falta-estoque');
-                        if (diferenca > 0) linha.classList.add('sobra-estoque');
-                        else if (diferenca < 0) linha.classList.add('falta-estoque');
-
-                        // Atualiza os cards globais
-                        aplicarFiltros();
-                    })
-                    .catch(err => console.error("Erro ao atualizar contagem/valor:", err));
-            }
-        });
-
-
-        const filtroCodigo = document.getElementById('filtro-codigo');
-        const filtroDescricao = document.getElementById('filtro-descricao');
-        const filtroStatus = document.getElementById('filtro-status');
-        const filtroData = document.getElementById("filtro-data");
-        const totalItensEl = document.getElementById("total-itens");
-        const sobraEstoqueEl = document.getElementById("sobra-estoque");
-        const faltaEstoqueEl = document.getElementById("falta-estoque");
-        const sobraPercentEl = document.getElementById('sobra-percent');
-        const faltaPercentEl = document.getElementById('falta-percent');
-        const analiseModal = document.getElementById('analise-modal');
-        const closeModalButton = analiseModal.querySelector('.close-button');
-        let graficoAnalise = null;
-
-        flatpickr(filtroData, {
-            locale: "pt",
-            dateFormat: "d/m/Y",
-            mode: "range",
-            onChange: function(selectedDates, dateStr, instance) {
+            item.historico[registroIndex].estoqueContado = novoEstoqueContado;
+            item.historico[registroIndex].valorUnitario = novoValorUnitario;
+            item.historico[registroIndex].user = userData.nome || 'manual';
+            
+            const docRef = doc(inventarioCollection, codigoSeguro);
+            try {
+                await updateDoc(docRef, { historico: item.historico });
+                const diferenca = novoEstoqueContado - item.historico[registroIndex].estoqueSistema;
+                linha.querySelector('.diferenca-qtd').textContent = `${diferenca > 0 ? '+' : ''}${diferenca}`;
+                linha.querySelector('.diferenca-valor').textContent = formatarMoeda(diferenca * novoValorUnitario);
+                linha.className = diferenca > 0 ? 'sobra-estoque' : (diferenca < 0 ? 'falta-estoque' : '');
                 aplicarFiltros();
-            }
-        });
-
-        // --- O restante do seu script (funções de filtro, renderização, modais, etc.) permanece o mesmo ---
-        // Nenhuma alteração necessária nas funções abaixo, pois elas já operam sobre `dadosLocais`,
-        // que agora é pré-filtrado pela filial do usuário.
-        
-        function popularFiltroData() {
-            const datas = new Set();
-            Object.values(dadosLocais).forEach(item => {
-                if (item.historico) {
-                    item.historico.forEach(registro => datas.add(registro.data));
-                }
-            });
-
-            const fp = filtroData._flatpickr;
-            if (!fp) return;
-
-            fp.set("enable", [
-                function(date) {
-                    const dataFormatada = `${('0' + date.getDate()).slice(-2)}/${('0' + (date.getMonth() + 1)).slice(-2)}/${date.getFullYear()}`;
-                    return datas.has(dataFormatada);
-                }
-            ]);
-
-            const datasOrdenadas = Array.from(datas).sort((a, b) => {
-                const [da, ma, aa] = a.split('/').map(Number);
-                const [db, mb, ab] = b.split('/').map(Number);
-                return new Date(ab, mb - 1, db) - new Date(aa, ma - 1, da);
-            });
-
-            if (datasOrdenadas.length > 0 && !filtroData.value) {
-                fp.setDate(datasOrdenadas[0], true);
+            } catch (err) {
+                console.error("Erro ao atualizar:", err);
             }
         }
 
-        function aplicarFiltros() {
-            const codigoFiltro = filtroCodigo.value.toLowerCase();
-            const descricaoFiltro = filtroDescricao.value.toLowerCase();
-            const statusFiltro = filtroStatus.value;
-            const periodoSelecionado = filtroData.value;
+        function handleTableClick(e) {
+            const btn = e.target.closest('.analise-btn');
+            if (btn) abrirModalAnalise(btn.dataset.codigo);
+        }
 
+        function popularFiltroData() {
+            const datas = new Set();
+            Object.values(dadosLocais).forEach(item => item.historico?.forEach(h => datas.add(h.data)));
+            const fp = document.getElementById("filtro-data")._flatpickr;
+            if (!fp) return;
+            fp.set("enable", [d => datas.has(d.toLocaleDateString('pt-BR'))]);
+            const ultimaData = Array.from(datas).sort((a, b) => new Date(b.split('/').reverse().join('-')) - new Date(a.split('/').reverse().join('-')))[0];
+            if (ultimaData && !fp.selectedDates.length) fp.setDate(ultimaData, true);
+        }
+        
+        function aplicarFiltros() {
+            const codigoFiltro = document.getElementById('filtro-codigo').value.toLowerCase();
+            const descricaoFiltro = document.getElementById('filtro-descricao').value.toLowerCase();
+            const statusFiltro = document.getElementById('filtro-status').value;
+            const periodoSelecionado = document.getElementById("filtro-data").value;
+            
             let dadosParaFiltrar = [];
-            if (periodoSelecionado) {
-                if (periodoSelecionado.includes(" até ")) {
-                    const [dataInicio, dataFim] = periodoSelecionado.split(" até ");
-                    
-                    dadosParaFiltrar = Object.keys(dadosLocais).map(codigoSeguro => {
-                        const item = dadosLocais[codigoSeguro];
-                        if (!item.historico) return null;
-                        
-                        const registrosDoPeriodo = item.historico.filter(h => {
-                            const dataRegistro = h.data;
-                            const [dReg, mReg, aReg] = dataRegistro.split('/').map(Number);
-                            const [dIni, mIni, aIni] = dataInicio.split('/').map(Number);
-                            const [dFim, mFim, aFim] = dataFim.split('/').map(Number);
-                            
-                            const dateReg = new Date(aReg, mReg - 1, dReg);
-                            const dateIni = new Date(aIni, mIni - 1, dIni);
-                            const dateFim = new Date(aFim, mFim - 1, dFim);
-                            
-                            return dateReg >= dateIni && dateReg <= dateFim;
-                        });
-                        
-                        if (registrosDoPeriodo.length === 0) return null;
-                        
-                        const registroMaisRecente = registrosDoPeriodo.sort((a, b) => {
-                            const [da, ma, aa] = a.data.split('/').map(Number);
-                            const [db, mb, ab] = b.data.split('/').map(Number);
-                            return new Date(ab, mb - 1, db) - new Date(aa, ma - 1, da);
-                        })[0];
-                        
-                        return { codigoSeguro, ...item.info, ...registroMaisRecente };
-                    }).filter(Boolean);
-                } else {
-                    dadosParaFiltrar = Object.keys(dadosLocais).map(codigoSeguro => {
-                        const item = dadosLocais[codigoSeguro];
-                        if (!item.historico) return null;
-                        const registro = item.historico.find(h => h.data === periodoSelecionado);
-                        if (!registro) return null;
-                        return { codigoSeguro, ...item.info, ...registro };
-                    }).filter(Boolean);
-                }
+            if (periodoSelecionado.includes(" até ")) {
+                const [inicio, fim] = periodoSelecionado.split(" até ").map(d => new Date(d.split('/').reverse().join('-')));
+                dadosParaFiltrar = Object.entries(dadosLocais).map(([codigo, item]) => {
+                    const registros = item.historico?.filter(h => {
+                        const dataH = new Date(h.data.split('/').reverse().join('-'));
+                        return dataH >= inicio && dataH <= fim;
+                    });
+                    if (!registros?.length) return null;
+                    const maisRecente = registros.sort((a, b) => new Date(b.data.split('/').reverse().join('-')) - new Date(a.data.split('/').reverse().join('-')))[0];
+                    return { codigoSeguro: codigo, ...item.info, ...maisRecente };
+                }).filter(Boolean);
+            } else if (periodoSelecionado) {
+                dadosParaFiltrar = Object.entries(dadosLocais).map(([codigo, item]) => {
+                    const registro = item.historico?.find(h => h.data === periodoSelecionado);
+                    return registro ? { codigoSeguro: codigo, ...item.info, ...registro } : null;
+                }).filter(Boolean);
             }
 
             const dadosFiltrados = dadosParaFiltrar.filter(item => {
-                const sobra = item.estoqueContado > item.estoqueSistema;
-                const falta = item.estoqueContado < item.estoqueSistema;
-                const ok = item.estoqueContado === item.estoqueSistema;
-                let statusOk = true;
-                if (statusFiltro === 'ok') statusOk = ok;
-                else if (statusFiltro === 'sobra') statusOk = sobra;
-                else if (statusFiltro === 'falta') statusOk = falta;
-                return statusOk &&
-                    (item.codigoOriginal.toLowerCase().includes(codigoFiltro)) &&
-                    item.descricao.toLowerCase().includes(descricaoFiltro);
+                const diff = (item.estoqueContado ?? item.estoqueSistema) - item.estoqueSistema;
+                const statusOk = (statusFiltro === 'ok' && diff === 0) || (statusFiltro === 'sobra' && diff > 0) || (statusFiltro === 'falta' && diff < 0) || !statusFiltro;
+                return statusOk && item.codigoOriginal.toLowerCase().includes(codigoFiltro) && item.descricao.toLowerCase().includes(descricaoFiltro);
             });
 
             renderizarTabela(dadosFiltrados);
-            atualizarCards(dadosFiltrados);
+            atualizarCardsGeral(dadosFiltrados);
         }
 
-            function renderizarTabela(dados) {
+        function renderizarTabela(dados) {
             tabelaBody.innerHTML = '';
             dados.forEach(item => {
                 const tr = document.createElement('tr');
-                const diferenca = item.estoqueContado - item.estoqueSistema;
+                const estoqueContado = item.estoqueContado ?? item.estoqueSistema;
+                const diferenca = estoqueContado - item.estoqueSistema;
                 const valorUnitario = item.valorUnitario || 0;
-                const valorDiferenca = diferenca * valorUnitario;
-
-                let classeCor = '';
-                if (diferenca > 0) classeCor = 'sobra-estoque';
-                else if (diferenca < 0) classeCor = 'falta-estoque';
-                
-                tr.className = classeCor; // Aplica a classe na linha inteira
-
+                tr.className = diferenca > 0 ? 'sobra-estoque' : (diferenca < 0 ? 'falta-estoque' : '');
                 tr.innerHTML = `
-                    <td>${item.codigoOriginal}</td>
-                    <td>${item.descricao}</td>
-                    <td>${item.prateleira}</td>
+                    <td>${item.codigoOriginal}</td><td>${item.descricao}</td><td>${item.prateleira || '-'}</td>
                     <td style="text-align: center;">${item.estoqueSistema}</td>
-                    <td style="text-align: center;">
-                        <input type="number" class="tabela-input quantidade-input" value="${item.estoqueContado}" min="0" data-codigo="${item.codigoSeguro}" data-data="${item.data}">
-                    </td>
+                    <td style="text-align: center;"><input type="number" class="tabela-input quantidade-input" value="${estoqueContado}" data-codigo="${item.codigoSeguro}" data-data="${item.data}"></td>
                     <td class="diferenca-qtd" style="text-align: center; font-weight: bold;">${diferenca > 0 ? '+' : ''}${diferenca}</td>
-                    <td style="text-align: center;">
-                        <input type="number" class="tabela-input valor-input" value="${valorUnitario.toFixed(2)}" step="0.01" min="0" data-codigo="${item.codigoSeguro}" data-data="${item.data}">
-                    </td>
-                    <td class="diferenca-valor" style="text-align: center; font-weight: bold;">${formatarMoeda(valorDiferenca)}</td>
-                    <td style="text-align: center;">
-                        <button class="btn-acao analise-btn" title="Analisar Histórico" data-codigo="${item.codigoSeguro}"><i data-lucide="area-chart"></i></button>
-                    </td>`;
+                    <td style="text-align: center;"><input type="number" class="tabela-input valor-input" value="${valorUnitario.toFixed(2)}" step="0.01" data-codigo="${item.codigoSeguro}" data-data="${item.data}"></td>
+                    <td class="diferenca-valor" style="text-align: center; font-weight: bold;">${formatarMoeda(diferenca * valorUnitario)}</td>
+                    <td style="text-align: center;"><button class="btn-acao analise-btn" title="Analisar Histórico" data-codigo="${item.codigoSeguro}"><i data-lucide="area-chart"></i></button></td>`;
                 tabelaBody.appendChild(tr);
             });
             lucide.createIcons();
         }
 
+function atualizarCardsGeral(dadosExibidos) { // <--- CORREÇÃO: Recebe o parâmetro
+    if (!dadosExibidos) return; // Se não houver dados, não faz nada
 
-                function atualizarCards(dadosExibidos) {
-            const totalItens = dadosExibidos.length;
-            
-            const sobras = dadosExibidos.filter(p => p.estoqueContado > p.estoqueSistema).length;
-            const faltas = dadosExibidos.filter(p => p.estoqueContado < p.estoqueSistema).length;
+    // A lógica de recalcular foi removida. Usamos diretamente 'dadosExibidos'.
+    
+    const totalItens = dadosExibidos.length; // Agora isso conta os itens na tabela
+    const itensComSobra = dadosExibidos.filter(d => d.estoqueContado > d.estoqueSistema).length;
+    const itensComFalta = dadosExibidos.filter(d => d.estoqueContado < d.estoqueSistema).length;
+    const valorSobra = dadosExibidos.reduce((acc, d) => d.estoqueContado > d.estoqueSistema ? acc + (d.estoqueContado - d.estoqueSistema) * (d.valorUnitario || 0) : acc, 0);
+    const valorFalta = dadosExibidos.reduce((acc, d) => d.estoqueContado < d.estoqueSistema ? acc + (d.estoqueSistema - d.estoqueContado) * (d.valorUnitario || 0) : acc, 0);
 
-            // MODIFICAÇÃO: Cálculos de valores
-            const totalValorSobra = dadosExibidos.reduce((acc, item) => {
-                const diferenca = item.estoqueContado - item.estoqueSistema;
-                if (diferenca > 0) {
-                    return acc + (diferenca * (item.valorUnitario || 0));
-                }
-                return acc;
-            }, 0);
+    document.getElementById('total-itens').textContent = totalItens;
+    document.getElementById('sobra-estoque').textContent = itensComSobra;
+    document.getElementById('falta-estoque').textContent = itensComFalta;
+    document.getElementById('valor-sobra').textContent = formatarMoeda(valorSobra);
+    document.getElementById('valor-falta').textContent = formatarMoeda(valorFalta);
+}
 
-            const totalValorFalta = dadosExibidos.reduce((acc, item) => {
-                const diferenca = item.estoqueContado - item.estoqueSistema;
-                if (diferenca < 0) {
-                    // O valor da falta é a diferença negativa * o valor, resultando em um prejuízo positivo
-                    return acc + (Math.abs(diferenca) * (item.valorUnitario || 0));
-                }
-                return acc;
-            }, 0);
-
-            totalItensEl.textContent = totalItens;
-            sobraEstoqueEl.textContent = sobras;
-            faltaEstoqueEl.textContent = faltas;
-
-            const sobraPercent = totalItens > 0 ? ((sobras / totalItens) * 100).toFixed(1) : 0;
-            const faltaPercent = totalItens > 0 ? ((faltas / totalItens) * 100).toFixed(1) : 0;
-
-            sobraPercentEl.textContent = `${sobraPercent}% do total`;
-            faltaPercentEl.textContent = `${faltaPercent}% do total`;
-
-            // MODIFICAÇÃO: Atualiza os novos cards de valor
-            document.getElementById('valor-sobra').textContent = formatarMoeda(totalValorSobra);
-            document.getElementById('valor-falta').textContent = formatarMoeda(totalValorFalta);
-        }
-
-        // MODIFICAÇÃO: Nova função para formatar moeda
-        function formatarMoeda(valor) {
-            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-
-        document.getElementById('btn-download-modelo').addEventListener('click', () => {
-            const csvContent = "Cod. produto,Descrição,Prateleira,Estoque Hoje Quantidade\n" +
-                               "001,Produto Exemplo,A1,10\n" +
-                               "002,Outro Produto,B2,5";
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "modelo_inventario.csv");
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-
-        tabelaBody.addEventListener('click', (e) => {
-            if (e.target.closest('.analise-btn')) {
-                const codigoSeguro = e.target.closest('.analise-btn').dataset.codigo;
-                abrirModalAnalise(codigoSeguro);
-            }
-        });
+        function formatarMoeda(valor) { return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
         function abrirModalAnalise(codigoSeguro) {
             const item = dadosLocais[codigoSeguro];
-            if (!item || !item.historico) return;
+            if (!item?.historico) return;
 
-            const analiseInfo = document.getElementById('analise-info');
-            const analiseKpis = document.getElementById('analise-kpis');
-            const analiseTabelaContainer = document.getElementById('analise-tabela-container');
+            document.getElementById('analise-info').innerHTML = `<p><strong>Código:</strong> ${item.info.codigoOriginal}</p><p><strong>Descrição:</strong> ${item.info.descricao}</p><p><strong>Filial:</strong> ${item.info.filial || 'N/A'}</p>`;
+            
+            const historico = [...item.historico].sort((a, b) => new Date(a.data.split('/').reverse().join('-')) - new Date(b.data.split('/').reverse().join('-')));
+            const ultimo = historico[historico.length - 1];
+            const diffAtual = ultimo.estoqueContado - ultimo.estoqueSistema;
+            
+            document.getElementById('analise-kpis').innerHTML = `
+                <div class="kpi-card"><div class="value">${historico.length}</div><div class="label">Registros</div></div>
+                <div class="kpi-card"><div class="value ${diffAtual > 0 ? 'positive' : diffAtual < 0 ? 'negative' : ''}">${diffAtual > 0 ? '+' : ''}${diffAtual}</div><div class="label">Diferença Atual</div></div>
+                <div class="kpi-card"><div class="value">${(historico.reduce((s, h) => s + h.estoqueSistema, 0) / historico.length).toFixed(1)}</div><div class="label">Média Sistema</div></div>`;
 
-            analiseInfo.innerHTML = `
-                <p><strong>Código:</strong> ${item.info.codigoOriginal}</p>
-                <p><strong>Descrição:</strong> ${item.info.descricao}</p>
-                <p><strong>Prateleira:</strong> ${item.info.prateleira}</p>
-                <p><strong>Filial:</strong> ${item.info.filial || 'Não informada'}</p> <!-- MODIFICAÇÃO: Exibe a filial -->
-            `;
-
-                        const historico = item.historico.sort((a, b) => {
-                const [da, ma, aa] = a.data.split('/').map(Number);
-                const [db, mb, ab] = b.data.split('/').map(Number);
-                return new Date(aa, ma - 1, da) - new Date(ab, mb - 1, db);
-            });
-
-            const totalRegistros = historico.length;
-            const ultimoRegistro = historico[historico.length - 1];
-            const diferencaAtual = ultimoRegistro.estoqueContado - ultimoRegistro.estoqueSistema;
-            const mediaEstoqueSistema = (historico.reduce((sum, h) => sum + h.estoqueSistema, 0) / totalRegistros).toFixed(1);
-
-            analiseKpis.innerHTML = `
-                <div class="kpi-card">
-                    <div class="value">${totalRegistros}</div>
-                    <div class="label">Total de Registros</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="value ${diferencaAtual > 0 ? 'positive' : diferencaAtual < 0 ? 'negative' : ''}">${diferencaAtual > 0 ? '+' : ''}${diferencaAtual}</div>
-                    <div class="label">Diferença Atual</div>
-                </div>
-                <div class="kpi-card">
-                    <div class="value">${mediaEstoqueSistema}</div>
-                    <div class="label">Média Estoque Sistema</div>
-                </div>
-            `;
-
-            const historicoParaTabela = [...historico].sort((a, b) => {
-                const [da, ma, aa] = a.data.split('/').map(Number);
-                const [db, mb, ab] = b.data.split('/').map(Number);
-                return new Date(ab, mb - 1, db) - new Date(aa, ma - 1, da);
-            });
-
-            let tabelaHtml = `
-                <h4 style="margin-top: 20px; margin-bottom: 10px; color: #ccc;">Últimos Registros</h4>
-                <table style="width: 100%; border-collapse: collapse; background-color: #2c2f3f; border-radius: 8px; overflow: hidden;">
-                    <thead>
-                        <tr style="background-color: #ffffff; color: #00205b;">
-                            <th style="padding: 8px; text-align: left;">Data</th>
-                            <th style="padding: 8px; text-align: center;">Sistema</th>
-                            <th style="padding: 8px; text-align: center;">Contado</th>
-                            <th style="padding: 8px; text-align: center;">Diferença</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            historicoParaTabela.forEach(h => {
-                const diff = h.estoqueContado - h.estoqueSistema;
-                const rowClass = diff > 0 ? 'sobra-estoque' : diff < 0 ? 'falta-estoque' : '';
-                tabelaHtml += `
-                    <tr class="${rowClass}" style="border-bottom: 1px solid #444;">
-                        <td style="padding: 8px;">${h.data}</td>
-                        <td style="padding: 8px; text-align: center;">${h.estoqueSistema}</td>
-                        <td style="padding: 8px; text-align: center;">${h.estoqueContado}</td>
-                        <td style="padding: 8px; text-align: center; font-weight: bold;">${diff > 0 ? '+' : ''}${diff}</td>
-                    </tr>
-                `;
-            });
-
-            tabelaHtml += '</tbody></table>';
-            analiseTabelaContainer.innerHTML = tabelaHtml;
+            document.getElementById('analise-tabela-container').innerHTML = `
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">Histórico de Contagens</h4>
+                <table><thead><tr><th>Data</th><th>Sistema</th><th>Contado</th><th>Diferença</th></tr></thead><tbody>
+                ${[...historico].reverse().map(h => {
+                    const diff = h.estoqueContado - h.estoqueSistema;
+                    return `<tr class="${diff > 0 ? 'sobra-estoque' : diff < 0 ? 'falta-estoque' : ''}"><td>${h.data}</td><td style="text-align:center;">${h.estoqueSistema}</td><td style="text-align:center;">${h.estoqueContado}</td><td style="text-align:center;font-weight:bold;">${diff > 0 ? '+' : ''}${diff}</td></tr>`;
+                }).join('')}
+                </tbody></table>`;
 
             const ctx = document.getElementById('analise-grafico').getContext('2d');
-            if (graficoAnalise) {
-                graficoAnalise.destroy();
-            }
-
+            if (graficoAnalise) graficoAnalise.destroy();
             graficoAnalise = new Chart(ctx, {
-                type: 'pie',
+                type: 'line',
                 data: {
-                    labels: ['Estoque Sistema', 'Estoque Contado'],
-                    datasets: [{
-                        label: 'Comparativo de Estoque (Último Registro)',
-                        data: [ultimoRegistro.estoqueSistema, ultimoRegistro.estoqueContado],
-                        backgroundColor: ['#36a2eb', '#ff6384'],
-                        borderColor: '#2c2f3f',
-                        borderWidth: 2
-                    }]
+                    labels: historico.map(h => h.data),
+                    datasets: [
+                        { label: 'Estoque Sistema', data: historico.map(h => h.estoqueSistema), borderColor: '#36a2eb', tension: 0.1 },
+                        { label: 'Estoque Contado', data: historico.map(h => h.estoqueContado), borderColor: '#ff6384', tension: 0.1 }
+                    ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: { 
-                                color: 'white',
-                                font: { size: 14 }
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: `Análise do dia ${ultimoRegistro.data}`,
-                            color: 'white',
-                            font: { size: 16 }
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } }, scales: { x: { ticks: { color: 'white' } }, y: { ticks: { color: 'white' } } } }
             });
 
-            analiseModal.style.display = 'flex';
+            document.getElementById('analise-modal').classList.add('visible');
         }
 
-        closeModalButton.addEventListener('click', () => {
-            analiseModal.style.display = 'none';
-        });
-
-        analiseModal.addEventListener('click', (e) => {
-            if (e.target === analiseModal) {
-                analiseModal.style.display = 'none';
-            }
-        });
-
-        filtroCodigo.addEventListener('input', aplicarFiltros);
-        filtroDescricao.addEventListener('input', aplicarFiltros);
-        filtroStatus.addEventListener('change', aplicarFiltros);
-
-        // MODIFICAÇÃO: Inicia a página após verificar a autenticação
+        // Inicia a aplicação
         iniciarPagina();
-        lucide.createIcons();
     </script>
+    
+    <!-- Scripts Globais -->
+    <script type="module" src="/assets/js/firebase-config.js"></script>
+    <script src="/assets/js/main.js"></script> 
+    <script src="/assets/js/components/Sidebar.js"></script>
 </body>
 </html>
-
