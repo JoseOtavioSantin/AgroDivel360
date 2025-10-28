@@ -622,6 +622,7 @@
       
       const app = getApp();
       db = getFirestore(app);
+      window.db = db;
 
       if (!userData.filial || userData.filial.length === 0) {
         document.body.innerHTML = `<div style="text-align: center; color: white; padding: 50px;">Acesso negado. Nenhuma filial associada a este usuário.</div>`;
@@ -1210,4 +1211,3 @@ function formatarDataBR(data) {
 
 </body>
 </html>
-
