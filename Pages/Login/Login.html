@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Gestores | Agro Divel</title>
+
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // Carregar Firebase no head (para evitar delay na página)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
+      authDomain: "agro-divel.firebaseapp.com",
+      projectId: "agro-divel",
+      storageBucket: "agro-divel.firebasestorage.app",
+      messagingSenderId: "583977436505",
+      appId: "1:583977436505:web:3754ec029aebb3d9d67848"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.auth = getAuth(app);
+    window.db = getFirestore(app);
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 360px;
+      background: #001439;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .top-bar {
+      height: 30px;
+      background-color: #001439;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    .content {
+      padding: 30px 20px;
+    }
+
+    .title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 5px;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 5px;
+      color: #ffffff;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 6px;
+      background-color: #e6e6e6;
+      font-size: 14px;
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      margin-bottom: 20px;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      color: #001439;
+      font-size: 14px;
+      margin-bottom: 15px;
+      cursor: pointer;
+    }
+
+    .register-link {
+      text-align: center;
+      font-size: 12px;
+      color: #ffffff;
+    }
+
+    .register-link a {
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar"></div>
+
+    <div style="margin-bottom: 10px; display: flex; justify-content: center;">
+      <img src="/assets/images/logo.png" alt="Agro Divel" style="width: 250px; height: auto;" />
+    </div>
+
+    <div class="content">
+      <div class="title">Área dos Gestores</div>
+      <div class="subtitle">Acesso com E-mail e Senha restrito.</div>
+
+      <label for="email">Digite seu E-mail</label>
+      <input type="email" id="email" placeholder="E-mail" />
+
+      <label for="senha">Digite sua Senha:</label>
+      <div class="password-wrapper">
+        <input type="password" id="senha" placeholder="Senha" />
+      </div>
+
+      <div class="options">
+        <label><input type="checkbox" id="lembrar" /> Lembrar minha Senha.</label>
+        <a href="recuperar.html">Esqueci minha Senha.</a>
+      </div>
+
+      <button class="login-btn" onclick="login()">ENTRAR</button>
+
+      <div class="register-link">
+        <a href="index.html">Voltar para início</a>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+    import {
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // Não precisamos mais importar nada do Firestore aqui.
+    // A tela de login só precisa saber se o email/senha são válidos.
+
+    window.login = async function ( ) {
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value.trim();
+      const loginButton = document.querySelector('.login-btn');
+
+      if (!email || !senha) {
+          alert("Por favor, preencha o e-mail e a senha.");
+          return;
+      }
+
+      loginButton.disabled = true;
+      loginButton.textContent = "ENTRANDO...";
+
+      try {
+        // 1. Tenta fazer o login no Firebase Authentication
+        const userCredential = await signInWithEmailAndPassword(auth, email, senha);
+        const user = userCredential.user;
+
+        console.log("Login bem-sucedido para o usuário:", user.uid);
+
+        // 2. Se o login deu certo, simplesmente redireciona para o menu principal.
+        // O menu.html vai cuidar do resto (buscar grupo, permissões, etc.)
+        window.location.href = '/Pages/Menu.html';
+
+      } catch (err) {
+        console.error("Erro no login:", err.code);
+        
+        if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+            alert("E-mail ou senha inválidos. Verifique seus dados e tente novamente.");
+        } else {
+            alert("Ocorreu um erro inesperado durante o login. Tente novamente mais tarde.");
+        }
+
+        loginButton.disabled = false;
+        loginButton.textContent = "ENTRAR";
+      }
+    }
+</script>
+</body>
+</html>
+
+
