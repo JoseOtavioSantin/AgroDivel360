@@ -3,21 +3,38 @@ import { db, auth, onAuthStateChanged, signOut, doc, getDoc } from './firebase-c
 
 // --- MAPA DE PERMISSÕES ---
 const menuPermissions = {
+
+// --- ADMIN ---
+
     'admin-CadastroGestores': ['admin'],
     'admin-CadastroTecnicos': ['admin'],
+
+// --- DIRETORIA ---
+
     'dash-geral':             ['admin', 'diretoria'],
+
+// --- COMERCIAL ---
+
     'dash-comercial':         ['admin', 'diretoria', 'comercial'],
-    'dash-pecas':             ['admin', 'diretoria', 'pecas'],
-    'dash-servicos':          ['admin', 'diretoria', 'servicos'],
-    'dash-PLM':               ['admin', 'diretoria', 'servicos'],
-    'dash-planos-manutencao': ['admin', 'diretoria', 'comercial'],
     'dash-Seguro':            ['admin', 'diretoria', 'comercial'],
     'dash-Consorcio':         ['admin', 'diretoria', 'comercial'],
-    'ctrl-PlanosVigentes':    ['admin', 'diretoria', 'servicos'],
-    'ctrl-MaquinaParada':     ['admin', 'diretoria', 'servicos'],
+
+// --- PECAS ---
+
+    'dash-pecas':             ['admin', 'diretoria', 'pecas'],
     'ctrl-Kit50':             ['admin', 'diretoria', 'pecas'],
     'ctrl-ContagemDiaria':    ['admin', 'diretoria', 'pecas'],
+
+// --- SERVICOS ---
+
+    'dash-servicos':          ['admin', 'diretoria', 'servicos'],
+    'dash-PLM':               ['admin', 'diretoria', 'servicos'],
+    'dash-planos-manutencao': ['admin', 'diretoria', 'servicos'],
+    'ctrl-PlanosVigentes':    ['admin', 'diretoria', 'servicos'],
+    'ctrl-MaquinaParada':     ['admin', 'diretoria', 'servicos'],
+
 };
+
 
 // Função principal que roda quando o estado de autenticação muda
 onAuthStateChanged(auth, async (user) => {
@@ -97,6 +114,7 @@ if (logoutButton) {
         });
     });
 }
+
 
 
 
