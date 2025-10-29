@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recuperar Senha | Agro Divel</title>
+
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <!-- Firebase SDKs (mesma configuração do login.html) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
+      authDomain: "agro-divel.firebaseapp.com",
+      projectId: "agro-divel",
+      storageBucket: "agro-divel.firebasestorage.app",
+      messagingSenderId: "583977436505",
+      appId: "1:583977436505:web:3754ec029aebb3d9d67848"
+    };
+
+    const app = initializeApp(firebaseConfig );
+    // Disponibiliza a instância do Auth globalmente para o script da página
+    window.auth = getAuth(app);
+  </script>
+
+  <!-- Estilos (copiados do login.html para manter a consistência) -->
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      margin: 0; padding: 0; background-color: #f9f9f9; display: flex;
+      justify-content: center; align-items: center; height: 100vh;
+    }
+    .container {
+      width: 100%; max-width: 360px; background: #001439;
+      border-radius: 12px; box-shadow: 0 0 15px rgba(0, 0, 0, 0.05); overflow: hidden;
+    }
+    .top-bar { height: 30px; background-color: #001439; }
+    .content { padding: 30px 20px; }
+    .title { font-weight: bold; font-size: 18px; margin-bottom: 5px; color: #ffffff; }
+    .subtitle { font-size: 14px; margin-bottom: 20px; color: #ffffff; }
+    label { display: block; font-size: 12px; margin-bottom: 5px; color: #ffffff; }
+    input[type="email"] {
+      width: 100%; padding: 12px; margin-bottom: 15px; border: none;
+      border-radius: 6px; background-color: #e6e6e6; font-size: 14px;
+    }
+    .action-btn {
+      width: 100%; padding: 12px; background-color: #ffffff; border: none;
+      border-radius: 6px; font-weight: bold; color: #001439;
+      font-size: 14px; margin-bottom: 15px; cursor: pointer;
+    }
+    .back-link { text-align: center; font-size: 12px; color: #ffffff; }
+    .back-link a { color: #ffffff; text-decoration: none; }
+    .back-link a:hover { text-decoration: underline; }
+    
+    /* Estilo para a mensagem de sucesso */
+    #success-message {
+        background-color: #28a745;
+        color: white;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+        margin-bottom: 20px;
+        display: none; /* Começa escondido */
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar"></div>
+
+    <div style="margin-bottom: 10px; display: flex; justify-content: center;">
+      <img src="/assets/images/logo.png" alt="Agro Divel" style="width: 250px; height: auto;" />
+    </div>
+
+    <div class="content">
+      <div class="title">Recuperar Senha</div>
+      <div class="subtitle">Digite seu e-mail para receber as instruções.</div>
+
+      <!-- Mensagem de sucesso que aparecerá após o envio -->
+      <div id="success-message">
+        <strong>Verifique seu e-mail!</strong>  
+
+        Se o e-mail informado estiver cadastrado, você receberá um link para criar uma nova senha.
+      </div>
+
+      <!-- Formulário de recuperação -->
+      <form id="recovery-form">
+        <label for="email">Seu E-mail de Cadastro</label>
+        <input type="email" id="email" placeholder="E-mail" required />
+        <button type="submit" class="action-btn" id="recovery-btn">ENVIAR E-MAIL DE RECUPERAÇÃO</button>
+      </form>
+
+      <div class="back-link">
+        <a href="login.html">Voltar para o Login</a>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+    // Importa a função específica para redefinição de senha
+    import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const recoveryForm = document.getElementById('recovery-form'  );
+    const recoveryBtn = document.getElementById('recovery-btn');
+    const emailInput = document.getElementById('email');
+    const successMessage = document.getElementById('success-message');
+
+    recoveryForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); // Impede o envio padrão do formulário
+        
+        const email = emailInput.value.trim();
+        if (!email) {
+            alert("Por favor, digite seu e-mail.");
+            return;
+        }
+
+        recoveryBtn.disabled = true;
+        recoveryBtn.textContent = "ENVIANDO...";
+
+        try {
+            // Define o código de idioma para português do Brasil
+            window.auth.languageCode = 'pt-br'; 
+            
+            // AQUI ESTAVA A LINHA DUPLICADA. ELA FOI REMOVIDA.
+            // A chamada correta é esta:
+            await sendPasswordResetEmail(window.auth, email);
+
+            // Exibe a mensagem de sucesso e esconde o formulário
+            recoveryForm.style.display = 'none';
+            successMessage.style.display = 'block';
+
+        } catch (err) {
+            console.error("Erro ao enviar e-mail de recuperação:", err.code);
+            // Informa um erro genérico para não revelar se um e-mail existe ou não no sistema
+            alert("Ocorreu um erro ao tentar enviar o e-mail. Verifique o endereço digitado e tente novamente.");
+            
+            recoveryBtn.disabled = false;
+            recoveryBtn.textContent = "ENVIAR E-MAIL DE RECUPERAÇÃO";
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redefinir Senha | Agro Divel</title>
+
+  <!-- Estilos idênticos ao seu login.html -->
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { margin: 0; padding: 0; background-color: #f9f9f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .container { width: 100%; max-width: 360px; background: #001439; border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.05); overflow: hidden; }
+    .top-bar { height: 30px; background-color: #001439; }
+    .content { padding: 30px 20px; }
+    .title { font-weight: bold; font-size: 18px; margin-bottom: 5px; color: #ffffff; }
+    .subtitle { font-size: 14px; margin-bottom: 20px; color: #ffffff; }
+    label { display: block; font-size: 12px; margin-bottom: 5px; color: #ffffff; }
+    input[type="password"] { width: 100%; padding: 12px; margin-bottom: 15px; border: none; border-radius: 6px; background-color: #e6e6e6; font-size: 14px; }
+    .action-btn { width: 100%; padding: 12px; background-color: #ffffff; border: none; border-radius: 6px; font-weight: bold; color: #001439; font-size: 14px; margin-bottom: 15px; cursor: pointer; }
+    .message { background-color: #28a745; color: white; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 20px; display: none; }
+    .back-link { text-align: center; font-size: 12px; }
+    .back-link a { color: #ffffff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top-bar"></div>
+    <div style="margin-bottom: 10px; display: flex; justify-content: center;">
+      <img src="/assets/images/logo.png" alt="Agro Divel" style="width: 250px; height: auto;" />
+    </div>
+    <div class="content">
+      <!-- Visão de Redefinição -->
+      <div id="reset-view">
+        <div class="title">Crie sua Nova Senha</div>
+        <div class="subtitle" id="user-email">Carregando...</div>
+        <form id="reset-form">
+          <label for="senha">Nova Senha</label>
+          <input type="password" id="senha" placeholder="Digite a nova senha" required />
+          <button type="submit" class="action-btn" id="reset-btn">SALVAR NOVA SENHA</button>
+        </form>
+      </div>
+      <!-- Visão de Sucesso -->
+      <div id="success-view" class="message">
+        <strong>Senha alterada com sucesso!</strong>
+        <p class="back-link" style="margin-top: 10px;"><a href="/login.html">Voltar para o Login</a></p>
+      </div>
+      <!-- Visão de Erro -->
+      <div id="error-view" class="message" style="background-color: #dc3545;"></div>
+    </div>
+  </div>
+
+<script type="module">
+    // Importa tudo que precisamos do Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, verifyPasswordResetCode, confirmPasswordReset } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // Sua configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
+      authDomain: "agro-divel.firebaseapp.com",
+      projectId: "agro-divel",
+      storageBucket: "agro-divel.firebasestorage.app",
+      messagingSenderId: "583977436505",
+      appId: "1:583977436505:web:3754ec029aebb3d9d67848"
+    };
+    const app = initializeApp(firebaseConfig );
+    const auth = getAuth(app);
+
+    // Seleciona os elementos da página
+    const resetView = document.getElementById('reset-view');
+    const successView = document.getElementById('success-view');
+    const errorView = document.getElementById('error-view');
+    const resetForm = document.getElementById('reset-form');
+    const userEmailEl = document.getElementById('user-email');
+    const newPasswordInput = document.getElementById('senha');
+    const resetBtn = document.getElementById('reset-btn');
+
+    // Pega o código de ação da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const actionCode = urlParams.get('oobCode');
+
+    // Função para mostrar erros
+    function showError(message) {
+        resetView.style.display = 'none';
+        errorView.textContent = message;
+        errorView.style.display = 'block';
+    }
+
+    // Verifica se o código da URL é válido
+    if (!actionCode) {
+        showError("Link de redefinição inválido ou ausente.");
+    } else {
+        // Usa o código para verificar o e-mail do usuário
+        verifyPasswordResetCode(auth, actionCode)
+            .then((email) => {
+                userEmailEl.textContent = `Para o e-mail: ${email}`;
+            })
+            .catch((error) => {
+                showError("O link é inválido ou expirou. Por favor, solicite um novo.");
+            });
+    }
+
+    // Listener para o envio do formulário
+    resetForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPassword = newPasswordInput.value;
+        if (newPassword.length < 6) {
+            alert("A senha deve ter no mínimo 6 caracteres.");
+            return;
+        }
+
+        resetBtn.disabled = true;
+        resetBtn.textContent = "SALVANDO...";
+
+        try {
+            // Usa o código e a nova senha para confirmar a redefinição
+            await confirmPasswordReset(auth, actionCode, newPassword);
+            resetView.style.display = 'none';
+            successView.style.display = 'block';
+        } catch (error) {
+            showError("Não foi possível redefinir a senha. O link pode ter expirado.");
+            resetBtn.disabled = false;
+            resetBtn.textContent = "SALVAR NOVA SENHA";
+        }
+    });
+</script>
+</body>
+</html>
