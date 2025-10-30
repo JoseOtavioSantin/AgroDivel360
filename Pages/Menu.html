@@ -8,47 +8,7 @@
     <!-- CSS -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="/assets/css/style.css">
-    <!-- Adicionando o CSS que usamos para a lista de novidades -->
-    <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css"> 
 
-    <style>
-        /* Estilos para a lista de novidades que havíamos definido */
-        .updates-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .update-item {
-            background-color: var(--sidebar-color );
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid;
-        }
-        .update-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .update-item-header h3 {
-            margin: 0;
-            font-size: 18px;
-        }
-        .update-item-date {
-            font-size: 12px;
-            color: var(--text-light-color);
-        }
-        .update-item p {
-            margin: 0;
-            font-size: 14px;
-            color: var(--text-light-color);
-            line-height: 1.5;
-        }
-        /* Cores baseadas no tipo */
-        .update-item.tipo-novidade { border-left-color: #3b82f6; } /* Azul */
-        .update-item.tipo-melhoria { border-left-color: #22c55e; } /* Verde */
-        .update-item.tipo-correcao { border-left-color: #f97316; } /* Laranja */
-    </style>
 </head>
 <body>
 
@@ -56,7 +16,7 @@
 
     <section class="home">
         <div class="text">
-            <h1>Bem-vindo ao seu Painel, <span id="user-name">Carregando...</span>!</h1>
+            <h1>Bem-vindo ao seu Painel, <span id="user-name"></span>!</h1>
             <p>Acompanhe aqui as principais novidades da plataforma.</p>
         </div>
 
@@ -65,84 +25,18 @@
                 <h2>Novidades e Atualizações</h2>
             </div>
             <div class="content-card-body">
-                <!-- O conteúdo será inserido aqui pelo JavaScript -->
-                <div id="updates-container" class="updates-list">
-                    <p>Carregando atualizações...</p>
-                </div>
+                <!-- Seus itens de novidades aqui -->
             </div>
         </div>
     </section>
 
-    <!-- Scripts do Firebase -->
-<script type="module">
-    // Importa as INSTÂNCIAS prontas do nosso arquivo de configuração
-    import { db, auth, messaging } from '/assets/js/firebase-config.js';
-    
-    // Importa as FUNÇÕES que vamos usar com essas instâncias
-    import { doc, getDoc, collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
-    
-    // Importa nosso gerenciador de notificações
-    import { setupNotifications } from '/assets/js/notification-manager.js';
-
-    // Seleciona os elementos da página
-    const userNameSpan = document.getElementById('user-name' );
-    const updatesContainer = document.getElementById('updates-container');
-
-    // Monitora o estado de autenticação
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                const userDocRef = doc(db, 'gestores', user.uid);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    userNameSpan.textContent = userDocSnap.data().nome.split(' ')[0];
-                } else {
-                    userNameSpan.textContent = 'Usuário';
-                }
-                // Chama a configuração de notificações, passando as instâncias
-                setupNotifications(auth, db, messaging);
-            } catch (error) {
-                console.error("Erro ao buscar dados do usuário:", error);
-            }
-        } else {
-            window.location.href = '/login.html';
-        }
-    });
-
-    // Listener para mensagens em primeiro plano
-    onMessage(messaging, (payload) => {
-        console.log("Mensagem recebida em primeiro plano: ", payload);
-        alert(`🔔 ${payload.notification.title}\n\n${payload.notification.body}`);
-    });
-
-    // Busca e exibe as novidades (agora 'db' está garantido que existe)
-    const q = query(collection(db, "novidades"), orderBy("dataPublicacao", "desc"), limit(10));
-    onSnapshot(q, (snapshot) => {
-        updatesContainer.innerHTML = '';
-        if (snapshot.empty) {
-            updatesContainer.innerHTML = '<p>Nenhuma atualização recente encontrada.</p>';
-            return;
-        }
-        snapshot.forEach(doc => {
-            const novidade = doc.data();
-            const itemDiv = document.createElement('div');
-            itemDiv.className = `update-item tipo-${novidade.tipo}`;
-            const [ano, mes, dia] = novidade.dataPublicacao.split('-');
-            const dataFormatada = `${dia}/${mes}/${ano}`;
-            itemDiv.innerHTML = `
-                <div class="update-item-header"><h3>${novidade.titulo}</h3><span class="update-item-date">${dataFormatada}</span></div>
-                <p>${novidade.descricao}</p>
-            `;
-            updatesContainer.appendChild(itemDiv);
-        });
-    });
-</script>
-
-    <script type="module" src="/assets/js/firebase-config.js"></script>
-    <script src="/assets/js/main.js"></script> 
-    <script src="/assets/js/components/Sidebar.js"></script>
+    <!-- Scripts do Firebase (precisam ser do tipo "module") -->
+      <script type="module" src="/assets/js/firebase-config.js"></script>
+      <script type="module" src="/assets/js/auth.js"></script>
+      <script src="/assets/js/main.js"></script> 
+      <script src="/assets/js/components/Sidebar.js"></script>
 
 </body>
 </html>
+
+
