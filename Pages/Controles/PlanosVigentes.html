@@ -20,46 +20,36 @@
   <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css">
 
   <style>
-
-    /* Adicione este bloco ao final da sua tag <style> */
-    .modal-body {
-        max-height: 70vh; /* Define a altura máxima como 70% da altura da tela */
-        overflow-y: auto; /* Adiciona uma barra de rolagem vertical apenas quando necessário */
-        padding-right: 15px; /* Adiciona um espaço para a barra de rolagem não sobrepor o conteúdo */
-    }
-
-
     .content-card-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-
     .header-actions {
         display: flex;
         gap: 10px;
-    }    
-
-    /* Estilos específicos da página que não estão no CSS global */
+    }
+    /* Estilos dos botões de ação na tabela */
+    .btn-acao {
+        display: inline-flex; align-items: center; justify-content: center;
+        background-color: #193b7c; color: white; border: none;
+        border-radius: 6px; padding: 6px; cursor: pointer;
+        transition: background-color 0.2s ease; text-decoration: none;
+        margin: 0 2px;
+    }
+    .btn-acao:hover { background-color: #132a5a; }
+    .btn-acao i { width: 18px; height: 18px; pointer-events: none; }
+    
+    /* Estilos específicos da página */
     .status-em-andamento { background-color: #c67903; color: white; }
     .status-concluido { background-color: #193b7c; color: white; }
-    .status-cancelado { background-color: #626262; color: white; }
     
     tr.linha-alerta td {
         animation: pulsarAlerta 1.2s ease-in-out infinite alternate;
     }
-
     @keyframes pulsarAlerta {
       from { background-color: #950000; }
       to { background-color: #c67903; }
-    }
-
-    /* Ajuste para o botão de checklist */
-    .checklist-container-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr ));
-      gap: 10px;
-      margin-bottom: 15px;
     }
   </style>
 </head>
@@ -76,22 +66,10 @@
 
     <!-- CARDS DE RESUMO -->
     <div class="dashboard-cards">
-      <div class="dashboard-card blue-card">
-        <h2 id="total-clientes">0</h2>
-        <p><i data-lucide="users"></i> Total de Clientes</p>
-      </div>
-      <div class="dashboard-card orange-card">
-        <h2 id="em-andamento">0</h2>
-        <p><i data-lucide="loader-circle"></i> Em Andamento</p>
-      </div>
-      <div class="dashboard-card green-card">
-        <h2 id="total-concluidos">0</h2>
-        <p><i data-lucide="check-circle"></i> Concluídos</p>
-      </div>
-       <div class="dashboard-card purple-card">
-          <h2 id="valor-total">R$ 0,00</h2>
-          <p><i data-lucide="dollar-sign"></i> Valor Total (R$)</p>
-        </div>
+      <div class="dashboard-card blue-card"><h2 id="total-clientes">0</h2><p><i data-lucide="users"></i> Total de Clientes</p></div>
+      <div class="dashboard-card orange-card"><h2 id="em-andamento">0</h2><p><i data-lucide="loader-circle"></i> Em Andamento</p></div>
+      <div class="dashboard-card green-card"><h2 id="total-concluidos">0</h2><p><i data-lucide="check-circle"></i> Concluídos</p></div>
+      <div class="dashboard-card purple-card"><h2 id="valor-total">R$ 0,00</h2><p><i data-lucide="dollar-sign"></i> Valor Total (R$)</p></div>
     </div>
 
     <!-- CONTAINER PRINCIPAL DO DASHBOARD -->
@@ -99,16 +77,12 @@
       <div class="content-card-header">
         <h3>Acompanhamento de Planos</h3>
         <div class="header-actions">
-           <button id="btn-exportar" class="btn-acao" title="Exportar para Excel">
-                <i data-lucide="download" style="width: 20px; height: 20px;"></i>
-            </button>
-            <button id="btn-importar" class="btn-acao" title="Importar Horas Atuais">
+           <button id="btn-exportar" class="btn-acao" title="Exportar para Excel"><i data-lucide="download"></i></button>
+           <button id="btn-importar" class="btn-acao" title="Importar Horas Atuais">
                 <input type="file" id="arquivo-importar" accept=".xlsx" style="display:none;">
-                <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
-            </button>
-          <a href="/Pages/Formularios/form-planosvigentes.html" id="btn-novo-plano" class="btn-acao" title="Novo Plano">
-              <i data-lucide="plus-circle"></i>
-          </a>
+                <i data-lucide="upload"></i>
+           </button>
+           <a href="/Pages/Formularios/form-planosvigentes.html" id="btn-novo-plano" class="btn-acao" title="Novo Plano"><i data-lucide="plus-circle"></i></a>
         </div>
       </div>
       <div class="content-card-body">
@@ -118,7 +92,6 @@
             <option value="">Todos os status</option>
             <option value="Concluído">Concluído</option>
             <option value="Em andamento">Em andamento</option>
-            <option value="Cancelado">Cancelado</option>
           </select>
           <input id="filtro-consultor" type="text" placeholder="Buscar consultor..." />
           <input id="filtro-periodo" placeholder="Selecione o período" />
@@ -139,9 +112,7 @@
     </div>
   </section>
 
-  <!-- MODAIS (POPUPS) -->
-
-  <!-- Modal para adicionar/editar data e OS do checklist -->
+  <!-- MODAL PARA ADICIONAR/EDITAR DATA E OS DO CHECKLIST (ÚNICO MODAL RESTANTE) -->
   <div id="popupChecklistData" class="modal-overlay">
     <div class="modal-container" style="max-width: 400px;">
       <div class="modal-header">
@@ -151,14 +122,8 @@
       <div class="modal-body">
         <input type="hidden" id="docIdChecklistData">
         <input type="hidden" id="valorChecklistData">
-        <div class="form-group">
-            <label for="osChecklistData">OS</label>
-            <input type="text" id="osChecklistData">
-        </div>
-        <div class="form-group">
-            <label for="inputDataChecklist">Data</label>
-            <input type="date" id="inputDataChecklist">
-        </div>
+        <div class="form-group"><label for="osChecklistData">OS</label><input type="text" id="osChecklistData"></div>
+        <div class="form-group"><label for="inputDataChecklist">Data</label><input type="date" id="inputDataChecklist"></div>
       </div>
       <div class="modal-footer">
         <button class="modal-btn btn-cancel" onclick="fecharPopupDataChecklist()">Cancelar</button>
@@ -167,90 +132,12 @@
     </div>
   </div>
 
-  <!-- Modal para Novo Plano -->
-  <div id="popupNovoPlano" class="modal-overlay">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3>Novo Plano</h3>
-        <button class="modal-close-btn" onclick="fecharNovoPlano()">&times;</button>
-      </div>
-      <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <div class="form-group"><label>Cliente</label><input type="text" id="novoCliente"></div>
-        <div class="form-group"><label>Plano Vendido</label><select id="novoPlanoVendido"><option value="">Selecione...</option><option value="Serve + Pro">Serve + Pro</option><option value="Serve Digital">Serve Digital</option></select></div>
-        <div class="form-group"><label>Modelo</label><input type="text" id="novoModelo"></div>
-        <div class="form-group"><label>Chassi</label><input type="text" id="novoChassi"></div>
-        <div class="form-group"><label>Horas Iniciais</label><input type="number" id="novoHorasIni"></div>
-        <div class="form-group"><label>Horas Finais</label><input type="number" id="novoHorasFim"></div>
-        <div class="form-group"><label>Data Início</label><input type="date" id="novoDataIni"></div>
-        <div class="form-group"><label>Data Fim</label><input type="date" id="novoDataFim"></div>
-        <div class="form-group" style="grid-column: 1 / -1;"><label>Valor Negociado (R$)</label><input type="number" id="novoValorNegociado"></div>
-        
-        <div style="grid-column: 1 / -1;">
-          <label>Checklists do Plano</label>
-          <div id="checklist-container" class="checklist-container-grid">
-            <label><input type="checkbox" class="checklistNovoPlano" value="ÓLEO" /> ÓLEO</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="50" /> 50</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="100" /> 100</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="300" /> 300</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="600" /> 600</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="900" /> 900</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="1200" /> 1200</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="Server+" /> Server+</label>
-            <label><input type="checkbox" class="checklistNovoPlano" value="Lastragem" /> Lastragem</label>
-          </div>
-          <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
-            <input type="number" id="inputChecklistManual" placeholder="Ex: 1500" style="flex: 1;">
-            <button onclick="adicionarChecklistManual()" class="btn-acao">Adicionar</button>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-btn btn-cancel" onclick="fecharNovoPlano()">Cancelar</button>
-        <button class="modal-btn btn-save" onclick="salvarNovoPlano()">Salvar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para Editar Plano -->
-  <div id="popupEditarPlano" class="modal-overlay">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3>Editar Plano</h3>
-        <button class="modal-close-btn" onclick="fecharEditarPlano()">&times;</button>
-      </div>
-      <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <input type="hidden" id="editarPlanoId">
-        <div class="form-group"><label>Cliente</label><input type="text" id="editarCliente"></div>
-        <div class="form-group"><label>Plano Vendido</label><select id="editarPlanoVendido"><option value="">Selecione...</option><option value="Serve + Pro">Serve + Pro</option><option value="Serve Digital">Serve Digital</option></select></div>
-        <div class="form-group"><label>Modelo</label><input type="text" id="editarModelo"></div>
-        <div class="form-group"><label>Chassi</label><input type="text" id="editarChassi"></div>
-        <div class="form-group"><label>Horas Iniciais</label><input type="number" id="editarHorasIni"></div>
-        <div class="form-group"><label>Horas Finais</label><input type="number" id="editarHorasFim"></div>
-        <div class="form-group"><label>Data Início</label><input type="date" id="editarDataIni"></div>
-        <div class="form-group"><label>Data Fim</label><input type="date" id="editarDataFim"></div>
-        <div class="form-group" style="grid-column: 1 / -1;"><label>Valor Negociado (R$)</label><input type="number" id="editarValorNegociado"></div>
-        
-        <div style="grid-column: 1 / -1;">
-          <label>Checklists do Plano</label>
-          <div id="checklist-container-editar" class="checklist-container-grid">
-            <!-- Checkboxes serão preenchidos dinamicamente -->
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-btn btn-cancel" onclick="fecharEditarPlano()">Cancelar</button>
-        <button class="modal-btn btn-save" onclick="salvarEdicaoPlano()">Salvar Alterações</button>
-      </div>
-    </div>
-  </div>
-
 <script type="module">
   import { garantirAutenticacao } from '/assets/js/auth-guard.js';
   import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs, query, where, doc, getDoc, updateDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const tipoChecklist = "planosVigentes";
-  
   let db;
   let userData;
   let dadosTotais = [];
@@ -263,17 +150,8 @@
       const app = getApp();
       db = getFirestore(app);
 
-      // Disponibiliza variáveis e funções globais
-      window.db = db;
-      window.doc = doc;
-      window.getDoc = getDoc;
-      window.updateDoc = updateDoc;
-      window.addDoc = addDoc;
-      window.collection = collection;
-      window.carregarDados = carregarDados;
-
       if (!userData.filial || userData.filial.length === 0) {
-        document.body.innerHTML = `<div class="error-container">Acesso negado. Nenhuma filial associada a este usuário.</div>`;
+        document.body.innerHTML = `<div class="error-container">Acesso negado. Nenhuma filial associada.</div>`;
         return;
       }
 
@@ -290,7 +168,7 @@
 
     } catch (error) {
       console.error("Falha na inicialização da página:", error);
-      document.body.innerHTML = `<div class="error-container">Ocorreu um erro ao carregar a página. Tente recarregar.</div>`;
+      document.body.innerHTML = `<div class="error-container">Ocorreu um erro ao carregar a página.</div>`;
     }
   }
 
@@ -299,63 +177,53 @@
     document.getElementById('btn-novo-plano').style.display = podeEditar ? 'flex' : 'none';
   }
 
- async function carregarDados() {
+  async function carregarDados() {
     const filiaisLogadas = userData.filial || [];
     if (filiaisLogadas.length === 0) return;
 
-    // 1. Busca TODOS os documentos da coleção
     const querySnapshot = await getDocs(collection(db, tipoChecklist));
     dadosTotais = [];
+    const filiaisDoUsuarioLowerCase = filiaisLogadas.map(f => f.toLowerCase().trim());
 
-    // 2. Filtra os resultados no lado do cliente (mais robusto)
     querySnapshot.forEach(docItem => {
       const dados = docItem.data();
-      // Converte a filial do documento e as filiais do usuário para minúsculas para uma comparação segura
       const filialDoDocumento = (dados.filial || "").toLowerCase().trim();
-      const filiaisDoUsuarioLowerCase = filiaisLogadas.map(f => f.toLowerCase().trim());
-
-      // Adiciona à lista se a filial do documento estiver na lista de filiais do usuário
       if (filiaisDoUsuarioLowerCase.includes(filialDoDocumento)) {
         dadosTotais.push({ id: docItem.id, ...dados });
       }
     });
-
-    console.log("Total de planos encontrados para as filiais:", dadosTotais.length);
     aplicarFiltros();
   }
 
-function aplicarFiltros() {
-  const clienteFiltro = document.getElementById("filtro-cliente").value.toLowerCase();
-  const statusFiltro = document.getElementById("filtro-status").value;
-  const consultorFiltro = document.getElementById("filtro-consultor").value.toLowerCase();
-  const instance = document.getElementById("filtro-periodo")._flatpickr;
-  const selectedDates = instance ? instance.selectedDates : [];
+  function aplicarFiltros() {
+    const clienteFiltro = document.getElementById("filtro-cliente").value.toLowerCase();
+    const statusFiltro = document.getElementById("filtro-status").value;
+    const consultorFiltro = document.getElementById("filtro-consultor").value.toLowerCase();
+    const instance = document.getElementById("filtro-periodo")._flatpickr;
+    const selectedDates = instance ? instance.selectedDates : [];
 
-  let dataInicio = "", dataFim = "";
-  if (selectedDates.length === 2) {
-    dataInicio = selectedDates[0].toISOString().slice(0, 10);
-    dataFim = selectedDates[1].toISOString().slice(0, 10);
+    let dataInicio = "", dataFim = "";
+    if (selectedDates.length === 2) {
+      dataInicio = selectedDates[0].toISOString().slice(0, 10);
+      dataFim = selectedDates[1].toISOString().slice(0, 10);
+    }
+
+    const filtrados = dadosTotais.filter(d => {
+      const totalChecklist = (d.checklistRealizado || []).length;
+      const preenchidos = (d.checklistRealizado || []).filter(item => (d.datasChecklist || {})[item]).length;
+      d.statusChecklist = totalChecklist > 0 && preenchidos === totalChecklist ? "Concluído" : "Em andamento";
+      const dentroDoPeriodo = !dataInicio || (d.dataInicioContrato >= dataInicio && d.dataInicioContrato <= dataFim);
+      return (d.nomeCliente || "").toLowerCase().includes(clienteFiltro) &&
+        (statusFiltro === "" || d.statusChecklist === statusFiltro) &&
+        (d.consultor || "").toLowerCase().includes(consultorFiltro) &&
+        dentroDoPeriodo;
+    });
+
+    atualizarCards(filtrados);
+    renderizarTabela(filtrados);
   }
 
-  const filtrados = dadosTotais.filter(d => {
-    const totalChecklist = (d.checklistRealizado || []).length;
-    const preenchidos = (d.checklistRealizado || []).filter(item => (d.datasChecklist || {})[item]).length;
-    const statusChecklistAuto = totalChecklist > 0 && preenchidos === totalChecklist ? "Concluído" : "Em andamento";
-    d.statusChecklist = statusChecklistAuto;
-
-    const dentroDoPeriodo = !dataInicio || (d.dataInicioContrato >= dataInicio && d.dataInicioContrato <= dataFim);
-
-    return (d.nomeCliente || "").toLowerCase().includes(clienteFiltro) &&
-      (statusFiltro === "" || d.statusChecklist === statusFiltro) &&
-      (d.consultor || "").toLowerCase().includes(consultorFiltro) &&
-      dentroDoPeriodo;
-  });
-
-  atualizarCards(filtrados);
-  renderizarTabela(filtrados);
-}
-
-function atualizarCards(dados) {
+  function atualizarCards(dados) {
     const total = dados.length;
     const concluidos = dados.filter(d => d.statusChecklist === "Concluído").length;
     const andamento = total - concluidos;
@@ -365,446 +233,191 @@ function atualizarCards(dados) {
     document.getElementById("total-concluidos").textContent = concluidos;
     document.getElementById("em-andamento").textContent = andamento;
     document.getElementById("valor-total").textContent = totalValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
-
-function renderizarTabela(dados) {
-  // *** LÓGICA DE ORDENAÇÃO ATUALIZADA ***
-  dados.sort((a, b) => {
-    // 1. Mantém os concluídos no final.
-    const statusOrderA = a.statusChecklist === 'Concluído' ? 1 : 0;
-    const statusOrderB = b.statusChecklist === 'Concluído' ? 1 : 0;
-    if (statusOrderA !== statusOrderB) {
-      return statusOrderA - statusOrderB;
-    }
-
-    // 2. Cria uma "pontuação de alerta" para priorizar a ordem.
-    // Alerta de Horas = 2 pontos, Alerta de Data = 1 ponto.
-    const pontuacaoA = (alertaDoItem(a) ? 2 : 0) + (alertaPorData(a) ? 1 : 0);
-    const pontuacaoB = (alertaDoItem(b) ? 2 : 0) + (alertaPorData(b) ? 1 : 0);
-
-    // 3. Ordena pela maior pontuação. Se a pontuação for igual, mantém a ordem atual.
-    if (pontuacaoB !== pontuacaoA) {
-      return pontuacaoB - pontuacaoA;
-    }
-
-    // Opcional: se a pontuação for a mesma, podemos ordenar por data de início do contrato
-    return new Date(a.dataInicioContrato) - new Date(b.dataInicioContrato);
-  });
-  // *** FIM DA ATUALIZAÇÃO ***
-  
-  const painel = document.getElementById("painel-detalhes");
-  painel.innerHTML = "";
-
-  if (dados.length === 0) {
-    painel.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 20px;">Nenhum plano encontrado.</td></tr>';
-    return;
   }
 
-  dados.forEach(d => {
-    const statusClass = d.statusChecklist === "Concluído" ? "status-concluido" : "status-em-andamento";
-    
-    const alertaHoras = alertaDoItem(d);
-    const alertaData = alertaPorData(d);
-    const precisaDeAlerta = alertaHoras || alertaData;
-    const alertaClass = precisaDeAlerta ? "linha-alerta" : "";
-    
-    let iconeAlertaHTML = "";
-    if (alertaHoras) {
-        iconeAlertaHTML = `<span title="Alerta de Horas: Manutenção próxima!" style="color: #f59e0b; margin-left: 6px; font-weight: bold;">⚠️</span>`;
-    } else if (alertaData) {
-        iconeAlertaHTML = `<span title="Alerta de Tempo: Última manutenção há mais de 4 meses!" style="color: #f59e0b; margin-left: 6px; font-weight: bold;">📅</span>`;
-    }
-
-    const checklistHtml = (d.checklistRealizado || []).sort((a, b) => parseFloat(a) - parseFloat(b)).map(item => {
-        const info = (d.datasChecklist || {})[item];
-        
-        const corFundo = info ? '#047857' : '#e5e7eb';
-        const corTexto = info ? '#fff' : '#1f2937';
-        
-        const tooltip = info 
-            ? `Visualizar dados (Data: ${formatarDataBR(info.data)}, OS: ${info.os || 'N/A'})` 
-            : `Adicionar dados para o checklist ${item}`;
-        
-        const textoBotao = item;
-
-        // *** MUDANÇA PRINCIPAL AQUI: A chamada onclick foi simplificada ***
-        return `<button 
-                    onclick="abrirDataChecklist('${d.id}', '${item}')" 
-                    style="background:${corFundo}; color:${corTexto}; padding:3px 8px; border:1px solid #ccc; border-radius:5px; margin:2px; font-size:10px; cursor: pointer;" 
-                    title="${tooltip}">
-                    ${textoBotao}
-                </button>`;
-    }).join("");
-
-    let acoesHTML = `<div class="acoes-cell">
-        ${podeEditar ? `<a href="/Pages/Formularios/form-planosvigentes.html?id=${d.id}" class="btn-acao" title="Editar Plano"><i data-lucide="pencil"></i></a>` : ''}
-        ${podeApagar ? `<button class="btn-acao btn-delete" data-id="${d.id}" title="Apagar Plano"><i data-lucide="trash-2" style="pointer-events: none;"></i></button>` : ''}
-    </div>`;
-
-    painel.innerHTML += `
-      <tr class="${statusClass} ${alertaClass}" data-id="${d.id}">
-        <td>${formatarDataBR(d.dataInicioContrato)}</td><td>${formatarDataBR(d.dataFimContrato)}</td><td>${d.nomeCliente || "-"}</td><td>${d.planoVendido || "-"}</td>
-        <td>${d.chassi || "-"}</td><td>${d.modelo || "-"}</td><td>${d.horasIniciais || "-"}</td><td>${d.horasFinais || "-"}</td>
-        <td>
-          ${d.horasAtuais || "-"}
-          ${iconeAlertaHTML}
-        </td>
-        <td style="white-space: normal;">${checklistHtml}</td><td>${acoesHTML}</td>
-      </tr>`;
-  });
-  lucide.createIcons();
-}
-
-
-/**
- * Verifica se um plano sem telemetria precisa de um alerta baseado em tempo.
- * O alerta é ativado se a última manutenção registrada foi há mais de 4 meses.
- * @param {object} d - Os dados do plano.
- * @returns {boolean} - True se o alerta por data deve ser ativado.
- */
-function alertaPorData(d) {
-    // 1. Ignora se a máquina tem telemetria (horasAtuais preenchida) ou se o plano já está concluído.
-    if (d.horasAtuais || d.statusChecklist === 'Concluído') {
-        return false;
-    }
-
-    const datasChecklist = d.datasChecklist || {};
-    const datasRealizadas = Object.values(datasChecklist).map(info => info.data);
-
-    // 2. Se nenhuma manutenção foi feita ainda, usa a data de início do contrato como base.
-    if (datasRealizadas.length === 0) {
-        if (!d.dataInicioContrato) return false; // Não tem como calcular sem data de início
-        
-        const dataInicio = new Date(d.dataInicioContrato);
-        const dataLimite = new Date();
-        dataLimite.setMonth(dataLimite.getMonth() - 4); // Define a data limite para 4 meses atrás
-        
-        return dataInicio < dataLimite;
-    }
-
-    // 3. Se já existem manutenções, encontra a mais recente.
-    const ultimaData = datasRealizadas.reduce((max, data) => {
-        const dataAtual = new Date(data);
-        return dataAtual > max ? dataAtual : max;
-    }, new Date(0)); // Inicia com uma data muito antiga
-
-    // 4. Compara a data mais recente com a data limite de 4 meses atrás.
-    const dataLimite = new Date();
-    dataLimite.setMonth(dataLimite.getMonth() - 5);
-
-    return ultimaData < dataLimite;
-}
-
-function alertaDoItem(d) {
-    const horasAtuais = parseFloat(d.horasAtuais || 0);
-    if (!horasAtuais) return false;
-
-    const checklistsPendentes = (d.checklistRealizado || []).filter(item => {
-        const isNumeric = !isNaN(parseFloat(item));
-        const isPendente = !(d.datasChecklist || {})[item];
-        return isNumeric && isPendente;
+  function renderizarTabela(dados) {
+    dados.sort((a, b) => {
+      const statusOrderA = a.statusChecklist === 'Concluído' ? 1 : 0;
+      const statusOrderB = b.statusChecklist === 'Concluído' ? 1 : 0;
+      if (statusOrderA !== statusOrderB) return statusOrderA - statusOrderB;
+      const pontuacaoA = (alertaDoItem(a) ? 2 : 0) + (alertaPorData(a) ? 1 : 0);
+      const pontuacaoB = (alertaDoItem(b) ? 2 : 0) + (alertaPorData(b) ? 1 : 0);
+      if (pontuacaoB !== pontuacaoA) return pontuacaoB - pontuacaoA;
+      return new Date(a.dataInicioContrato) - new Date(b.dataInicioContrato);
     });
+    
+    const painel = document.getElementById("painel-detalhes");
+    painel.innerHTML = dados.length === 0 ? '<tr><td colspan="11" style="text-align: center; padding: 20px;">Nenhum plano encontrado.</td></tr>' : '';
 
-    return checklistsPendentes.some(item => {
-        const horasChecklist = parseFloat(item);
-        return horasAtuais >= (horasChecklist - 60);
+    dados.forEach(d => {
+      const statusClass = d.statusChecklist === "Concluído" ? "status-concluido" : "status-em-andamento";
+      const alertaHoras = alertaDoItem(d);
+      const alertaData = alertaPorData(d);
+      const alertaClass = (alertaHoras || alertaData) ? "linha-alerta" : "";
+      let iconeAlertaHTML = "";
+      if (alertaHoras) iconeAlertaHTML = `<span title="Alerta de Horas: Manutenção próxima!" style="color: #f59e0b; margin-left: 6px; font-weight: bold;">⚠️</span>`;
+      else if (alertaData) iconeAlertaHTML = `<span title="Alerta de Tempo: Última manutenção há mais de 4 meses!" style="color: #f59e0b; margin-left: 6px; font-weight: bold;">📅</span>`;
+
+      const checklistHtml = (d.checklistRealizado || []).sort((a, b) => parseFloat(a) - parseFloat(b)).map(item => {
+          const info = (d.datasChecklist || {})[item];
+          const corFundo = info ? '#047857' : '#e5e7eb';
+          const corTexto = info ? '#fff' : '#1f2937';
+          const tooltip = info ? `Visualizar (Data: ${formatarDataBR(info.data)}, OS: ${info.os || 'N/A'})` : `Adicionar dados para ${item}`;
+          return `<button onclick="abrirDataChecklist('${d.id}', '${item}')" style="background:${corFundo}; color:${corTexto}; padding:3px 8px; border:1px solid #ccc; border-radius:5px; margin:2px; font-size:10px; cursor: pointer;" title="${tooltip}">${item}</button>`;
+      }).join("");
+
+      const acoesHTML = `<div class="acoes-cell">
+          ${podeEditar ? `<a href="/Pages/Formularios/form-planosvigentes.html?id=${d.id}" class="btn-acao" title="Editar Plano"><i data-lucide="pencil"></i></a>` : ''}
+          ${podeApagar ? `<button class="btn-acao btn-delete" data-id="${d.id}" title="Apagar Plano"><i data-lucide="trash-2"></i></button>` : ''}
+      </div>`;
+
+      painel.innerHTML += `
+        <tr class="${statusClass} ${alertaClass}" data-id="${d.id}">
+          <td>${formatarDataBR(d.dataInicioContrato)}</td><td>${formatarDataBR(d.dataFimContrato)}</td><td>${d.nomeCliente || "-"}</td><td>${d.planoVendido || "-"}</td>
+          <td>${d.chassi || "-"}</td><td>${d.modelo || "-"}</td><td>${d.horasIniciais || "-"}</td><td>${d.horasFinais || "-"}</td>
+          <td>${d.horasAtuais || "-"}${iconeAlertaHTML}</td>
+          <td style="white-space: normal;">${checklistHtml}</td><td>${acoesHTML}</td>
+        </tr>`;
     });
-}
-
-function configurarListeners() {
     lucide.createIcons();
-    document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
-    document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
-    document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
-    flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
+  }
 
-    document.getElementById("btn-novo-plano").addEventListener("click", abrirFormularioNovoPlano);
-    document.getElementById("btn-exportar").addEventListener("click", exportarParaExcel);
-    document.getElementById("btn-importar").addEventListener("click", () => document.getElementById("arquivo-importar").click());
-    document.getElementById("arquivo-importar").addEventListener("change", importarHoras);
-
-    document.getElementById("painel-detalhes").addEventListener('click', async (event) => {
-        const button = event.target.closest('button.btn-acao');
-        if (!button) return;
-        const id = button.dataset.id;
-        if (button.classList.contains('btn-edit')) abrirPopupEdicao(id);
-        if (button.classList.contains('btn-delete')) apagarPlano(id);
-    });
-
-    setInterval(carregarDados, 60000); // Auto-refresh
-}
-
-// --- Funções de Ação ---
-
-async function apagarPlano(id) {
-    const plano = dadosTotais.find(p => p.id === id);
-    const result = await Swal.fire({
-        title: 'Tem certeza?',
-        text: `Deseja apagar o plano do cliente "${plano.nomeCliente}" (chassi: ${plano.chassi})?`,
-        icon: 'warning', showCancelButton: true, confirmButtonText: 'Sim, apagar!', cancelButtonText: 'Cancelar'
-    });
-    if (result.isConfirmed) {
-        try {
-            await deleteDoc(doc(db, tipoChecklist, id));
-            Swal.fire('Apagado!', 'Plano apagado com sucesso.', 'success');
-            carregarDados();
-        } catch (error) {
-            Swal.fire('Erro!', 'Falha ao apagar o plano.', 'error');
-        }
-    }
-}
-
-function exportarParaExcel() {
-    const headers = ["Data Início", "Data Fim", "Cliente", "Plano Vendido", "Chassi", "Modelo", "Horas Iniciais", "Horas Finais", "Horas Atuais", "Checklist"];
-    const linhas = Array.from(document.querySelectorAll("#painel-detalhes tr")).map(tr => {
-      if (tr.querySelector('td[colspan="11"]')) return null; // Ignora a linha "Nenhum resultado"
-      const tds = tr.querySelectorAll("td");
-      return [
-        tds[0]?.textContent, tds[1]?.textContent, tds[2]?.textContent, tds[3]?.textContent, tds[4]?.textContent,
-        tds[5]?.textContent, tds[6]?.textContent, tds[7]?.textContent, tds[8]?.textContent.replace('⚠️','').trim(),
-        Array.from(tds[9].querySelectorAll('button')).map(b => b.title).join('; ')
-      ];
-    }).filter(Boolean); // Remove linhas nulas
-    const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, planilha, "PlanosVigentes");
-    XLSX.writeFile(wb, "planos_vigentes.xlsx");
-}
-
-async function importarHoras(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    Swal.fire({ title: 'Importando...', text: 'Aguarde enquanto os dados são processados.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const data = new Uint8Array(event.target.result);
-        const workbook = XLSX.read(data, { type: "array" });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const registros = XLSX.utils.sheet_to_json(sheet);
-        let atualizados = 0;
-        for (const linha of registros) {
-          const chassi = String(linha["PIN"] || "").trim();
-          const horas = parseFloat(String(linha["Horas totais do motor"]).replace(",", "."));
-          if (!chassi || isNaN(horas)) continue;
-          
-          const planoParaAtualizar = dadosTotais.find(p => p.chassi === chassi);
-          if (planoParaAtualizar) {
-            const ref = doc(db, tipoChecklist, planoParaAtualizar.id);
-            await updateDoc(ref, { horasAtuais: horas });
-            atualizados++;
-          }
-        }
-        Swal.fire('Sucesso!', `Importação concluída. ${atualizados} registros atualizados.`, 'success');
-        carregarDados();
-      } catch (err) {
-        Swal.fire('Erro!', `Ocorreu um erro durante a importação: ${err.message}`, 'error');
+  function alertaPorData(d) {
+      if (d.horasAtuais || d.statusChecklist === 'Concluído') return false;
+      const datasRealizadas = Object.values(d.datasChecklist || {}).map(info => info.data);
+      const dataLimite = new Date();
+      dataLimite.setMonth(dataLimite.getMonth() - 4);
+      if (datasRealizadas.length === 0) {
+          return d.dataInicioContrato ? new Date(d.dataInicioContrato) < dataLimite : false;
       }
-    };
-    reader.readAsArrayBuffer(file);
-}
+      const ultimaData = datasRealizadas.reduce((max, data) => new Date(data) > new Date(max) ? data : max);
+      return new Date(ultimaData) < dataLimite;
+  }
 
-// --- Funções de Modal ---
-window.abrirFormularioNovoPlano = () => document.getElementById("popupNovoPlano").classList.add('visible');
-window.fecharNovoPlano = () => document.getElementById("popupNovoPlano").classList.remove('visible');
+  function alertaDoItem(d) {
+      const horasAtuais = parseFloat(d.horasAtuais || 0);
+      if (!horasAtuais) return false;
+      const checklistsPendentes = (d.checklistRealizado || []).filter(item => !isNaN(parseFloat(item)) && !(d.datasChecklist || {})[item]);
+      return checklistsPendentes.some(item => horasAtuais >= (parseFloat(item) - 60));
+  }
 
-window.abrirDataChecklist = (id, valor) => {
-    // 1. Encontra o plano completo no nosso array de dados.
-    const plano = dadosTotais.find(p => p.id === id);
-    if (!plano) {
-        console.error("Plano não encontrado para o ID:", id);
-        return;
-    }
+  function configurarListeners() {
+      lucide.createIcons();
+      document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
+      document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
+      document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
+      flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
+      document.getElementById("btn-exportar").addEventListener("click", exportarParaExcel);
+      document.getElementById("btn-importar").addEventListener("click", () => document.getElementById("arquivo-importar").click());
+      document.getElementById("arquivo-importar").addEventListener("change", importarHoras);
+      document.getElementById("painel-detalhes").addEventListener('click', (event) => {
+          const button = event.target.closest('button.btn-delete');
+          if (button) apagarPlano(button.dataset.id);
+      });
+      setInterval(carregarDados, 60000); // Auto-refresh
+  }
 
-    // 2. Pega as informações específicas do checklist (data e OS).
-    const info = (plano.datasChecklist || {})[valor] || {};
-    const dataPreenchida = info.data || '';
-    const osPreenchida = info.os || '';
+  async function apagarPlano(id) {
+      const plano = dadosTotais.find(p => p.id === id);
+      const result = await Swal.fire({
+          title: 'Tem certeza?', text: `Deseja apagar o plano do cliente "${plano.nomeCliente}" (chassi: ${plano.chassi})?`,
+          icon: 'warning', showCancelButton: true, confirmButtonText: 'Sim, apagar!', cancelButtonText: 'Cancelar'
+      });
+      if (result.isConfirmed) {
+          try {
+              await deleteDoc(doc(db, tipoChecklist, id));
+              Swal.fire('Apagado!', 'Plano apagado com sucesso.', 'success');
+              carregarDados();
+          } catch (error) {
+              Swal.fire('Erro!', 'Falha ao apagar o plano.', 'error');
+          }
+      }
+  }
 
-    // 3. Lógica de permissão (agora com os dados corretos).
-    if (!podeEditar) {
-        if (dataPreenchida) {
-            // Se não pode editar, mas os dados existem, mostra o pop-up de visualização.
-            Swal.fire({
-                title: `Checklist: ${valor}`,
-                html: `<b>Data:</b> ${formatarDataBR(dataPreenchida)}  
-<b>OS:</b> ${osPreenchida || 'Não informada'}`,
-                icon: 'info',
-                confirmButtonText: 'Fechar'
-            });
-        }
-        // Se não pode editar e os dados não existem, não faz nada (o botão branco não terá ação).
-        return;
-    }
+  function exportarParaExcel() {
+      const headers = ["Data Início", "Data Fim", "Cliente", "Plano Vendido", "Chassi", "Modelo", "Horas Iniciais", "Horas Finais", "Horas Atuais", "Checklist"];
+      const linhas = dadosTotais.map(d => [
+        formatarDataBR(d.dataInicioContrato), formatarDataBR(d.dataFimContrato), d.nomeCliente, d.planoVendido, d.chassi,
+        d.modelo, d.horasIniciais, d.horasFinais, d.horasAtuais,
+        (d.checklistRealizado || []).join('; ')
+      ]);
+      const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, planilha, "PlanosVigentes");
+      XLSX.writeFile(wb, "planos_vigentes.xlsx");
+  }
 
-    // 4. Se PODE editar, abre o modal para edição ou adição.
-    document.getElementById('docIdChecklistData').value = id;
-    document.getElementById('valorChecklistData').value = valor;
-    document.getElementById('inputDataChecklist').value = dataPreenchida || new Date().toISOString().split('T')[0];
-    document.getElementById('osChecklistData').value = osPreenchida || '';
-    
-    document.getElementById('popupChecklistData').classList.add('visible');
-};
+  async function importarHoras(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      Swal.fire({ title: 'Importando...', text: 'Aguarde...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const registros = XLSX.utils.sheet_to_json(sheet);
+          let atualizados = 0;
+          for (const linha of registros) {
+            const chassi = String(linha["PIN"] || "").trim();
+            const horas = parseFloat(String(linha["Horas totais do motor"]).replace(",", "."));
+            if (!chassi || isNaN(horas)) continue;
+            const planoParaAtualizar = dadosTotais.find(p => p.chassi === chassi);
+            if (planoParaAtualizar) {
+              await updateDoc(doc(db, tipoChecklist, planoParaAtualizar.id), { horasAtuais: horas });
+              atualizados++;
+            }
+          }
+          Swal.fire('Sucesso!', `Importação concluída. ${atualizados} registros atualizados.`, 'success');
+          carregarDados();
+        } catch (err) { Swal.fire('Erro!', `Ocorreu um erro na importação: ${err.message}`, 'error'); }
+      };
+      reader.readAsArrayBuffer(file);
+  }
 
+  // --- Funções do Modal de Checklist ---
+  window.abrirDataChecklist = (id, valor) => {
+      const plano = dadosTotais.find(p => p.id === id);
+      if (!plano) return;
+      const info = (plano.datasChecklist || {})[valor] || {};
+      if (!podeEditar) {
+          if (info.data) Swal.fire({ title: `Checklist: ${valor}`, html: `<b>Data:</b> ${formatarDataBR(info.data)}  
+<b>OS:</b> ${info.os || 'N/A'}`, icon: 'info' });
+          return;
+      }
+      document.getElementById('docIdChecklistData').value = id;
+      document.getElementById('valorChecklistData').value = valor;
+      document.getElementById('inputDataChecklist').value = info.data || new Date().toISOString().split('T')[0];
+      document.getElementById('osChecklistData').value = info.os || '';
+      document.getElementById('popupChecklistData').classList.add('visible');
+  };
+  window.fecharPopupDataChecklist = () => document.getElementById('popupChecklistData').classList.remove('visible');
+  window.salvarDataChecklist = async () => {
+      const id = document.getElementById('docIdChecklistData').value;
+      const valor = document.getElementById('valorChecklistData').value;
+      const data = document.getElementById('inputDataChecklist').value;
+      if (!data) return Swal.fire("Atenção", "Preencha a data.", "warning");
+      const os = document.getElementById('osChecklistData').value.trim();
+      const docRef = doc(db, tipoChecklist, id);
+      try {
+          const docSnap = await getDoc(docRef);
+          const dadosAtuais = docSnap.data();
+          const datasChecklist = dadosAtuais.datasChecklist || {};
+          datasChecklist[valor] = { data, os };
+          await updateDoc(docRef, { datasChecklist });
+          fecharPopupDataChecklist();
+          carregarDados();
+          Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Checklist atualizado!', showConfirmButton: false, timer: 2000 });
+      } catch (error) { Swal.fire('Erro!', `Falha ao salvar: ${error.message}`, 'error'); }
+  };
 
-window.fecharPopupDataChecklist = () => document.getElementById('popupChecklistData').classList.remove('visible');
+  function formatarDataBR(data) {
+    if (!data) return "";
+    const [ano, mes, dia] = data.split('-');
+    return (dia && mes && ano) ? `${dia}/${mes}/${ano}` : data;
+  }
 
-window.abrirPopupEdicao = (id) => {
-    const plano = dadosTotais.find(p => p.id === id);
-    if (!plano) return;
-    document.getElementById('editarPlanoId').value = id;
-    document.getElementById('editarCliente').value = plano.nomeCliente || '';
-    document.getElementById('editarPlanoVendido').value = plano.planoVendido || '';
-    document.getElementById('editarModelo').value = plano.modelo || '';
-    document.getElementById('editarChassi').value = plano.chassi || '';
-    document.getElementById('editarHorasIni').value = plano.horasIniciais || '';
-    document.getElementById('editarHorasFim').value = plano.horasFinais || '';
-    document.getElementById('editarDataIni').value = plano.dataInicioContrato || '';
-    document.getElementById('editarDataFim').value = plano.dataFimContrato || '';
-    document.getElementById('editarValorNegociado').value = plano.valorNegociado || '';
-    
-    const container = document.getElementById('checklist-container-editar');
-    container.innerHTML = '';
-    const checklistsFixos = ["ÓLEO", "50", "100", "300", "600", "900", "1200", "Server+", "Lastragem"];
-    const todosChecklists = [...new Set([...checklistsFixos, ...(plano.checklistRealizado || [])])].sort((a,b) => {
-        if (a === "ÓLEO") return -1; if (b === "ÓLEO") return 1;
-        if (isNaN(parseFloat(a))) return 1; if (isNaN(parseFloat(b))) return -1;
-        return parseFloat(a) - parseFloat(b);
-    });
-    
-    todosChecklists.forEach(val => {
-        const isChecked = (plano.checklistRealizado || []).includes(val);
-        container.innerHTML += `<label><input type="checkbox" class="checklistEditarPlano" value="${val}" ${isChecked ? 'checked' : ''}> ${val}</label>`;
-    });
-
-    document.getElementById('popupEditarPlano').classList.add('visible');
-};
-
-window.fecharEditarPlano = () => document.getElementById('popupEditarPlano').classList.remove('visible');
-
-window.salvarDataChecklist = async () => {
-    const id = document.getElementById('docIdChecklistData').value;
-    const valor = document.getElementById('valorChecklistData').value;
-    const data = document.getElementById('inputDataChecklist').value;
-    const os = document.getElementById('osChecklistData').value.trim();
-    if (!data) return Swal.fire("Atenção", "Preencha a data antes de salvar.", "warning");
-
-    const docRef = doc(db, tipoChecklist, id);
-    try {
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) return Swal.fire("Erro", "Documento não encontrado.", "error");
-        
-        const dados = docSnap.data();
-        const datasChecklist = dados.datasChecklist || {};
-        datasChecklist[valor] = { data, os };
-        
-        await updateDoc(docRef, { datasChecklist });
-        fecharPopupDataChecklist();
-        carregarDados();
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Checklist atualizado!', showConfirmButton: false, timer: 2000 });
-    } catch (error) {
-        Swal.fire('Erro!', `Falha ao salvar dados do checklist: ${error.message}`, 'error');
-    }
-};
-
-window.salvarNovoPlano = async () => {
-    const filial = (userData.filial || [])[0];
-    if (!filial) return Swal.fire("Erro", "Filial do usuário não encontrada.", "error");
-
-    const novoPlano = {
-        nomeCliente: document.getElementById("novoCliente").value.trim(),
-        planoVendido: document.getElementById("novoPlanoVendido").value,
-        modelo: document.getElementById("novoModelo").value.trim(),
-        chassi: document.getElementById("novoChassi").value.trim(),
-        horasIniciais: parseFloat(document.getElementById("novoHorasIni").value) || 0,
-        horasFinais: parseFloat(document.getElementById("novoHorasFim").value) || 0,
-        dataInicioContrato: document.getElementById("novoDataIni").value,
-        dataFimContrato: document.getElementById("novoDataFim").value,
-        valorNegociado: parseFloat(document.getElementById("novoValorNegociado").value) || 0,
-        checklistRealizado: Array.from(document.querySelectorAll(".checklistNovoPlano:checked")).map(cb => cb.value),
-        datasChecklist: {},
-        statusChecklist: "Em andamento",
-        comentarioResponsavel: "",
-        dataCriacao: new Date().toISOString(),
-        filial: filial.toLowerCase().trim()
-    };
-
-    if (!novoPlano.nomeCliente || !novoPlano.chassi) {
-        return Swal.fire("Atenção", "Os campos Cliente e Chassi são obrigatórios.", "warning");
-    }
-
-    try {
-        await addDoc(collection(db, tipoChecklist), novoPlano);
-        fecharNovoPlano();
-        limparFormularioNovoPlano();
-        carregarDados();
-        Swal.fire('Sucesso!', 'Novo plano salvo com sucesso!', 'success');
-    } catch (error) {
-        Swal.fire('Erro!', `Falha ao salvar o novo plano: ${error.message}`, 'error');
-    }
-};
-
-window.salvarEdicaoPlano = async () => {
-    const id = document.getElementById('editarPlanoId').value;
-    if (!id) return;
-
-    const dadosAtualizados = {
-        nomeCliente: document.getElementById('editarCliente').value,
-        planoVendido: document.getElementById('editarPlanoVendido').value,
-        modelo: document.getElementById('editarModelo').value,
-        chassi: document.getElementById('editarChassi').value,
-        horasIniciais: parseFloat(document.getElementById('editarHorasIni').value) || 0,
-        horasFinais: parseFloat(document.getElementById('editarHorasFim').value) || 0,
-        dataInicioContrato: document.getElementById('editarDataIni').value,
-        dataFimContrato: document.getElementById('editarDataFim').value,
-        valorNegociado: parseFloat(document.getElementById('editarValorNegociado').value) || 0,
-        checklistRealizado: Array.from(document.querySelectorAll(".checklistEditarPlano:checked")).map(cb => cb.value)
-    };
-
-    try {
-        await updateDoc(doc(db, tipoChecklist, id), dadosAtualizados);
-        fecharEditarPlano();
-        carregarDados();
-        Swal.fire('Sucesso!', 'Plano atualizado com sucesso!', 'success');
-    } catch (error) {
-        Swal.fire('Erro!', `Falha ao atualizar o plano: ${error.message}`, 'error');
-    }
-};
-
-// --- Funções Auxiliares ---
-function limparFormularioNovoPlano() {
-  document.getElementById("novoCliente").value = "";
-  document.getElementById("novoPlanoVendido").value = "";
-  document.getElementById("novoModelo").value = "";
-  document.getElementById("novoChassi").value = "";
-  document.getElementById("novoHorasIni").value = "";
-  document.getElementById("novoHorasFim").value = "";
-  document.getElementById("novoDataIni").value = "";
-  document.getElementById("novoDataFim").value = "";
-  document.getElementById("novoValorNegociado").value = "";
-  document.querySelectorAll(".checklistNovoPlano").forEach(cb => cb.checked = false);
-  document.getElementById("inputChecklistManual").value = "";
-}
-
-window.adicionarChecklistManual = () => {
-  const valor = document.getElementById("inputChecklistManual").value.trim();
-  if (!valor) return;
-  const container = document.getElementById("checklist-container");
-  const label = document.createElement("label");
-  label.innerHTML = `<input type="checkbox" class="checklistNovoPlano" value="${valor}" checked /> ${valor}`;
-  container.appendChild(label);
-  document.getElementById("inputChecklistManual").value = "";
-}
-
-function formatarDataBR(data) {
-  if (!data) return "";
-  const [ano, mes, dia] = data.split('-');
-  if (!dia || !mes || !ano) return data; // Retorna o original se o formato for inesperado
-  return `${dia}/${mes}/${ano}`;
-}
-
-  // --- INÍCIO DA EXECUÇÃO ---
   iniciarPagina();
 </script>
 
