@@ -106,9 +106,9 @@
                 <input type="file" id="arquivo-importar" accept=".xlsx" style="display:none;">
                 <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
             </button>
-            <button id="btn-novo-plano" class="btn-acao" title="Novo Plano">
-                <i data-lucide="plus-circle"></i>
-            </button>
+          <a href="/Pages/Formularios/form-planosvigentes.html" id="btn-novo-plano" class="btn-acao" title="Novo Plano">
+              <i data-lucide="plus-circle"></i>
+          </a>
         </div>
       </div>
       <div class="content-card-body">
@@ -437,7 +437,7 @@ function renderizarTabela(dados) {
     }).join("");
 
     let acoesHTML = `<div class="acoes-cell">
-        ${podeEditar ? `<button class="btn-acao btn-edit" data-id="${d.id}" title="Editar Plano"><i data-lucide="pencil" style="pointer-events: none;"></i></button>` : ''}
+        ${podeEditar ? `<a href="/Pages/Formularios/form-planosvigentes.html?id=${d.id}" class="btn-acao" title="Editar Plano"><i data-lucide="pencil"></i></a>` : ''}
         ${podeApagar ? `<button class="btn-acao btn-delete" data-id="${d.id}" title="Apagar Plano"><i data-lucide="trash-2" style="pointer-events: none;"></i></button>` : ''}
     </div>`;
 

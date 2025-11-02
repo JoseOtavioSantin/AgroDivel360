@@ -138,3 +138,30 @@
         align-items: center;
     }
 
+    /* Estilo para os botões de ação na tabela (Editar/Apagar) */
+.btn-acao {
+    display: inline-flex; /* Essencial para alinhar o ícone no centro */
+    align-items: center;
+    justify-content: center;
+    background-color: #193b7c; /* Fundo azul escuro, como na imagem */
+    color: white;             /* Ícone branco */
+    border: none;
+    border-radius: 6px;       /* Bordas arredondadas */
+    padding: 6px;             /* Um pouco de espaço interno */
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;    /* Remove o sublinhado do link */
+    margin: 0 2px;            /* Pequeno espaçamento entre os botões */
+}
+
+.btn-acao:hover {
+    background-color: #132a5a; /* Um tom mais escuro ao passar o mouse */
+}
+
+/* Ajuste para o ícone dentro do botão */
+.btn-acao i {
+    width: 18px;
+    height: 18px;
+    pointer-events: none; /* Garante que o clique seja no botão, não no ícone */
+}
+
