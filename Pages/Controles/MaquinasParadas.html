@@ -18,59 +18,30 @@
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css">
 
-    <style>
-    /* Animação de alerta para linhas com mais de 5 dias de parada */
-    tr.linha-alerta td {
-      animation: pulsarAlerta 1.2s ease-in-out infinite alternate;
-    }
-    @keyframes pulsarAlerta {
-      from { background-color: #950000; }
-      to { background-color: #c67903; }
-    }
-
-    /* Alinhamento dos botões no cabeçalho do card */
-    .content-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .header-actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    /* Cores para os botões de ação na tabela */
-    .btn-edit { background-color: #f39c12 !important; }
-    .btn-edit:hover { background-color: #e67e22 !important; }
-
-    .btn-concluir { background-color: #27ae60 !important; }
-    .btn-concluir:hover { background-color: #229954 !important; }
-
-    .btn-cancelar { background-color: #c0392b !important; }
-    .btn-cancelar:hover { background-color: #a52335 !important; }
-
-    .btn-delete { background-color: #e74c3c !important; }
-    .btn-delete:hover { background-color: #c0392b !important; }
-    
-    .acoes-cell {
-        display: flex;
-        gap: 2px; /* Define o espaçamento entre os botões para 2px */
-    }
+  <style>
+    tr.linha-alerta td { animation: pulsarAlerta 1.2s ease-in-out infinite alternate; }
+    @keyframes pulsarAlerta { from { background-color: #950000; } to { background-color: #c67903; } }
+    .content-card-header { display: flex; justify-content: space-between; align-items: center; }
+    .header-actions { display: flex; gap: 10px; }
+    .btn-acao { display: inline-flex; align-items: center; justify-content: center; padding: 8px; border-radius: 6px; border: none; cursor: pointer; color: white; text-decoration: none; }
+    .btn-acao i { width: 16px; height: 16px; }
+    .btn-edit { background-color: #f39c12; } .btn-edit:hover { background-color: #e67e22; }
+    .btn-concluir { background-color: #27ae60; } .btn-concluir:hover { background-color: #229954; }
+    .btn-cancelar { background-color: #c0392b; } .btn-cancelar:hover { background-color: #a52335; }
+    .btn-delete { background-color: #e74c3c; } .btn-delete:hover { background-color: #c0392b; }
+    .acoes-cell { display: flex; gap: 4px; }
   </style>
-
 </head>
 <body>
 
   <nav id="sidebar-placeholder"></nav>
 
-  <!-- Conteúdo Principal da Página -->
   <section class="home">
     <div class="text">
       <h1>Controle de Máquinas Paradas</h1>
       <p id="dynamic-title">Carregando...</p>
     </div>
 
-    <!-- CARDS DE RESUMO -->
     <div class="dashboard-cards">
       <div class="dashboard-card red-card"><h2 id="card-total-aberto">0</h2><p><i data-lucide="alert-circle"></i> Total em Aberto</p></div>
       <div class="dashboard-card orange-card"><h2 id="card-mes-aberto">0</h2><p><i data-lucide="calendar-plus"></i> Abertas no Mês</p></div>
@@ -78,35 +49,24 @@
       <div class="dashboard-card green-card"><h2 id="card-concluido-30d">0</h2><p><i data-lucide="check-circle"></i> Concluído (30 dias )</p></div>
     </div>
 
-    <!-- CONTAINER PRINCIPAL DO DASHBOARD -->
     <div class="content-card">
       <div class="content-card-header">
         <h3>Acompanhamento de Paradas</h3>
         <div class="header-actions">
-          <button class="btn-acao" title="Ir para Análise" onclick="window.location.href='analisarparadas.html'"><i data-lucide="pie-chart"></i></button>
-          <button id="btn-add-maquina" class="btn-acao" title="Adicionar Máquina Parada"><i data-lucide="plus"></i></button>
+          <a href="analisarparadas.html" class="btn-acao" title="Ir para Análise"><i data-lucide="pie-chart"></i></a>
+          <a href="/Pages/Formularios/form-maquinasparadas.html" class="btn-acao" title="Adicionar Máquina Parada"><i data-lucide="plus"></i></a>
         </div>
       </div>
       <div class="content-card-body">
         <div class="filters">
           <input id="filtro-cliente" type="text" placeholder="Buscar por cliente ou chassi..." />
           <input id="filtro-tecnico" type="text" placeholder="Buscar por técnico..." />
-          <select id="filtro-status">
-            <option value="">Todos os Status</option>
-            <option value="parada">Em Andamento</option>
-            <option value="concluida">Concluído</option>
-            <option value="cancelada">Cancelado</option>
-          </select>
+          <select id="filtro-status"><option value="">Todos</option><option value="parada">Em Andamento</option><option value="concluida">Concluído</option><option value="cancelada">Cancelado</option></select>
           <input id="filtro-periodo" placeholder="Selecione o período" />
         </div>
-
         <div class="table-wrapper">
           <table>
-            <thead>
-              <tr>
-                <th>Data Parada</th><th>Cliente</th><th>Chassis</th><th>Modelo</th><th>Horas</th><th>OS</th><th>Técnico</th><th>Parada Por</th><th>Ações</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Data Parada</th><th>Cliente</th><th>Chassis</th><th>Modelo</th><th>Horas</th><th>OS</th><th>Técnico</th><th>Parada Por</th><th>Ações</th></tr></thead>
             <tbody id="tabela-maquinas"></tbody>
           </table>
         </div>
@@ -114,69 +74,27 @@
     </div>
   </section>
 
-  <!-- MODAIS (POPUPS) -->
-
-  <!-- Modal Adicionar/Editar -->
-  <div id="maquina-modal" class="modal-overlay">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h3 id="modal-title">Adicionar Nova Máquina Parada</h3>
-        <button class="modal-close-btn" onclick="fecharModal('maquina-modal')">&times;</button>
-      </div>
-      <div class="modal-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <input type="hidden" id="maquina-id">
-        <div class="form-group"><label for="form-dataParada">Data da Parada*</label><input type="date" id="form-dataParada"></div>
-        <div class="form-group"><label for="form-cliente">Cliente*</label><input type="text" id="form-cliente"></div>
-        <div class="form-group"><label for="form-chassis">Chassis*</label><input type="text" id="form-chassis"></div>
-        <div class="form-group"><label for="form-modelo">Modelo</label><input type="text" id="form-modelo"></div>
-        <div class="form-group"><label for="form-horas">Horas</label><input type="number" id="form-horas"></div>
-        <div class="form-group"><label for="form-os">Ordem de Serviço</label><input type="text" id="form-os"></div>
-        <div class="form-group full-width"><label for="form-tecnico">Técnico Responsável*</label><select id="form-tecnico"><option value="">Carregando...</option></select></div>
-        <div class="form-group full-width"><label for="form-motivo">Máquina Parada Por*</label><input type="text" id="form-motivo" list="motivos-sugeridos"></div>
-        <datalist id="motivos-sugeridos"><option value="THD"></option><option value="APROVAÇÃO SEGURO"></option><option value="PEÇAS"></option><option value="APROVAÇÃO DO CLIENTE"></option><option value="FERRAMENTAS"></option><option value="SERVIÇOS DE TERCEIRO"></option><option value="GARANTIA"></option><option value="INDISPONIBILIDADE DE TÉCNICO"></option></datalist>
-        <div id="campo-curva-peca" class="form-group full-width" style="display: none;"><label for="form-curva">Curva da Peça*</label><select id="form-curva"><option value="">Selecione</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option></select></div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-btn btn-cancel" onclick="fecharModal('maquina-modal')">Cancelar</button>
-        <button id="btn-save" class="modal-btn btn-save">Salvar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Concluir -->
+  <!-- MODAIS DE AÇÃO (CONCLUIR E CANCELAR) -->
   <div id="modal-concluir" class="modal-overlay">
     <div class="modal-container" style="max-width: 400px;">
       <div class="modal-header"><h3>Concluir Parada</h3><button class="modal-close-btn" onclick="fecharModal('modal-concluir')">&times;</button></div>
-      <div class="modal-body">
-        <input type="hidden" id="maquina-id-concluir">
-        <div class="form-group"><label for="data-resolucao">Data da Resolução*</label><input type="date" id="data-resolucao"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-btn btn-cancel" onclick="fecharModal('modal-concluir')">Cancelar</button>
-        <button id="btn-save-conclusao" class="modal-btn btn-save">Confirmar Conclusão</button>
-      </div>
+      <div class="modal-body"><input type="hidden" id="maquina-id-concluir"><div class="form-group"><label for="data-resolucao">Data da Resolução*</label><input type="date" id="data-resolucao"></div></div>
+      <div class="modal-footer"><button class="modal-btn btn-cancel" onclick="fecharModal('modal-concluir')">Cancelar</button><button id="btn-save-conclusao" class="modal-btn btn-save">Confirmar</button></div>
     </div>
   </div>
 
-  <!-- Modal Cancelar -->
   <div id="modal-cancelar" class="modal-overlay">
     <div class="modal-container" style="max-width: 450px;">
       <div class="modal-header"><h3>Cancelar Parada</h3><button class="modal-close-btn" onclick="fecharModal('modal-cancelar')">&times;</button></div>
-      <div class="modal-body">
-        <input type="hidden" id="maquina-id-cancelar">
-        <div class="form-group"><label for="motivo-cancelamento">Motivo do Cancelamento*</label><textarea id="motivo-cancelamento" placeholder="Descreva o motivo..."></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="modal-btn btn-cancel" onclick="fecharModal('modal-cancelar')">Voltar</button>
-        <button id="btn-save-cancelamento" class="modal-btn btn-save" style="background: #c72c41;">Confirmar Cancelamento</button>
-      </div>
+      <div class="modal-body"><input type="hidden" id="maquina-id-cancelar"><div class="form-group"><label for="motivo-cancelamento">Motivo do Cancelamento*</label><textarea id="motivo-cancelamento" placeholder="Descreva o motivo..."></textarea></div></div>
+      <div class="modal-footer"><button class="modal-btn btn-cancel" onclick="fecharModal('modal-cancelar')">Voltar</button><button id="btn-save-cancelamento" class="modal-btn btn-save" style="background: #c72c41;">Confirmar</button></div>
     </div>
   </div>
 
 <script type="module">
   import { garantirAutenticacao } from '/assets/js/auth-guard.js';
   import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   async function iniciarPagina( ) {
     try {
@@ -185,50 +103,10 @@
       const db = getFirestore(app);
       const maquinasCollection = collection(db, "maquinasParadas");
       let dadosMaquinas = [];
-      let podeAgir = false, podeApagar = false;
-
-      if (userData.grupo?.includes("admin")) {
-        podeAgir = true;
-        podeApagar = true;
-      } else {
-        podeAgir = userData.grupo?.includes("servicos");
-      }
-
-      function setupListeners() {
-        flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
-        document.getElementById('filtro-cliente').addEventListener('input', aplicarFiltros);
-        document.getElementById('filtro-status').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtro-tecnico').addEventListener('input', aplicarFiltros);
-        document.getElementById('btn-add-maquina').addEventListener('click', () => abrirModal());
-        document.getElementById('btn-save').addEventListener('click', salvarMaquina);
-        document.getElementById('form-motivo').addEventListener('input', (e) => verificarMotivoPecas(e.target.value));
-        document.getElementById('btn-save-conclusao').addEventListener('click', salvarConclusao);
-        document.getElementById('btn-save-cancelamento').addEventListener('click', salvarCancelamento);
-        document.getElementById('tabela-maquinas').addEventListener('click', handleTableClick);
-      }
+      let podeAgir = userData.grupo?.includes("admin") || userData.grupo?.includes("servicos");
+      let podeApagar = userData.grupo?.includes("admin");
 
       window.fecharModal = (modalId) => document.getElementById(modalId).classList.remove('visible');
-
-      function verificarMotivoPecas(motivo) {
-        document.getElementById('campo-curva-peca').style.display = motivo.trim().toLowerCase() === 'peças' ? 'block' : 'none';
-      }
-
-      async function carregarTecnicosDaFilial(filiais) {
-        const select = document.getElementById('form-tecnico');
-        select.innerHTML = '<option value="">Carregando...</option>';
-        try {
-          if (!filiais?.length) throw new Error("Filiais do gestor não encontradas.");
-          const q = query(collection(db, "tecnicos"), where("filial", "in", filiais));
-          const snapshot = await getDocs(q);
-          if (snapshot.empty) throw new Error("Nenhum técnico encontrado.");
-          
-          const nomes = snapshot.docs.map(d => d.data().nome).sort();
-          select.innerHTML = '<option value="">Selecione um técnico</option>';
-          nomes.forEach(nome => select.innerHTML += `<option value="${nome}">${nome}</option>`);
-        } catch (error) {
-          select.innerHTML = `<option value="">${error.message}</option>`;
-        }
-      }
 
       async function carregarDados() {
         const filiaisLogadas = userData.filial || [];
@@ -237,12 +115,10 @@
           document.getElementById("tabela-maquinas").innerHTML = '<tr><td colspan="9" style="text-align:center;">Nenhuma filial associada.</td></tr>';
           return;
         }
-        try {
-          const q = query(maquinasCollection, where("filial", "in", filiaisLogadas));
-          const snapshot = await getDocs(q);
-          dadosMaquinas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          aplicarFiltros();
-        } catch (error) { console.error("Erro ao carregar dados:", error); }
+        const q = query(maquinasCollection, where("filial", "in", filiaisLogadas));
+        const snapshot = await getDocs(q);
+        dadosMaquinas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        aplicarFiltros();
       }
 
       function aplicarFiltros() {
@@ -262,7 +138,6 @@
           }
           return buscaCliente && buscaStatus && buscaTecnico && buscaPeriodo;
         });
-        
         renderizarTabela(dadosFiltrados);
         atualizarCards(dadosFiltrados);
       }
@@ -294,16 +169,14 @@
           if (dado.status === 'parada') {
               acoesHTML = '';
               if (podeAgir) {
-                  acoesHTML += `<button class="btn-acao btn-edit" data-id="${dado.id}" title="Editar"><i data-lucide="pencil"></i></button>`;
+                  acoesHTML += `<a href="/Pages/Formularios/form-maquinasparadas.html?id=${dado.id}" class="btn-acao btn-edit" title="Editar"><i data-lucide="pencil"></i></a>`;
                   acoesHTML += `<button class="btn-acao btn-concluir" data-id="${dado.id}" title="Concluir"><i data-lucide="check"></i></button>`;
                   acoesHTML += `<button class="btn-acao btn-cancelar" data-id="${dado.id}" title="Cancelar"><i data-lucide="x"></i></button>`;
               }
               if (podeApagar) {
                   acoesHTML += `<button class="btn-acao btn-delete" data-id="${dado.id}" title="Apagar"><i data-lucide="trash-2"></i></button>`;
               }
-              if (!podeAgir && !podeApagar) {
-                  acoesHTML = `<span>Em Andamento</span>`;
-              }
+              if (!podeAgir && !podeApagar) acoesHTML = `<span>Em Andamento</span>`;
           }
 
           tr.innerHTML = `<td>${formatarData(dado.dataParada)}</td><td>${dado.cliente||'-'}</td><td>${dado.chassis||'-'}</td><td>${dado.modelo||'-'}</td><td>${dado.horas||'-'}</td><td>${dado.os||'-'}</td><td>${dado.tecnico||'-'}</td><td>${motivoDisplay}</td><td><div class="acoes-cell">${acoesHTML}</div></td>`;
@@ -327,55 +200,6 @@
       }
 
       function formatarData(data) { return data ? data.split('-').reverse().join('/') : '-'; }
-
-      function abrirModal(id = null) {
-        const maquina = id ? dadosMaquinas.find(m => m.id === id) : null;
-        document.getElementById('modal-title').textContent = id ? 'Editar Máquina Parada' : 'Adicionar Nova Máquina Parada';
-        document.getElementById('maquina-id').value = id || '';
-        document.getElementById('form-dataParada').value = maquina?.dataParada || new Date().toISOString().split('T')[0];
-        document.getElementById('form-cliente').value = maquina?.cliente || '';
-        document.getElementById('form-chassis').value = maquina?.chassis || '';
-        document.getElementById('form-modelo').value = maquina?.modelo || '';
-        document.getElementById('form-horas').value = maquina?.horas || '';
-        document.getElementById('form-os').value = maquina?.os || '';
-        document.getElementById('form-tecnico').value = maquina?.tecnico || '';
-        document.getElementById('form-motivo').value = maquina?.motivo || '';
-        document.getElementById('form-curva').value = maquina?.curvaPeca || '';
-        verificarMotivoPecas(maquina?.motivo || '');
-        document.getElementById('maquina-modal').classList.add('visible');
-      }
-
-      async function salvarMaquina() {
-        const id = document.getElementById('maquina-id').value;
-        const motivo = document.getElementById('form-motivo').value.trim();
-        const curvaPeca = document.getElementById('form-curva').value;
-        const dados = {
-          dataParada: document.getElementById('form-dataParada').value,
-          cliente: document.getElementById('form-cliente').value.trim(),
-          chassis: document.getElementById('form-chassis').value.trim(),
-          tecnico: document.getElementById('form-tecnico').value,
-          motivo: motivo,
-          modelo: document.getElementById('form-modelo').value.trim(),
-          horas: parseInt(document.getElementById('form-horas').value) || 0,
-          os: document.getElementById('form-os').value.trim(),
-          curvaPeca: motivo.toLowerCase() === 'peças' ? curvaPeca : ''
-        };
-        if (!dados.dataParada || !dados.cliente || !dados.chassis || !dados.motivo || !dados.tecnico) return Swal.fire('Atenção', 'Preencha todos os campos obrigatórios (*).', 'warning');
-        if (motivo.toLowerCase() === 'peças' && !curvaPeca) return Swal.fire('Atenção', 'Para o motivo "Peças", a Curva da Peça é obrigatória.', 'warning');
-        
-        try {
-          if (id) {
-            await updateDoc(doc(db, "maquinasParadas", id), dados);
-          } else {
-            dados.status = 'parada';
-            dados.filial = userData.filial[0];
-            await addDoc(maquinasCollection, dados);
-          }
-          fecharModal('maquina-modal');
-          carregarDados();
-          Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Salvo com sucesso!', showConfirmButton: false, timer: 2000 });
-        } catch (error) { Swal.fire('Erro', `Falha ao salvar: ${error.message}`, 'error'); }
-      }
 
       async function salvarConclusao() {
         const id = document.getElementById('maquina-id-concluir').value;
@@ -401,39 +225,46 @@
         } catch (error) { Swal.fire('Erro', `Falha ao cancelar: ${error.message}`, 'error'); }
       }
 
-      async function handleTableClick(event) {
+      function handleTableClick(event) {
           const button = event.target.closest('button.btn-acao');
           if (!button) return;
           const id = button.dataset.id;
-          if (button.classList.contains('btn-edit')) abrirModal(id);
           if (button.classList.contains('btn-concluir')) {
             document.getElementById('maquina-id-concluir').value = id;
             document.getElementById('data-resolucao').valueAsDate = new Date();
             document.getElementById('modal-concluir').classList.add('visible');
-          }
-          if (button.classList.contains('btn-cancelar')) {
+          } else if (button.classList.contains('btn-cancelar')) {
             document.getElementById('maquina-id-cancelar').value = id;
             document.getElementById('modal-cancelar').classList.add('visible');
-          }
-          if (button.classList.contains('btn-delete')) {
+          } else if (button.classList.contains('btn-delete')) {
               const maquina = dadosMaquinas.find(m => m.id === id);
-              const result = await Swal.fire({
+              Swal.fire({
                   title: 'Tem certeza?', text: `Deseja apagar a parada do chassi "${maquina.chassis}"?`,
                   icon: 'warning', showCancelButton: true, confirmButtonText: 'Sim, apagar!', cancelButtonText: 'Cancelar'
+              }).then(async (result) => {
+                  if (result.isConfirmed) {
+                      try {
+                          await deleteDoc(doc(db, "maquinasParadas", id));
+                          carregarDados();
+                          Swal.fire('Apagado!', 'Registro apagado com sucesso.', 'success');
+                      } catch (error) { Swal.fire('Erro!', 'Falha ao apagar o registro.', 'error'); }
+                  }
               });
-              if (result.isConfirmed) {
-                  try {
-                      await deleteDoc(doc(db, "maquinasParadas", id));
-                      carregarDados();
-                      Swal.fire('Apagado!', 'Registro apagado com sucesso.', 'success');
-                  } catch (error) { Swal.fire('Erro!', 'Falha ao apagar o registro.', 'error'); }
-              }
           }
+      }
+
+      function setupListeners() {
+        flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
+        document.getElementById('filtro-cliente').addEventListener('input', aplicarFiltros);
+        document.getElementById('filtro-status').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro-tecnico').addEventListener('input', aplicarFiltros);
+        document.getElementById('btn-save-conclusao').addEventListener('click', salvarConclusao);
+        document.getElementById('btn-save-cancelamento').addEventListener('click', salvarCancelamento);
+        document.getElementById('tabela-maquinas').addEventListener('click', handleTableClick);
       }
 
       // --- INÍCIO DA EXECUÇÃO ---
       setupListeners();
-      await carregarTecnicosDaFilial(userData.filial);
       await carregarDados();
 
     } catch (error) {
