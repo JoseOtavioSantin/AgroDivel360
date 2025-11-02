@@ -52,8 +52,20 @@
             <div class="form-group"><label for="horas">Horas</label><input type="number" id="horas"></div>
             <div class="form-group"><label for="os">Ordem de Serviço</label><input type="text" id="os"></div>
             <div class="form-group full-width"><label for="tecnico">Técnico Responsável*</label><select id="tecnico" required><option value="">Carregando...</option></select></div>
-            <div class="form-group full-width"><label for="motivo">Máquina Parada Por*</label><input type="text" id="motivo" list="motivos-sugeridos" required></div>
-            <datalist id="motivos-sugeridos"><option value="THD"></option><option value="APROVAÇÃO SEGURO"></option><option value="PEÇAS"></option><option value="APROVAÇÃO DO CLIENTE"></option><option value="FERRAMENTAS"></option><option value="SERVIÇOS DE TERCEIRO"></option><option value="GARANTIA"></option><option value="INDISPONIBILIDADE DE TÉCNICO"></option></datalist>
+            <div class="form-group full-width">
+              <label for="motivo">Máquina Parada Por*</label>
+              <select id="motivo" required>
+                <option value="">Selecione o motivo...</option>
+                <option value="THD">THD</option>
+                <option value="APROVAÇÃO SEGURO">APROVAÇÃO SEGURO</option>
+                <option value="PEÇAS">PEÇAS</option>
+                <option value="APROVAÇÃO DO CLIENTE">APROVAÇÃO DO CLIENTE</option>
+                <option value="FERRAMENTAS">FERRAMENTAS</option>
+                <option value="SERVIÇOS DE TERCEIRO">SERVIÇOS DE TERCEIRO</option>
+                <option value="GARANTIA">GARANTIA</option>
+                <option value="INDISPONIBILIDADE DE TÉCNICO">INDISPONIBILIDADE DE TÉCNICO</option>
+              </select>
+            </div>
             <div id="campo-curva-peca" class="form-group full-width" style="display: none;"><label for="curva">Curva da Peça*</label><select id="curva"><option value="">Selecione</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="E">E</option></select></div>
           </div>
 
