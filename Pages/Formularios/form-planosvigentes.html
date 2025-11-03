@@ -21,7 +21,7 @@
     .form-group { display: flex; flex-direction: column; }
     .form-group label { margin-bottom: 8px; font-weight: 600; color: #333; }
     .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; font-family: inherit; background-color: #fff; box-sizing: border-box; }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: #193b7c; box-shadow: 0 0 0 2px rgba(25, 59, 124, 0.25 ); }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #193b7c; box-shadow: 0 0 0 2px rgba(25, 59, 124, 0.25  ); }
     .full-width { grid-column: 1 / -1; }
     .checklist-container-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-bottom: 15px; }
     .checklist-container-grid label { font-weight: normal; }
@@ -57,7 +57,21 @@
             <div class="form-group"><label for="horasFim">Horas Finais</label><input type="number" id="horasFim" required></div>
             <div class="form-group"><label for="dataIni">Data Início</label><input type="date" id="dataIni" required></div>
             <div class="form-group"><label for="dataFim">Data Fim</label><input type="date" id="dataFim" required></div>
-            <div class="form-group full-width"><label for="valorNegociado">Valor Negociado (R$)</label><input type="number" id="valorNegociado" required></div>
+            
+            <!-- CAMPO "VENDIDO POR" E "VALOR NEGOCIADO" NA MESMA LINHA -->
+            <div class="form-group">
+              <label for="vendidoPor">Vendido por:</label>
+              <select id="vendidoPor" required>
+                <option value="">Selecione...</option>
+                <option value="Comercial">Comercial</option>
+                <option value="Pós-Venda">Pós-Venda</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="valorNegociado">Valor Negociado (R$)</label>
+              <input type="number" id="valorNegociado" required>
+            </div>
             
             <div class="full-width">
               <label class="form-group" style="font-weight: 600; color: #333;">Checklists do Plano</label>
@@ -95,7 +109,7 @@
 
     // --- FUNÇÕES DO FORMULÁRIO ---
 
-    window.adicionarChecklistManual = ( ) => {
+    window.adicionarChecklistManual = (  ) => {
       const input = document.getElementById("inputChecklistManual");
       const valor = input.value.trim();
       if (!valor) return;
@@ -137,6 +151,7 @@
             document.getElementById('dataIni').value = data.dataInicioContrato || '';
             document.getElementById('dataFim').value = data.dataFimContrato || '';
             document.getElementById('valorNegociado').value = data.valorNegociado || '';
+            document.getElementById('vendidoPor').value = data.vendidoPor || ''; // Carrega o valor do novo campo
             
             renderizarChecklists(data.checklistRealizado || []);
         } else {
@@ -164,10 +179,11 @@
             dataFimContrato: document.getElementById("dataFim").value,
             valorNegociado: parseFloat(document.getElementById("valorNegociado").value) || 0,
             checklistRealizado: Array.from(document.querySelectorAll(".checklistPlano:checked")).map(cb => cb.value),
+            vendidoPor: document.getElementById("vendidoPor").value // Salva o valor do novo campo
         };
 
-        if (!dadosPlano.nomeCliente || !dadosPlano.chassi || !dadosPlano.modelo) {
-            return Swal.fire("Atenção", "Os campos Cliente, Chassi e Modelo são obrigatórios.", "warning");
+        if (!dadosPlano.nomeCliente || !dadosPlano.chassi || !dadosPlano.modelo || !dadosPlano.vendidoPor) {
+            return Swal.fire("Atenção", "Os campos Cliente, Chassi, Modelo e Vendido por são obrigatórios.", "warning");
         }
 
         Swal.fire({
