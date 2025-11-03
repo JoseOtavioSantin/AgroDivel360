@@ -51,6 +51,19 @@
       from { background-color: #950000; }
       to { background-color: #c67903; }
     }
+    /* Estilo para a área de filtros */
+    .filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr ));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .filters input, .filters select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
   </style>
 </head>
 <body>
@@ -86,15 +99,22 @@
         </div>
       </div>
       <div class="content-card-body">
+        <!-- ÁREA DE FILTROS ATUALIZADA -->
         <div class="filters">
-          <input id="filtro-cliente" type="text" placeholder="Buscar cliente..." />
+          <input id="filtro-cliente" type="text" placeholder="Buscar por cliente..." />
+          <input id="filtro-chassi" type="text" placeholder="Buscar por chassi..." />
+          <select id="filtro-filial">
+            <option value="">Todas as Filiais</option>
+            <option value="campos novos">Campos Novos</option>
+            <option value="rio do sul">Rio do Sul</option>
+            <option value="lages">Lages</option>
+          </select>
           <select id="filtro-status">
             <option value="">Todos os status</option>
             <option value="Concluído">Concluído</option>
             <option value="Em andamento">Em andamento</option>
           </select>
-          <input id="filtro-consultor" type="text" placeholder="Buscar consultor..." />
-          <input id="filtro-periodo" placeholder="Selecione o período" />
+          <input id="filtro-periodo" placeholder="Filtrar por período" />
         </div>
 
         <div class="table-wrapper">
@@ -112,7 +132,7 @@
     </div>
   </section>
 
-  <!-- MODAL PARA ADICIONAR/EDITAR DATA E OS DO CHECKLIST (ÚNICO MODAL RESTANTE) -->
+  <!-- MODAL PARA ADICIONAR/EDITAR DATA E OS DO CHECKLIST -->
   <div id="popupChecklistData" class="modal-overlay">
     <div class="modal-container" style="max-width: 400px;">
       <div class="modal-header">
@@ -144,7 +164,7 @@
   let podeEditar = false;
   let podeApagar = false;
 
-  async function iniciarPagina( ) {
+  async function iniciarPagina(  ) {
     try {
       userData = await garantirAutenticacao();
       const app = getApp();
@@ -195,10 +215,12 @@
     aplicarFiltros();
   }
 
+  // FUNÇÃO DE FILTRO ATUALIZADA
   function aplicarFiltros() {
     const clienteFiltro = document.getElementById("filtro-cliente").value.toLowerCase();
+    const chassiFiltro = document.getElementById("filtro-chassi").value.toLowerCase();
+    const filialFiltro = document.getElementById("filtro-filial").value.toLowerCase();
     const statusFiltro = document.getElementById("filtro-status").value;
-    const consultorFiltro = document.getElementById("filtro-consultor").value.toLowerCase();
     const instance = document.getElementById("filtro-periodo")._flatpickr;
     const selectedDates = instance ? instance.selectedDates : [];
 
@@ -212,10 +234,13 @@
       const totalChecklist = (d.checklistRealizado || []).length;
       const preenchidos = (d.checklistRealizado || []).filter(item => (d.datasChecklist || {})[item]).length;
       d.statusChecklist = totalChecklist > 0 && preenchidos === totalChecklist ? "Concluído" : "Em andamento";
+      
       const dentroDoPeriodo = !dataInicio || (d.dataInicioContrato >= dataInicio && d.dataInicioContrato <= dataFim);
+      
       return (d.nomeCliente || "").toLowerCase().includes(clienteFiltro) &&
+        (d.chassi || "").toLowerCase().includes(chassiFiltro) &&
+        (filialFiltro === "" || (d.filial || "").toLowerCase() === filialFiltro) &&
         (statusFiltro === "" || d.statusChecklist === statusFiltro) &&
-        (d.consultor || "").toLowerCase().includes(consultorFiltro) &&
         dentroDoPeriodo;
     });
 
@@ -247,7 +272,7 @@
     });
     
     const painel = document.getElementById("painel-detalhes");
-    painel.innerHTML = dados.length === 0 ? '<tr><td colspan="11" style="text-align: center; padding: 20px;">Nenhum plano encontrado.</td></tr>' : '';
+    painel.innerHTML = dados.length === 0 ? '<tr><td colspan="11" style="text-align: center; padding: 20px;">Nenhum plano encontrado com os filtros aplicados.</td></tr>' : '';
 
     dados.forEach(d => {
       const statusClass = d.statusChecklist === "Concluído" ? "status-concluido" : "status-em-andamento";
@@ -301,11 +326,13 @@
       return checklistsPendentes.some(item => horasAtuais >= (parseFloat(item) - 60));
   }
 
+  // FUNÇÃO DE LISTENERS ATUALIZADA
   function configurarListeners() {
       lucide.createIcons();
       document.getElementById("filtro-cliente").addEventListener("input", aplicarFiltros);
+      document.getElementById("filtro-chassi").addEventListener("input", aplicarFiltros);
+      document.getElementById("filtro-filial").addEventListener("change", aplicarFiltros);
       document.getElementById("filtro-status").addEventListener("change", aplicarFiltros);
-      document.getElementById("filtro-consultor").addEventListener("input", aplicarFiltros);
       flatpickr("#filtro-periodo", { mode: "range", dateFormat: "Y-m-d", locale: "pt", onChange: aplicarFiltros });
       document.getElementById("btn-exportar").addEventListener("click", exportarParaExcel);
       document.getElementById("btn-importar").addEventListener("click", () => document.getElementById("arquivo-importar").click());
