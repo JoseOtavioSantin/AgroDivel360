@@ -1,14 +1,13 @@
 // assets/js/components/CalendarioRitmo.js
 
-// 1. Importa as dependências do Firebase, incluindo as novas para autenticação e exclusão.
 import { db } from '../firebase-config.js';
-import { collection, query, where, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
 // --- VARIÁVEIS DE ESTADO ---
 let dataBase = getInicioDaSemana( );
-let tarefasDaSemanaCache = []; // Guarda as tarefas buscadas para evitar novas buscas ao filtrar.
-let gestorSelecionado = 'todos'; // Guarda o valor do filtro selecionado.
+let tarefasDaSemanaCache = [];
+let gestorSelecionado = 'todos';
 
 // --- FUNÇÕES AUXILIARES ---
 function getInicioDaSemana() {
@@ -27,38 +26,43 @@ function toISODateString(date) {
     return `${ano}-${mes}-${dia}`;
 }
 
-// --- LÓGICA DO MODAL (ATUALIZADA COM BOTÃO DE EXCLUIR) ---
+
 function mostrarModalDetalhes(tarefa) {
     const modalAntigo = document.getElementById('tarefa-modal-overlay');
     if (modalAntigo) modalAntigo.remove();
 
     let corpoModal = `
         <p><strong>Gestor:</strong> ${tarefa.gestor}</p>
-        <p><strong>Descrição:</strong> ${tarefa.descricao}</p>
+        <p><strong>Descrição:</strong> ${tarefa.descricao || 'Nenhuma.'}</p>
     `;
 
     if (tarefa.tipo === 'deslocamento') {
         corpoModal += `<p><strong>Filial:</strong> ${tarefa.filial || 'N/A'}</p>`;
-        if (tarefa.dataFim) {
-            corpoModal += `<p><strong>Data de Volta:</strong> ${new Date(tarefa.dataFim.replace(/-/g, '/')).toLocaleDateString()}</p>`;
-        }
     } else if (tarefa.tipo === 'reuniao') {
         if (tarefa.horarioInicio) {
             corpoModal += `<p><strong>Horário:</strong> ${tarefa.horarioInicio} às ${tarefa.horarioFim || 'N/A'}</p>`;
         }
     }
 
-    // Lógica de permissão para o botão de excluir
     const auth = getAuth();
     const currentUser = auth.currentUser;
     let footerModal = '';
 
     if (currentUser && currentUser.uid === tarefa.criadorUid) {
-        footerModal = `
-            <div class="modal-footer">
-                <button id="btn-excluir-tarefa" class="btn-danger">Excluir Tarefa</button>
-            </div>
-        `;
+        if (tarefa.idGrupo) {
+            footerModal = `
+                <div class="modal-footer" style="display: flex; justify-content: space-between; gap: 10px;">
+                    <button id="btn-excluir-dia" class="btn-secondary">Apagar somente este dia</button>
+                    <button id="btn-excluir-grupo" class="btn-danger">Apagar todo o agendamento</button>
+                </div>
+            `;
+        } else {
+            footerModal = `
+                <div class="modal-footer">
+                    <button id="btn-excluir-dia" class="btn-danger">Excluir Tarefa</button>
+                </div>
+            `;
+        }
     }
 
     const modalOverlay = document.createElement('div');
@@ -70,9 +74,7 @@ function mostrarModalDetalhes(tarefa) {
                 <h2>Detalhes da Tarefa</h2>
                 <button class="modal-close-btn">&times;</button>
             </div>
-            <div class="modal-body">
-                ${corpoModal}
-            </div>
+            <div class="modal-body">${corpoModal}</div>
             ${footerModal}
         </div>
     `;
@@ -85,33 +87,77 @@ function mostrarModalDetalhes(tarefa) {
         setTimeout(() => modalOverlay.remove(), 300);
     };
 
-    modalOverlay.querySelector('.modal-close-btn').addEventListener('click', fecharModal);
+    // --- CORREÇÃO APLICADA AQUI ---
+    // Procuramos os botões DENTRO do modalOverlay que acabamos de criar.
+    
+    const btnFechar = modalOverlay.querySelector('.modal-close-btn');
+    if (btnFechar) btnFechar.addEventListener('click', fecharModal);
+
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) fecharModal();
     });
 
-    const btnExcluir = document.getElementById('btn-excluir-tarefa');
-    if (btnExcluir) {
-        btnExcluir.addEventListener('click', async () => {
-            if (confirm('Tem certeza de que deseja excluir esta tarefa? Esta ação não pode ser desfeita.')) {
-                btnExcluir.disabled = true;
-                btnExcluir.textContent = 'Excluindo...';
+    const btnExcluirDia = modalOverlay.querySelector('#btn-excluir-dia');
+    if (btnExcluirDia) {
+        btnExcluirDia.addEventListener('click', async () => {
+            const result = await Swal.fire({
+                title: 'Tem certeza?',
+                text: "Deseja apagar a tarefa deste dia?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, apagar!',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (result.isConfirmed) {
                 try {
-                    const tarefaDocRef = doc(db, 'tarefasRitmo', tarefa.id);
-                    await deleteDoc(tarefaDocRef);
-                    alert('Tarefa excluída com sucesso!');
+                    await deleteDoc(doc(db, 'tarefasRitmo', tarefa.id));
                     fecharModal();
-                    buscarERenderizarSemana(dataBase); // Re-renderiza a visualização
+                    Swal.fire('Apagado!', 'A tarefa foi removida.', 'success');
+                    buscarERenderizarSemana(dataBase);
                 } catch (error) {
-                    console.error("Erro ao excluir tarefa: ", error);
-                    alert("Ocorreu um erro ao excluir a tarefa.");
-                    btnExcluir.disabled = false;
-                    btnExcluir.textContent = 'Excluir Tarefa';
+                    Swal.fire('Erro!', 'Não foi possível apagar a tarefa.', 'error');
+                }
+            }
+        });
+    }
+
+    const btnExcluirGrupo = modalOverlay.querySelector('#btn-excluir-grupo');
+    if (btnExcluirGrupo) {
+        btnExcluirGrupo.addEventListener('click', async () => {
+            const result = await Swal.fire({
+                title: 'Apagar o agendamento completo?',
+                text: "Esta ação removerá a tarefa de TODOS os dias relacionados. Não pode ser desfeita.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, apagar tudo!',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const q = query(collection(db, "tarefasRitmo"), where("idGrupo", "==", tarefa.idGrupo));
+                    const querySnapshot = await getDocs(q);
+                    const batch = writeBatch(db);
+                    querySnapshot.forEach((doc) => batch.delete(doc.ref));
+                    await batch.commit();
+                    
+                    fecharModal();
+                    Swal.fire('Apagado!', 'Todo o agendamento foi removido.', 'success');
+                    buscarERenderizarSemana(dataBase);
+                } catch (error) {
+                    console.error("Erro ao excluir grupo:", error);
+                    Swal.fire('Erro!', 'Não foi possível apagar o agendamento.', 'error');
                 }
             }
         });
     }
 }
+
 
 // --- LÓGICA DE RENDERIZAÇÃO E FILTRO ---
 
@@ -153,10 +199,19 @@ function exibirTarefasNaTela(dataInicioSemana) {
             tarefasDoDia.forEach(tarefa => {
                 const tarefaEl = document.createElement('div');
                 tarefaEl.className = `tarefa tipo-${tarefa.tipo || 'outro'}`;
-                let tituloTarefa = 'Atividade';
-                if (tarefa.tipo === 'reuniao') tituloTarefa = 'Reunião';
-                if (tarefa.tipo === 'deslocamento') tituloTarefa = 'Desloc. Filial';
-                if (tarefa.tipo === 'atendimento') tituloTarefa = 'Atendimento';
+
+                const nomesDasTarefas = {
+                    deslocamento: "Desloc. Filial",
+                    reuniao: "Reunião",
+                    atendimento: "Atendimento",
+                    agendamento_reuniao: "Sala de Reunião",
+                    agendamento_treinamento: "Sala de Treinamento",
+                    ferias: "Férias",
+                    outro: "Atividade"
+                };
+
+                const tituloTarefa = nomesDasTarefas[tarefa.tipo] || 'Atividade';
+
                 tarefaEl.innerHTML = `<span class="gestor">${tarefa.gestor}</span><span>${tituloTarefa}</span>`;
                 tarefaEl.addEventListener('click', () => mostrarModalDetalhes(tarefa));
                 tarefasContainer.appendChild(tarefaEl);

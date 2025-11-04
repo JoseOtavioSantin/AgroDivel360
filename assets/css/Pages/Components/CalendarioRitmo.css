@@ -157,11 +157,45 @@
     border-radius: 4px 0 0 4px;
 }
 
-/* Cores específicas */
-.tarefa.tipo-deslocamento::before { background-color: #007bff; } /* Azul */
-.tarefa.tipo-reuniao::before { background-color: #ffc107; } /* Amarelo */
-.tarefa.tipo-atendimento::before { background-color: #28a745; } /* Verde */
-.tarefa.tipo-outro::before { background-color: #6c757d; } /* Cinza */
+/* Cor padrão para qualquer tarefa */
+.tarefa {
+    border-left: 5px solid #ccc; /* Cinza claro padrão */
+    padding-left: 10px;
+    margin-bottom: 5px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+/* Cores específicas por tipo de tarefa */
+
+.tarefa.tipo-reuniao {
+    border-left-color: #007bff; /* Azul */
+}
+
+.tarefa.tipo-deslocamento {
+    border-left-color: #ffc107; /* Amarelo/Laranja */
+}
+
+.tarefa.tipo-atendimento {
+    border-left-color: #28a745; /* Verde */
+}
+
+.tarefa.tipo-agendamento_reuniao {
+    border-left-color: #17a2b8; /* Ciano/Azul claro */
+}
+
+.tarefa.tipo-agendamento_treinamento {
+    border-left-color: #6f42c1; /* Roxo */
+}
+
+.tarefa.tipo-ferias {
+    border-left-color: #fd7e14; /* Laranja */
+    background-color: #fff3e0; /* Fundo levemente alaranjado para destacar */
+}
+
+.tarefa.tipo-outro {
+    border-left-color: #6c757d; /* Cinza escuro (o que você já tinha) */
+}
 
 
 /* --- ESTILOS PARA O MODAL DE DETALHES --- */
@@ -299,6 +333,39 @@
 .btn-danger:disabled {
     background-color: #e9a3ab;
     cursor: not-allowed;
+}
+
+.modal-footer .btn-secondary {
+    background-color: #6c757d; /* Cinza escuro, cor padrão para ações secundárias */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.modal-footer .btn-secondary:hover {
+    background-color: #5a6268; /* Um tom mais escuro para o efeito hover */
+}
+
+/* Garante que o botão de perigo (danger) também tenha um bom estilo, caso ainda não tenha */
+.modal-footer .btn-danger {
+    background-color: #dc3545; /* Vermelho para ações destrutivas */
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.modal-footer .btn-danger:hover {
+    background-color: #c82333; /* Vermelho mais escuro para o hover */
 }
 
 
