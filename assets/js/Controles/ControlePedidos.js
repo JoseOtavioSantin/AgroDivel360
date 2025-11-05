@@ -97,7 +97,7 @@ async function iniciarPagina( ) {
                     <td>${formatarData(pedido.data)}</td>
                     <td>${pedido.responsavelPedido || ''}</td>
                     <td class="acoes-cell">
-                        <a href="/Pages/Formularios/form-pedidos.html?id=${pedido.id}" class="btn-acao" title="Editar Pedido">
+                        <a href="/Pages/Formularios/form-pecaspedidos.html?id=${pedido.id}" class="btn-acao" title="Editar Pedido">
                             <i data-lucide="pencil"></i>
                         </a>
                         <button class="btn-acao btn-delete" data-id="${pedido.id}" title="Apagar Pedido">

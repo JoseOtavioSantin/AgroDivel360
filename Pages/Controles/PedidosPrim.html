@@ -16,50 +16,8 @@
   <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css">
+  <link rel="stylesheet" href="/assets/css/Pages/Controles/Pedidosprim.css">
 
-  <style>
-    .btn-acao {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;  /* Largura fixa para formato quadrado */
-        height: 36px; /* Altura fixa para formato quadrado */
-        padding: 0;   /* Remove padding para o ícone ficar centralizado */
-        background-color: #d60019; /* Cor vermelha padrão do PRIM */
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        text-decoration: none;
-    }
-    .btn-acao:hover {
-        background-color: #b00015; /* Vermelho mais escuro no hover */
-    }
-    .btn-acao i {
-        margin: 0; /* Garante que não haja margens no ícone */
-        width: 18px;
-        height: 18px;
-    }
-
-    /* Estilo específico para o botão de apagar na tabela */
-    .btn-delete {
-        background-color: #950000; /* Tom de vermelho diferente para "apagar" */
-    }
-    .btn-delete:hover {
-        background-color: #c62828;
-    }
-
-    .acoes-cell { display: flex; gap: 8px; }
-
-    @keyframes piscar {
-    0%, 100% { background-color: #228b22; } /* Verde para "chegou" */
-    50% { background-color: #c67903; }
-    }
-    .chegou-no-estoque { animation: piscar 1.5s infinite; }
-
-    td, input, select { text-transform: uppercase; }
-  </style>
 </head>
 <body>
 
