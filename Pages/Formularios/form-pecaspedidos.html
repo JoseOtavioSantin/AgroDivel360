@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#2c2f3f" />
+  <title>Formulário de Pedido de Peça</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- LIBS EXTERNAS -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- CSS -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <!-- Reutilizando o CSS de formulários padrão -->
+  <link rel="stylesheet" href="/assets/css/Pages/Formularios/style-forms.css">
+</head>
+<body>
+
+  <nav id="sidebar-placeholder"></nav>
+
+  <section class="home">
+    <div class="text">
+      <h1 id="form-title">Novo Pedido de Peça</h1>
+      <p id="form-subtitle">Preencha os dados abaixo para registrar um novo pedido.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="content-card-body">
+        <form id="form-pedido">
+          <!-- Linha 1 -->
+          <div class="form-group">
+            <label for="codigo">Código da Peça</label>
+            <input type="text" id="codigo" required>
+          </div>
+
+          <!-- Linha 2 -->
+          <div class="form-group">
+            <label for="quantidade">Quantidade</label>
+            <input type="number" id="quantidade" value="1" min="1" required>
+          </div>
+
+          <!-- Linha 3 -->
+          <div class="form-group">
+            <label for="pedido-para">Pedido para (Cliente/Técnico )</label>
+            <input type="text" id="pedido-para" required>
+          </div>
+
+          <!-- Linha 4 -->
+          <div class="form-group">
+            <label for="os">Ordem de Serviço (OS)</label>
+            <input type="text" id="os">
+          </div>
+
+          <!-- Linha 5 -->
+          <div class="form-group">
+            <label for="fornecedor">Fornecedor</label>
+            <select id="fornecedor">
+                <option value="FÁBRICA - CNH">Fábrica - CNH</option>
+                <option value="TRANSFERÊNCIA - LAGES">Transferência - Lages</option>
+                <option value="TRANSFERÊNCIA - RIO DO SUL">Transferência - Rio do Sul</option>
+                <option value="OUTROS">Outros</option>
+            </select>
+          </div>
+
+          <!-- Linha 6 -->
+          <div class="form-group">
+            <label for="responsavel">Responsável pelo Pedido</label>
+            <select id="responsavel">
+                <option value="MURILO">Murilo</option>
+                <option value="CARLOS ANTUNES">Carlos Antunes</option>
+                <option value="MATHEUS">Matheus</option>
+                <option value="GUSTAVO P.">Gustavo P.</option>
+                <option value="GUSTAVO F.">Gustavo F.</option>
+                <option value="SANDRO">Sandro</option>
+                <option value="CARLOS L.">Carlos L.</option>
+            </select>
+          </div>
+
+          <!-- Linha 7 -->
+          <div class="form-group">
+            <label for="data">Data do Pedido</label>
+            <input type="date" id="data" required>
+          </div>
+
+          <!-- Linha 8 (só aparece na edição) -->
+          <div class="form-group" id="status-group" style="display: none;">
+            <label for="status">Status</label>
+            <select id="status">
+              <option value="Aguardando Peça">Aguardando Peça</option>
+              <option value="Pedido Concluído">Pedido Concluído</option>
+            </select>
+          </div>
+
+          <!-- BOTÕES DE AÇÃO -->
+          <div class="form-actions">
+            <a href="/Pages/Controles/PedidosPecas.html" class="btn-secondary">Cancelar</a> 
+            <button type="submit" class="btn-primary" id="btn-salvar">Salvar Pedido</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, getDoc, addDoc, updateDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // --- VARIÁVEIS GLOBAIS ---
+    const dbCollectionName = "pedidosPecas";
+    let db;
+    let userData;
+    let editMode = false;
+    let docId = null;
+
+    // --- FUNÇÕES DO FORMULÁRIO ---
+
+    async function carregarDadosParaEdicao(id ) {
+        const docRef = doc(db, dbCollectionName, id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('codigo').value = data.codigo || '';
+            document.getElementById('quantidade').value = data.quantidade || 1;
+            document.getElementById('pedido-para').value = data.pedidoPara || '';
+            document.getElementById('os').value = data.ordemServico || '';
+            document.getElementById('fornecedor').value = data.fornecedor || 'FÁBRICA - CNH';
+            document.getElementById('responsavel').value = data.responsavelPedido || '';
+            document.getElementById('data').value = data.data || '';
+            
+            // Mostra e define o status
+            document.getElementById('status-group').style.display = 'block';
+            document.getElementById('status').value = data.status.replace('AGUARDANDO PEÇA', 'Aguardando Peça').replace('PEDIDO CONCLUÍDO', 'Pedido Concluído');
+
+        } else {
+            Swal.fire('Erro', 'Pedido não encontrado. Redirecionando para a lista.', 'error');
+            window.location.href = '/Pages/Controles/PedidosPecas.html';
+        }
+    }
+
+    async function salvarPedido(event) {
+        event.preventDefault();
+
+        const filial = (userData.filial && userData.filial.length > 0) ? userData.filial[0].toLowerCase().trim() : null;
+        if (!filial) {
+            return Swal.fire("Erro de Autenticação", "Filial do usuário não encontrada. Não é possível salvar.", "error");
+        }
+
+        const dadosPedido = {
+            codigo: document.getElementById("codigo").value.trim().toUpperCase(),
+            quantidade: parseInt(document.getElementById("quantidade").value, 10),
+            pedidoPara: document.getElementById("pedido-para").value.trim().toUpperCase(),
+            ordemServico: document.getElementById("os").value.trim().toUpperCase(),
+            fornecedor: document.getElementById("fornecedor").value.toUpperCase(),
+            responsavelPedido: document.getElementById("responsavel").value.toUpperCase(),
+            data: document.getElementById("data").value,
+            filial: filial
+        };
+
+        if (!dadosPedido.codigo || !dadosPedido.data) {
+            return Swal.fire("Atenção", "Os campos 'Código da Peça' e 'Data do Pedido' são obrigatórios.", "warning");
+        }
+
+        Swal.fire({
+            title: 'Salvando...',
+            text: 'Aguarde um momento.',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            if (editMode) {
+                // MODO EDIÇÃO: Atualiza o documento existente
+                dadosPedido.status = document.getElementById("status").value.toUpperCase();
+                const docRef = doc(db, dbCollectionName, docId);
+                await updateDoc(docRef, dadosPedido);
+                await Swal.fire('Sucesso!', 'Pedido atualizado com sucesso!', 'success');
+            } else {
+                // MODO CRIAÇÃO: Adiciona um novo documento com valores padrão
+                dadosPedido.status = "AGUARDANDO PEÇA";
+                dadosPedido.chegouEstoque = false; // Valor padrão para novos pedidos
+                dadosPedido.dataCriacao = new Date().toISOString();
+                
+                await addDoc(collection(db, dbCollectionName), dadosPedido);
+                await Swal.fire('Sucesso!', 'Novo pedido salvo com sucesso!', 'success');
+            }
+            window.location.href = '/Pages/Controles/PedidosPecas.html';
+        } catch (error) {
+            Swal.fire('Erro!', `Falha ao salvar o pedido: ${error.message}`, 'error');
+        }
+    }
+
+    // --- INICIALIZAÇÃO DA PÁGINA ---
+
+    async function iniciarPagina() {
+        try {
+            userData = await garantirAutenticacao();
+            const app = getApp();
+            db = getFirestore(app);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            docId = urlParams.get('id');
+
+            if (docId) {
+                // MODO DE EDIÇÃO
+                editMode = true;
+                document.getElementById('form-title').textContent = 'Editar Pedido de Peça';
+                document.getElementById('form-subtitle').textContent = 'Altere os dados do pedido abaixo.';
+                document.getElementById('btn-salvar').textContent = 'Salvar Alterações';
+                await carregarDadosParaEdicao(docId);
+            } else {
+                // MODO DE CRIAÇÃO
+                document.getElementById('data').valueAsDate = new Date(); // Define a data de hoje como padrão
+            }
+
+            document.getElementById('form-pedido').addEventListener('submit', salvarPedido);
+        } catch (error) {
+            console.error("Falha na inicialização da página:", error);
+            document.body.innerHTML = `<div class="error-container">Ocorreu um erro ao carregar a página. Verifique se você está logado e tente recarregar.</div>`;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', iniciarPagina);
+  </script>
+
+  <!-- Scripts Globais -->
+  <script type="module" src="/assets/js/firebase-config.js"></script>
+  <script type="module" src="/assets/js/auth.js"></script>
+  <script src="/assets/js/main.js"></script> 
+  <script src="/assets/js/components/Sidebar.js"></script>
+
+</body>
+</html>

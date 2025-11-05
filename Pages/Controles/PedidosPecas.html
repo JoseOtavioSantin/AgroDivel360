@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#2c2f3f" />
+  <title>Controle de Peças</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- LIBS EXTERNAS -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- CSS -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css">
+  <link rel="stylesheet" href="/assets/css/Pages/Controles/Pedidospecas.css">
+
+  <style>
+    /* --- CSS LIMPO E CORRIGIDO --- */
+
+    /* Estilos dos botões de ação */
+    .btn-acao {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; padding: 0;
+        background-color: #193b7c; color: white; border: none;
+        border-radius: 6px; cursor: pointer;
+        transition: background-color 0.2s ease; text-decoration: none;
+    }
+    .btn-acao:hover { background-color: #132a5a; }
+    .btn-acao i { margin: 0; width: 18px; height: 18px; }
+
+    /* Botão de apagar */
+    .btn-delete { background-color: #950000; }
+    .btn-delete:hover { background-color: #c62828; }
+
+    .acoes-cell { display: flex; gap: 8px; }
+    td, input, select { text-transform: uppercase; }
+
+    /* Classes de Status da Tabela */
+    .status-aguardando { background-color: #c67903; } /* Laranja */
+    .status-concluido { background-color: #193b7c; }  /* Azul escuro */
+
+    /* Animação de Piscar (Definida apenas UMA VEZ ) */
+    @keyframes piscar {
+      0%, 100% { background-color: #950000; } /* Vermelho escuro */
+      50% { background-color: #c67903; } /* Laranja */
+    }
+    .chegou-no-estoque { 
+        animation: piscar 1.5s infinite; 
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="sidebar-placeholder"></nav>
+
+  <section class="home">
+    <div class="text">
+      <h1>Controle de Pedidos de Peças</h1>
+      <p id="dynamic-title">Carregando...</p>
+    </div>
+
+    <div class="dashboard-cards">
+      <div class="dashboard-card blue-card"><h2 id="total-pedidos">0</h2><p><i data-lucide="package"></i> Total de Pedidos</p></div>
+      <div class="dashboard-card orange-card"><h2 id="pedidos-aguardando">0</h2><p><i data-lucide="loader-circle"></i> Aguardando Peça</p></div>
+      <div class="dashboard-card green-card"><h2 id="pedidos-concluidos">0</h2><p><i data-lucide="check-circle"></i> Pedidos Concluídos</p></div>
+      
+      <a href="/Pages/Controles/PedidosPrim.html" class="dashboard-card" style="background: #d60019; text-decoration: none; color: white;">
+        <h2>PRIM</h2><p><i data-lucide="package-plus"></i> Pedidos PRIM</p>
+      </a>
+      <a href="#" class="dashboard-card" style="background: #3a3e52; text-decoration: none; color: white;">
+        <h2>Análise</h2><p><i data-lucide="bar-chart-3"></i> Ver Desempenho</p>
+      </a>
+    </div>
+
+    <div class="content-card">
+      <div class="content-card-header">
+        <h3>Acompanhamento de Pedidos</h3>
+        <div class="header-actions">
+          <button class="btn-acao" id="btn-verificar-xml" title="Verificar Estoque com XML">
+            <i data-lucide="file-scan"></i> 
+          </button>
+          <input type="file" id="xml-uploader" accept=".xml" style="display: none;">
+          
+          <a href="/Pages/Formularios/form-pecaspedidos.html" class="btn-acao" title="Adicionar Novo Pedido">
+            <i data-lucide="plus"></i> 
+          </a>
+        </div>
+      </div>
+      <div class="content-card-body">
+        <div class="filters">
+          <input id="filtro-codigo" type="text" placeholder="Buscar por Código..." />
+          <input id="filtro-pedido-para" type="text" placeholder="Buscar por 'Pedido para'..." />
+          <input id="filtro-fornecedor" type="text" placeholder="Buscar por Fornecedor..." />
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th><th>Qtd.</th><th>Pedido para</th><th>Status</th><th>OS</th><th>Fornecedor</th><th>Data</th><th>Responsável</th><th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-pedidos"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="loader-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">Carregando...</div>
+
+  <!-- Carrega o JavaScript da página a partir de um arquivo externo -->
+  <script type="module" src="/assets/js/Controles/ControlePedidos.js"></script>
+
+  <!-- Scripts Globais -->
+  <script type="module" src="/assets/js/auth.js"></script>
+  <script src="/assets/js/main.js"></script> 
+  <script src="/assets/js/components/Sidebar.js"></script>
+
+</body>
+</html>

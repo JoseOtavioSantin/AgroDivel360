@@ -24,6 +24,8 @@ const menuPermissions = {
     'dash-pecas':             ['admin', 'diretoria', 'pecas'],
     'ctrl-Kit50':             ['admin', 'diretoria', 'pecas'],
     'ctrl-ContagemDiaria':    ['admin', 'diretoria', 'pecas'],
+    'ctrl-PedidosPecas':      ['admin', 'diretoria', 'pecas'],
+    
 
 // --- SERVICOS ---
 
