@@ -18,7 +18,6 @@
   <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css">
   <link rel="stylesheet" href="/assets/css/Pages/Cadastros/CadastroTecnico.css">
   
-  
 </head>
 <body>
 
@@ -31,7 +30,7 @@
       <p id="dynamic-title">Aguardando autenticação...</p>
     </div>
 
-    <!-- CARDS DE RESUMO -->
+    <!-- CARDS DE RESUMO ATUALIZADOS -->
     <div class="dashboard-cards">
       <div class="dashboard-card pink-card">
         <h2 id="total-exibidos">0</h2>
@@ -41,10 +40,6 @@
         <h2 id="total-andamento">0</h2>
         <p><i data-lucide="clock-6"></i> Em andamento</p>
       </div>
-      <div class="dashboard-card blue-card">
-        <h2 id="total-semresposta">0</h2>
-        <p><i data-lucide="help-circle"></i> Sem resposta</p>
-      </div>
       <div class="dashboard-card green-card">
         <h2 id="total-concluido">0</h2>
         <p><i data-lucide="check-circle-2"></i> Concluídos</p>
@@ -52,6 +47,10 @@
       <div class="dashboard-card red-card">
         <h2 id="total-cancelado">0</h2>
         <p><i data-lucide="x-octagon"></i> Cancelados</p>
+      </div>
+      <div class="dashboard-card green-card">
+        <h2 id="valor-concluido">R$ 0,00</h2>
+        <p><i data-lucide="dollar-sign"></i> Valor Concluído</p>
       </div>
     </div>
 
@@ -66,14 +65,12 @@
           <select id="filtro-status">
             <option value="">Todos os status</option>
             <option value="Em andamento">Em andamento</option>
-            <option value="__SemResposta__">Sem resposta</option>
             <option value="Concluído">Concluído</option>
             <option value="Cancelado">Cancelado</option>
           </select>
           <input id="filtro-consultor" type="text" placeholder="Buscar consultor..." />
           <select id="filtro-checklist">
             <option value="">Todos os checklists</option>
-            <!-- As opções serão preenchidas dinamicamente -->
           </select>
           <input id="filtro-periodo" placeholder="Selecione o período" />
           <button id="btn-exportar" class="btn-acao" style="margin-left:auto;" title="Exportar para Excel">
@@ -104,23 +101,17 @@
   </section>
 
   <script type="module">
-    // 1. Importa a função de guarda e as funções do Firebase
     import { garantirAutenticacao } from '/assets/js/auth-guard.js?v=2';
     import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Função principal assíncrona para iniciar a página
-    async function iniciarPagina() {
+    async function iniciarPagina( ) {
       try {
-        // 2. ESPERA a autenticação ser confirmada.
         await garantirAutenticacao();
         console.log("Autenticação confirmada. Iniciando o painel de gestão...");
 
-        // 3. Agora que a autenticação passou, podemos configurar o Firebase e a página
         const app = getApp();
         const db = getFirestore(app);
-
-        // --- O RESTO DO SEU CÓDIGO VAI AQUI DENTRO ---
 
         let collectionsToWatch = ["checklistComercial", "checklistPecas", "checklistServicos"];
         const saved = JSON.parse(localStorage.getItem("gestao_colecoes") || "null");
@@ -132,9 +123,7 @@
 
         const low = v => String(v ?? "").toLowerCase().trim();
         
-        // Função para formatar o nome do checklist (remover "checklist" do início)
         function formatarNomeChecklist(collName) {
-          // Remove "checklist" do início e capitaliza a primeira letra
           return collName.replace(/^checklist/, '').replace(/([A-Z])/g, ' $1').trim();
         }
         
@@ -166,31 +155,33 @@
           return String(any);
         }
         function getData(d){ return formatDate(d.dataVisita || d.data || d.createdAt || d.dt || d.timestamp); }
+        
+        function getValor(d) {
+          const valorEncontrado = d.valorNegociado || d.valor || d.valorTotal || d.valor_total || '0';
+          return parseFloat(String(valorEncontrado).replace(',', '.') || '0');
+        }
+
         function statusTag(d){
           const s = low(d.statusChecklist);
           if (s === "em andamento") return "andamento";
           if (s === "concluido" || s === "concluído") return "concluido";
           if (s === "cancelado") return "cancelado";
-          if (!d.statusChecklist || String(d.statusChecklist).trim() === "") return "semresposta";
           return "outro";
         }
 
         const painel = document.getElementById("painel-detalhes");
         const filtroChecklist = document.getElementById("filtro-checklist");
 
-        // Função para atualizar o filtro de checklists
         function atualizarFiltroChecklists() {
           const checklistsUnicos = [...new Set(collectionsToWatch)];
           const opcoesAtuais = Array.from(filtroChecklist.options).map(opt => opt.value);
           
-          // Remove opções que não existem mais
           for (let i = filtroChecklist.options.length - 1; i >= 0; i--) {
             if (filtroChecklist.options[i].value && !checklistsUnicos.includes(filtroChecklist.options[i].value)) {
               filtroChecklist.remove(i);
             }
           }
           
-          // Adiciona novas opções
           checklistsUnicos.forEach(checklist => {
             if (!opcoesAtuais.includes(checklist)) {
               const option = document.createElement('option');
@@ -225,6 +216,7 @@
                     collection: collName,
                     departamento: mapColecaoParaDepartamento(collName), 
                     dataVisita: getData(d), 
+                    valor: getValor(d),
                     cliente: getCliente(d), 
                     municipio: getMunicipio(d), 
                     consultor: getConsultor(d), 
@@ -246,37 +238,19 @@
           });
         }
 
-function rebuildAllRows(){
-  allRows = [];
-  for (const arr of byCollection.values()) allRows = allRows.concat(arr);
-  
-  // Ordenar por status: Em andamento > Concluído > Cancelado > Sem resposta
-  allRows.sort((a,b)=>{
-    // Definir ordem de prioridade dos status
-    const ordemStatus = {
-      'andamento': 2,
-      'concluido': 3, 
-      'cancelado': 4,
-      'semresposta': 1
-    };
-    
-    const ordemA = ordemStatus[a.statusTag] || 5;
-    const ordemB = ordemStatus[b.statusTag] || 5;
-    
-    // Primeiro ordena por status
-    if (ordemA !== ordemB) {
-      return ordemA - ordemB;
-    }
-    
-    // Se mesmo status, ordena por departamento
-    if (a.departamento !== b.departamento) {
-      return a.departamento.localeCompare(b.departamento);
-    }
-    
-    // Se mesmo departamento, ordena por data (mais recente primeiro)
-    return (b.dataVisita||"").localeCompare(a.dataVisita||"");
-  });
-}
+        function rebuildAllRows(){
+          allRows = [];
+          for (const arr of byCollection.values()) allRows = allRows.concat(arr);
+          
+          allRows.sort((a,b)=>{
+            const ordemStatus = { 'andamento': 1, 'concluido': 2, 'cancelado': 3 };
+            const ordemA = ordemStatus[a.statusTag] || 4;
+            const ordemB = ordemStatus[b.statusTag] || 4;
+            if (ordemA !== ordemB) return ordemA - ordemB;
+            if (a.departamento !== b.departamento) return a.departamento.localeCompare(b.departamento);
+            return (b.dataVisita||"").localeCompare(a.dataVisita||"");
+          });
+        }
 
         function aplicarFiltros(){
           const clienteFiltro = document.getElementById("filtro-cliente").value.toLowerCase();
@@ -285,42 +259,43 @@ function rebuildAllRows(){
           const checklistFiltro = document.getElementById("filtro-checklist").value;
           const instance = document.getElementById("filtro-periodo")._flatpickr;
           const selectedDates = instance?.selectedDates || [];
-          let dataInicio="", dataFim="";
-          if (selectedDates.length === 2) { dataInicio = selectedDates[0].toISOString().slice(0,10); dataFim = selectedDates[1].toISOString().slice(0,10); }
-          else if (selectedDates.length === 1) { dataInicio = dataFim = selectedDates[0].toISOString().slice(0,10); }
+          let dataInicio = "", dataFim = "";
+          if (selectedDates.length === 2) { dataInicio = selectedDates[0].toISOString().slice(0, 10); dataFim = selectedDates[1].toISOString().slice(0, 10); }
+          else if (selectedDates.length === 1) { dataInicio = dataFim = selectedDates[0].toISOString().slice(0, 10); }
 
-          const filtrados = allRows.filter(r=>{
+          const filtrados = allRows.filter(r => {
             const dentroDoPeriodo = (!dataInicio && !dataFim) || ((!dataInicio || r.dataVisita >= dataInicio) && (!dataFim || r.dataVisita <= dataFim));
-            const passaStatus = statusFiltroRaw === "" ? (["andamento","semresposta","concluido","cancelado"].includes(r.statusTag)) : statusFiltroRaw === "Em andamento" ? (r.statusTag === "andamento") : statusFiltroRaw === "__SemResposta__" ? (r.statusTag === "semresposta") : statusFiltroRaw === "Concluído" ? (r.statusTag === "concluido") : statusFiltroRaw === "Cancelado" ? (r.statusTag === "cancelado") : false;
+            const passaStatus = statusFiltroRaw === "" ? (["andamento", "concluido", "cancelado"].includes(r.statusTag)) : statusFiltroRaw === "Em andamento" ? (r.statusTag === "andamento") : statusFiltroRaw === "Concluído" ? (r.statusTag === "concluido") : statusFiltroRaw === "Cancelado" ? (r.statusTag === "cancelado") : false;
             const passaChecklist = !checklistFiltro || r.collection === checklistFiltro;
-            
-            return r.cliente.toLowerCase().includes(clienteFiltro) && 
-                   r.consultor.toLowerCase().includes(consultorFiltro) && 
-                   dentroDoPeriodo && 
-                   passaStatus && 
+
+            return r.cliente.toLowerCase().includes(clienteFiltro) &&
+                   r.consultor.toLowerCase().includes(consultorFiltro) &&
+                   dentroDoPeriodo &&
+                   passaStatus &&
                    passaChecklist;
           });
 
+          const concluidosFiltrados = filtrados.filter(r => r.statusTag === "concluido");
+          const valorTotalConcluido = concluidosFiltrados.reduce((acc, item) => acc + item.valor, 0);
+
           document.getElementById("total-exibidos").textContent = filtrados.length;
-          document.getElementById("total-andamento").textContent = filtrados.filter(r=>r.statusTag==="andamento").length;
-          document.getElementById("total-semresposta").textContent = filtrados.filter(r=>r.statusTag==="semresposta").length;
-          document.getElementById("total-concluido").textContent = filtrados.filter(r=>r.statusTag==="concluido").length;
-          document.getElementById("total-cancelado").textContent = filtrados.filter(r=>r.statusTag==="cancelado").length;
+          document.getElementById("total-andamento").textContent = filtrados.filter(r => r.statusTag === "andamento").length;
+          document.getElementById("total-concluido").textContent = concluidosFiltrados.length;
+          document.getElementById("total-cancelado").textContent = filtrados.filter(r => r.statusTag === "cancelado").length;
+          document.getElementById("valor-concluido").textContent = valorTotalConcluido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
           painel.innerHTML = "";
-          filtrados.forEach(r=>{
-            const statusClass = r.statusTag==="andamento" ? "status-em-andamento" : 
-                              r.statusTag==="semresposta" ? "status-sem-resposta" : 
-                              r.statusTag==="concluido" ? "status-concluido" : 
-                              r.statusTag==="cancelado" ? "status-cancelado" : "";
-            
-            const whats = r.telefone ? `<a href="https://wa.me/55${String(r.telefone ).replace(/\D/g,'')}" target="_blank" title="Chamar no WhatsApp" style="color:#25D366; font-size:22px; display:inline-block;"><i class="fa-brands fa-whatsapp"></i></a>` : "-";
-            
-            // Formata os itens do checklist para exibição
-            const checklistItens = r.checklist.map(item => 
+          filtrados.forEach(r => {
+            const statusClass = r.statusTag === "andamento" ? "status-em-andamento" :
+                              r.statusTag === "concluido" ? "status-concluido" :
+                              r.statusTag === "cancelado" ? "status-cancelado" : "";
+
+            const whats = r.telefone ? `<a href="https://wa.me/55${String(r.telefone ).replace(/\D/g, '')}" target="_blank" title="Chamar no WhatsApp" style="color:#25D366; font-size:22px; display:inline-block;"><i class="fa-brands fa-whatsapp"></i></a>` : "-";
+
+            const checklistItens = r.checklist.map(item =>
               `<span style="background:#fff; color:#00205b; padding:3px 8px; border-radius:5px; margin:2px; display:inline-block; font-size:10px">${item}</span>`
             ).join("");
-            
+
             painel.innerHTML += `
               <tr class="${statusClass}">
                 <td>${r.departamento}</td>
@@ -344,8 +319,7 @@ function rebuildAllRows(){
             const tds = tr.querySelectorAll("td");
             const status = tr.classList.contains("status-em-andamento") ? "Em andamento" : 
                           tr.classList.contains("status-concluido") ? "Concluído" : 
-                          tr.classList.contains("status-cancelado") ? "Cancelado" : 
-                          tr.classList.contains("status-sem-resposta") ? "Sem resposta" : "";
+                          tr.classList.contains("status-cancelado") ? "Cancelado" : "";
             return [tds[0]?.textContent.trim(), tds[1]?.textContent.trim(), tds[2]?.textContent.trim(), tds[3]?.textContent.trim(), tds[4]?.textContent.trim(), tds[5]?.textContent.trim(), tds[6]?.textContent.trim(), tds[7]?.textContent.trim(), tds[8]?.textContent.trim(), tds[9]?.textContent.trim(), tds[10]?.innerText.trim(), status];
           });
           const planilha = XLSX.utils.aoa_to_sheet([headers, ...linhas]);
@@ -354,7 +328,6 @@ function rebuildAllRows(){
           XLSX.writeFile(wb, "gestao_multicolecoes_completa.xlsx");
         }
 
-        // --- Configuração final da UI e início do monitoramento ---
         lucide.createIcons();
         const filiais = JSON.parse(localStorage.getItem("gestorFilial") || "[]").map(f => low(f));
         if (filiais.length) {
@@ -372,7 +345,6 @@ function rebuildAllRows(){
         
         atualizarFiltroChecklists();
         
-        // Inicia o monitoramento com as filiais do gestor logado
         startWatch(filiais);
         setInterval(aplicarFiltros, 60000);
 
@@ -381,7 +353,6 @@ function rebuildAllRows(){
       }
     }
 
-    // Inicia todo o processo
     iniciarPagina();
   </script>
 
@@ -393,4 +364,3 @@ function rebuildAllRows(){
 
 </body>
 </html>
-
