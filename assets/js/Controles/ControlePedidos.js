@@ -123,7 +123,7 @@ async function iniciarPagina( ) {
                 let acoesHTML = `<a href="/Pages/Formularios/form-pecaspedidos.html?id=${pedido.id}" class="btn-acao" title="Editar Pedido"><i data-lucide="pencil"></i></a>`;
 
                 if (pedido.status === 'PEDIR PEÇA' && isAutorizado) {
-                    acoesHTML += `<button class="btn-acao btn-status" data-id="${pedido.id}" data-status="PEÇA PEDIDA" title="Aprovar e Marcar como Peça Pedida"><i data-lucide="send"></i></button>`;
+                    acoesHTML += `<button class="btn-acao btn-status" data-id="${pedido.id}" data-status="PEÇA PEDIDA" title="Aprovar e Marcar como Peça Pedida"><i data-lucide="check"></i></button>`;
                 }
                 if (pedido.status === 'CHEGOU') {
                     acoesHTML += `<button class="btn-acao btn-status" data-id="${pedido.id}" data-status="SEPARADO" title="Marcar como Separado"><i data-lucide="box-select"></i></button>`;
@@ -255,3 +255,4 @@ async function iniciarPagina( ) {
 }
 
 iniciarPagina();
+
