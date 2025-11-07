@@ -13,7 +13,6 @@
   <!-- CSS -->
   <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   <link rel="stylesheet" href="/assets/css/style.css">
-  <!-- Reutilizando o CSS de formulários padrão -->
   <link rel="stylesheet" href="/assets/css/Pages/Formularios/style-forms.css">
 </head>
 <body>
@@ -87,9 +86,13 @@
           <!-- Linha 8 (só aparece na edição) -->
           <div class="form-group" id="status-group" style="display: none;">
             <label for="status">Status</label>
+            <!-- SELECT ATUALIZADO COM TODOS OS NOVOS STATUS -->
             <select id="status">
-              <option value="Aguardando Peça">Aguardando Peça</option>
-              <option value="Pedido Concluído">Pedido Concluído</option>
+              <option value="PEDIR PEÇA">Pedir Peça</option>
+              <option value="PEÇA PEDIDA">Peça Pedida</option>
+              <option value="CHEGOU">Chegou</option>
+              <option value="SEPARADO">Separado</option>
+              <option value="ENTREGUE">Entregue</option>
             </select>
           </div>
 
@@ -133,7 +136,8 @@
             
             // Mostra e define o status
             document.getElementById('status-group').style.display = 'block';
-            document.getElementById('status').value = data.status.replace('AGUARDANDO PEÇA', 'Aguardando Peça').replace('PEDIDO CONCLUÍDO', 'Pedido Concluído');
+            // CORREÇÃO: Define o valor do status corretamente
+            document.getElementById('status').value = data.status || 'PEDIR PEÇA';
 
         } else {
             Swal.fire('Erro', 'Pedido não encontrado. Redirecionando para a lista.', 'error');
@@ -180,8 +184,9 @@
                 await Swal.fire('Sucesso!', 'Pedido atualizado com sucesso!', 'success');
             } else {
                 // MODO CRIAÇÃO: Adiciona um novo documento com valores padrão
-                dadosPedido.status = "AGUARDANDO PEÇA";
-                dadosPedido.chegouEstoque = false; // Valor padrão para novos pedidos
+                // --- CORREÇÃO PRINCIPAL AQUI ---
+                dadosPedido.status = "PEDIR PEÇA"; 
+                dadosPedido.chegouEstoque = false;
                 dadosPedido.dataCriacao = new Date().toISOString();
                 
                 await addDoc(collection(db, dbCollectionName), dadosPedido);
