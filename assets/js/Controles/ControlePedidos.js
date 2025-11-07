@@ -1,11 +1,12 @@
 import { garantirAutenticacao } from '/assets/js/auth-guard.js';
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, query, writeBatch, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// IMPORTANTE: Adicionar o 'onSnapshot' às importações do Firestore
+import { getFirestore, collection, doc, getDoc, setDoc, query, writeBatch, deleteDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // --- LISTA DE PERMISSÕES ---
 const EMAILS_AUTORIZADOS = [
     'admin@gmail.com',
-    'email.do.segundo.usuario@seudominio.com'
+    'sandro.silva@agrodivel.com.br'
 ];
 // --- FIM DA LISTA DE PERMISSÕES ---
 
@@ -27,19 +28,14 @@ async function iniciarPagina( ) {
         const filtroFornecedor = document.getElementById('filtro-fornecedor');
 
         let dadosCompletos = [];
+        let unsubscribe = null; // Variável para controlar a "inscrição" em tempo real
 
         async function mudarStatus(pedidoId, novoStatus) {
             loaderOverlay.style.display = 'flex';
             try {
                 const pedidoRef = doc(db, "pedidosPecas", pedidoId);
                 await updateDoc(pedidoRef, { status: novoStatus });
-                
-                const pedidoIndex = dadosCompletos.findIndex(p => p.id === pedidoId);
-                if (pedidoIndex > -1) {
-                    dadosCompletos[pedidoIndex].status = novoStatus;
-                }
-                aplicarFiltros();
-                
+                // Não precisa mais recarregar os dados manualmente, o onSnapshot fará isso.
             } catch (error) {
                 console.error("Erro ao mudar status:", error);
                 Swal.fire('Erro!', 'Não foi possível atualizar o status do pedido.', 'error');
@@ -48,26 +44,40 @@ async function iniciarPagina( ) {
             }
         }
 
+        // --- FUNÇÃO ATUALIZADA PARA TEMPO REAL ---
         async function carregarDadosDoFirebase() {
             loaderOverlay.style.display = 'flex';
             const filiaisLogadas = userData.filial || [];
             document.getElementById('dynamic-title').textContent = `Filial: ${filiaisLogadas.join(", ")}`;
 
+            if (unsubscribe) {
+                unsubscribe(); // Cancela a escuta anterior para evitar duplicidade
+            }
+
             const q = query(pedidosCollection);
-            const querySnapshot = await getDocs(q);
-            const todosOsPedidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            dadosCompletos = todosOsPedidos.filter(pedido => {
-                if (!pedido.status) {
-                    pedido.status = 'PEDIR PEÇA';
-                }
-                const filialDoPedido = (pedido.filial || "").toLowerCase().trim();
-                if (!filialDoPedido) return true;
-                return filiaisLogadas.some(f => f.toLowerCase().trim() === filialDoPedido);
+            unsubscribe = onSnapshot(q, (querySnapshot) => {
+                console.log("Atualização recebida do Firestore em tempo real!");
+
+                const todosOsPedidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                dadosCompletos = todosOsPedidos.filter(pedido => {
+                    if (!pedido.status) {
+                        pedido.status = 'PEDIR PEÇA';
+                    }
+                    const filialDoPedido = (pedido.filial || "").toLowerCase().trim();
+                    if (!filialDoPedido) return true;
+                    return filiaisLogadas.some(f => f.toLowerCase().trim() === filialDoPedido);
+                });
+
+                aplicarFiltros();
+                loaderOverlay.style.display = 'none';
+
+            }, (error) => {
+                console.error("Erro ao escutar atualizações em tempo real:", error);
+                Swal.fire('Erro de Conexão', 'Não foi possível receber atualizações em tempo real.', 'error');
+                loaderOverlay.style.display = 'none';
             });
-
-            aplicarFiltros();
-            loaderOverlay.style.display = 'none';
         }
 
         function aplicarFiltros() {
@@ -90,7 +100,7 @@ async function iniciarPagina( ) {
             });
 
             renderizarTabela(dadosFiltrados);
-            atualizarCards(dadosCompletos); // Atualiza os cards com base em TODOS os dados, não apenas os filtrados
+            atualizarCards(dadosCompletos);
         }
 
         function renderizarTabela(dados) {
@@ -123,7 +133,7 @@ async function iniciarPagina( ) {
                 let acoesHTML = `<a href="/Pages/Formularios/form-pecaspedidos.html?id=${pedido.id}" class="btn-acao" title="Editar Pedido"><i data-lucide="pencil"></i></a>`;
 
                 if (pedido.status === 'PEDIR PEÇA' && isAutorizado) {
-                    acoesHTML += `<button class="btn-acao btn-status" data-id="${pedido.id}" data-status="PEÇA PEDIDA" title="Aprovar e Marcar como Peça Pedida"><i data-lucide="check"></i></button>`;
+                    acoesHTML += `<button class="btn-acao btn-status" data-id="${pedido.id}" data-status="PEÇA PEDIDA" title="Aprovar e Marcar como Peça Pedida"><i data-lucide="Check"></i></button>`;
                 }
                 if (pedido.status === 'CHEGOU') {
                     acoesHTML += `<button class="btn-acao btn-status" data-id="${pedido.id}" data-status="SEPARADO" title="Marcar como Separado"><i data-lucide="box-select"></i></button>`;
@@ -184,7 +194,7 @@ async function iniciarPagina( ) {
                     loaderOverlay.style.display = 'flex';
                     await deleteDoc(doc(db, "pedidosPecas", id));
                     await Swal.fire('Apagado!', 'O pedido foi removido com sucesso.', 'success');
-                    await carregarDadosDoFirebase();
+                    // Não precisa recarregar, o onSnapshot faz isso.
                 } catch (error) {
                     Swal.fire('Erro!', 'Não foi possível apagar o pedido.', 'error');
                 } finally {
@@ -223,7 +233,6 @@ async function iniciarPagina( ) {
             }
         });
 
-        // --- NOVO CÓDIGO PARA FILTRAGEM PELOS CARDS ---
         const containerCards = document.querySelector('.dashboard-cards');
         containerCards.addEventListener('click', (event) => {
             const cardClicado = event.target.closest('.card-filter');
@@ -243,7 +252,6 @@ async function iniciarPagina( ) {
             }
             
             renderizarTabela(dadosParaRenderizar);
-            // Não precisa atualizar os cards aqui, pois eles devem sempre mostrar o total geral
         });
 
         await carregarDadosDoFirebase();
@@ -255,4 +263,3 @@ async function iniciarPagina( ) {
 }
 
 iniciarPagina();
-
