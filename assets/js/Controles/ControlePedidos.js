@@ -6,7 +6,8 @@ import { getFirestore, collection, doc, getDoc, setDoc, query, writeBatch, delet
 // --- LISTA DE PERMISSÕES ---
 const EMAILS_AUTORIZADOS = [
     'admin@gmail.com',
-    'sandro.silva@agrodivel.com.br'
+    'sandro.silva@agrodivel.com.br',
+    'carlos.lazzari@agrodivel.com.br'
 ];
 // --- FIM DA LISTA DE PERMISSÕES ---
 
@@ -272,3 +273,4 @@ async function iniciarPagina( ) {
 }
 
 iniciarPagina();
+
