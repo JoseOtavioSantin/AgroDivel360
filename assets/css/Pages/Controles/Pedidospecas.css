@@ -1,5 +1,3 @@
-/* --- CSS FINAL E CORRIGIDO PARA PISCAR --- */
-
 /* Estilos gerais (sem alteração) */
 .btn-acao {
     display: inline-flex; align-items: center; justify-content: center;
@@ -29,12 +27,6 @@ td, input, select { text-transform: uppercase; }
   50% { background-color: #ffc107 !important; } /* Amarelo para destaque */
 }
 
-/* 
- *  A REGRA CORRIGIDA E FINAL:
- *  1. Define a cor de fundo inicial.
- *  2. Aplica a animação.
- *  Isso garante que a célula tenha uma cor base e que a animação comece imediatamente.
- */
 .status-chegou td {
     background-color: #ffc107 !important; /* Define a cor base */
     animation: piscar 1.5s infinite;      /* Aplica a animação */

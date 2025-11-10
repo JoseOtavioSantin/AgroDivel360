@@ -10,31 +10,43 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- FIREBASE V9 (COMPAT ) -->
+    <!-- *** FIREBASE V9 (COMPAT ) - DO SEU CÓDIGO FUNCIONAL *** -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
     <!-- CSS -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Estilos base (opcional, mas mantido para consistência ) -->
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/Pages/Formularios/style-forms.css">
 
     <style>
-        /* Seus estilos permanecem os mesmos, com um pequeno ajuste para o botão de limpar */
+        /* ESTILOS GERAIS PARA A PÁGINA MOBILE (DO NOSSO LAYOUT BONITO) */
         body {
             background-color: #f4f7fa;
-            padding-bottom: 100px;
+            padding-bottom: 100px; /* Espaço para o rodapé de ações fixo */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        .home { left: 0; width: 100%; padding: 15px; }
+        .home {
+            left: 0;
+            width: 100%;
+            padding: 15px;
+        }
         .text h1 { font-size: 1.8rem; color: #333; }
         .text p { color: #666; }
         .content-card {
-            padding: 20px; border: none; border-radius: 12px;
-            background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.07 );
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
         }
-        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; /* Apenas uma coluna */
+            gap: 15px; 
+        }
         #preview-container { 
             display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; 
             border: 2px dashed #ccc; padding: 10px; border-radius: 8px; 
@@ -63,10 +75,13 @@
             flex: 1; padding: 15px; font-size: 1rem; text-align: center;
             display: flex; align-items: center; justify-content: center;
         }
-        /* Estilo para o botão de limpar */
-        .btn-limpar {
-            background-color: #6c757d; /* Cinza secundário */
+        .status-message {
+            padding: 12px; margin-top: 20px; border-radius: 6px;
+            text-align: center; font-weight: bold; display: none;
+            color: white;
         }
+        .status-message.success { background-color: #40c057; }
+        .status-message.error { background-color: #fa5252; }
     </style>
 </head>
 <body>
@@ -99,10 +114,11 @@
                             <span class="preview-placeholder">Pré-visualização das imagens</span>
                         </div>
                     </div>
+                    
+                    <div id="status-message" class="status-message"></div>
 
-                    <!-- *** BOTÕES ATUALIZADOS NO RODAPÉ *** -->
                     <div class="mobile-actions-footer">
-                        <button type="button" class="btn-secondary btn-limpar" id="btn-limpar"><i data-lucide="eraser"></i> Limpar</button>
+                        <a href="/Pages/Controles/ControleFerramentas.html" class="btn-secondary">Cancelar</a>
                         <button type="submit" class="btn-primary" id="btn-salvar"><i data-lucide="save"></i> Salvar</button>
                     </div>
                 </form>
@@ -110,13 +126,14 @@
         </div>
     </section>
 
+    <!-- *** SCRIPT FUNCIONAL (DO SEU CÓDIGO ANTIGO) *** -->
     <script>
         // --- CONFIGURAÇÃO DO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
             authDomain: "agro-divel.firebaseapp.com",
             projectId: "agro-divel",
-            storageBucket: "agro-divel.appspot.com",
+            storageBucket: "agro-divel.appspot.com", // Corrigido para o domínio correto do storage
             messagingSenderId: "583977436505",
             appId: "1:583977436505:web:3754ec029aebb3d9d67848"
         };
@@ -131,27 +148,14 @@
         const form = document.getElementById('form-ferramenta');
         const fotosInput = document.getElementById('ferramenta-fotos');
         const previewContainer = document.getElementById('preview-container');
+        const statusMessage = document.getElementById('status-message');
         const btnSalvar = document.getElementById('btn-salvar');
-        const btnLimpar = document.getElementById('btn-limpar'); // *** NOVO: Referência ao botão de limpar
         const codigoInput = document.getElementById('ferramenta-codigo');
         const descricaoInput = document.getElementById('ferramenta-descricao');
-
-        // --- FUNÇÃO PARA LIMPAR O FORMULÁRIO ---
-        function limparFormulario() {
-            form.reset();
-            previewContainer.innerHTML = '<span class="preview-placeholder">Pré-visualização das imagens</span>';
-            // Reseta o valor do input de arquivo para permitir selecionar o mesmo arquivo novamente
-            fotosInput.value = ''; 
-            // Foca no primeiro campo para facilitar o próximo cadastro
-            document.getElementById('ferramenta-filial').focus();
-        }
 
         // --- EVENT LISTENERS ---
         codigoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
         descricaoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
-        
-        // *** NOVO: Event listener para o botão de limpar ***
-        btnLimpar.addEventListener('click', limparFormulario);
 
         fotosInput.addEventListener('change', (e) => {
             if (previewContainer.querySelector('.preview-placeholder')) {
@@ -172,7 +176,6 @@
             }
         });
 
-        // *** ALTERADO: Lógica de submit para limpar o formulário em vez de redirecionar ***
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const originalButtonHtml = btnSalvar.innerHTML;
@@ -211,14 +214,13 @@
                 // Mostra a mensagem de sucesso e limpa o formulário
                 Swal.fire({
                     icon: 'success',
-                    title: 'Registrado!',
-                    text: 'A ferramenta foi cadastrada com sucesso.',
-                    timer: 2000, // O pop-up some sozinho
-                    timerProgressBar: true,
+                    title: 'Sucesso!',
+                    text: 'Ferramenta cadastrada com sucesso!',
+                    timer: 2000,
                     showConfirmButton: false
                 });
-                
-                limparFormulario(); // Chama a função para limpar tudo
+                form.reset();
+                previewContainer.innerHTML = '<span class="preview-placeholder">Pré-visualização das imagens</span>';
 
             } catch (error) {
                 console.error("Erro ao salvar ferramenta: ", error);
