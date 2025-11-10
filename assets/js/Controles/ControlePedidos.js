@@ -273,4 +273,3 @@ async function iniciarPagina( ) {
 }
 
 iniciarPagina();
-
