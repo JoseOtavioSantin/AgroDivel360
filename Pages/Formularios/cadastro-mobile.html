@@ -10,29 +10,78 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- *** FIREBASE V9 (COMPAT ) - DO SEU CÓDIGO FUNCIONAL *** -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+
     <!-- CSS -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Estilos base (opcional, mas mantido para consistência ) -->
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/Pages/Formularios/style-forms.css">
 
     <style>
-        /* Seus estilos CSS permanecem os mesmos */
-        body { background-color: #f4f7fa; padding-bottom: 100px; }
-        .home { left: 0; width: 100%; padding: 15px; }
-        .text h1 { font-size: 1.8rem; }
-        .content-card { padding: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05 ); }
-        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        #preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; border: 2px dashed #ccc; padding: 10px; border-radius: 8px; min-height: 100px; align-items: center; justify-content: flex-start; background-color: #f9f9f9; }
-        .preview-item { position: relative; }
+        /* ESTILOS GERAIS PARA A PÁGINA MOBILE (DO NOSSO LAYOUT BONITO) */
+        body {
+            background-color: #f4f7fa;
+            padding-bottom: 100px; /* Espaço para o rodapé de ações fixo */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .home {
+            left: 0;
+            width: 100%;
+            padding: 15px;
+        }
+        .text h1 { font-size: 1.8rem; color: #333; }
+        .text p { color: #666; }
+        .content-card {
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+        }
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; /* Apenas uma coluna */
+            gap: 15px; 
+        }
+        #preview-container { 
+            display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; 
+            border: 2px dashed #ccc; padding: 10px; border-radius: 8px; 
+            min-height: 100px; align-items: center; justify-content: flex-start; 
+            background-color: #f9f9f9; 
+        }
         .preview-image { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
-        .remove-image-btn { position: absolute; top: -5px; right: -5px; background-color: #ff4d4d; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 14px; line-height: 22px; text-align: center; cursor: pointer; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
         .preview-placeholder { color: #888; font-size: 0.9rem; width: 100%; text-align: center; }
         .upload-btn-wrapper { position: relative; overflow: hidden; display: block; width: 100%; text-align: center; }
-        .btn-upload { border: 2px solid #007bff; color: #007bff; background-color: white; padding: 12px 20px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
-        .mobile-actions-footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; padding: 15px; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); display: flex; gap: 10px; z-index: 100; }
-        .mobile-actions-footer .btn-secondary, .mobile-actions-footer .btn-primary { flex: 1; padding: 15px; font-size: 1rem; text-align: center; display: flex; align-items: center; justify-content: center; }
-        .error-container { padding: 20px; background-color: #ffdddd; border: 1px solid #ff0000; color: #D8000C; border-radius: 8px; }
+        .btn-upload {
+            border: 2px solid #007bff; color: #007bff; background-color: white;
+            padding: 12px 20px; border-radius: 8px; font-size: 1rem; font-weight: bold;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer;
+        }
+        .mobile-actions-footer {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background-color: #ffffff; padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex; gap: 10px; z-index: 100;
+        }
+        .mobile-actions-footer .btn-secondary,
+        .mobile-actions-footer .btn-primary {
+            flex: 1; padding: 15px; font-size: 1rem; text-align: center;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .status-message {
+            padding: 12px; margin-top: 20px; border-radius: 6px;
+            text-align: center; font-weight: bold; display: none;
+            color: white;
+        }
+        .status-message.success { background-color: #40c057; }
+        .status-message.error { background-color: #fa5252; }
     </style>
 </head>
 <body>
@@ -47,9 +96,8 @@
             <div class="content-card-body">
                 <form id="form-ferramenta">
                     <div class="form-grid">
-                        <!-- Campos do formulário -->
                         <div class="form-group"><label for="ferramenta-filial">Filial</label><select id="ferramenta-filial" required><option value="">Selecione a Filial</option><option value="Campos Novos">Campos Novos</option><option value="Rio do Sul">Rio do Sul</option><option value="Lages">Lages</option></select></div>
-                        <div class="form-group"><label for="ferramenta-grupo">Grupo</label><select id="ferramenta-grupo" required><option value="">Aguardando inicialização...</option></select></div>
+                        <div class="form-group"><label for="ferramenta-grupo">Grupo</label><select id="ferramenta-grupo" required><option value="">Carregando...</option></select></div>
                         <div class="form-group"><label for="ferramenta-codigo">Código da Ferramenta</label><input type="text" id="ferramenta-codigo" required></div>
                         <div class="form-group"><label for="ferramenta-descricao">Descrição</label><input type="text" id="ferramenta-descricao" required></div>
                         <div class="form-group"><label for="ferramenta-localizacao">Localização (Ex: 14 A 9)</label><input type="text" id="ferramenta-localizacao" required placeholder="Prateleira e Nível"></div>
@@ -60,13 +108,14 @@
                         <label>Fotos da Ferramenta</label>
                         <div class="upload-btn-wrapper">
                             <button type="button" class="btn-upload"><i data-lucide="camera"></i> Adicionar Fotos</button>
-                            <!-- O atributo 'multiple' é mantido para navegadores que o suportam -->
-                            <input type="file" id="ferramenta-fotos" accept="image/*" capture="environment" multiple>
+                            <input type="file" id="ferramenta-fotos" accept="image/*" multiple>
                         </div>
                         <div id="preview-container">
                             <span class="preview-placeholder">Pré-visualização das imagens</span>
                         </div>
                     </div>
+                    
+                    <div id="status-message" class="status-message"></div>
 
                     <div class="mobile-actions-footer">
                         <a href="/Pages/Controles/ControleFerramentas.html" class="btn-secondary">Cancelar</a>
@@ -77,63 +126,56 @@
         </div>
     </section>
 
-    <script type="module">
-        import { inicializarFirebase } from "/assets/js/firebase-config.js"; 
-        // *** NOVO: Importa o login anônimo ***
-        import { signInAnonymously } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-        import { collection, addDoc, getDocs, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-        import { ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
+    <!-- *** SCRIPT FUNCIONAL (DO SEU CÓDIGO ANTIGO) *** -->
+    <script>
+        // --- CONFIGURAÇÃO DO FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
+            authDomain: "agro-divel.firebaseapp.com",
+            projectId: "agro-divel",
+            storageBucket: "agro-divel.appspot.com", // Corrigido para o domínio correto do storage
+            messagingSenderId: "583977436505",
+            appId: "1:583977436505:web:3754ec029aebb3d9d67848"
+        };
 
-        let db, storage, auth; // A variável 'auth' foi adicionada novamente
-        let ferramentaId = null;
-        let urlsImagensExistentes = [];
-        
-        // *** NOVO: Array para acumular os arquivos de imagem selecionados ***
-        let arquivosDeFotosParaUpload = [];
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const ferramentasCollection = db.collection('ferramentas');
+        const gruposCollection = db.collection('grupos');
 
-        const form = document.getElementById('form-ferramenta' );
+        // --- ELEMENTOS DO DOM ---
+        const form = document.getElementById('form-ferramenta');
         const fotosInput = document.getElementById('ferramenta-fotos');
         const previewContainer = document.getElementById('preview-container');
+        const statusMessage = document.getElementById('status-message');
         const btnSalvar = document.getElementById('btn-salvar');
-        const localizacaoInput = document.getElementById('ferramenta-localizacao');
+        const codigoInput = document.getElementById('ferramenta-codigo');
+        const descricaoInput = document.getElementById('ferramenta-descricao');
 
-        // ... (As funções carregarGrupos, exibirPreviews, handleRemoverImagem, preencherFormularioParaEdicao permanecem as mesmas)
-        async function carregarGrupos() { /* ...código sem alteração... */ }
-        function exibirPreviews(urls) { /* ...código sem alteração... */ }
-        async function handleRemoverImagem(urlParaRemover) { /* ...código sem alteração... */ }
-        async function preencherFormularioParaEdicao(id) { /* ...código sem alteração... */ }
-        localizacaoInput.addEventListener('input', (e) => { /* ...código sem alteração... */ });
+        // --- EVENT LISTENERS ---
+        codigoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
+        descricaoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
 
-        // *** ALTERADO: Lógica para acumular fotos ***
         fotosInput.addEventListener('change', (e) => {
-            const novosArquivos = Array.from(e.target.files);
-            if (novosArquivos.length > 0) {
-                // Adiciona os novos arquivos à nossa lista de upload
-                arquivosDeFotosParaUpload.push(...novosArquivos);
-                
-                if (previewContainer.querySelector('.preview-placeholder')) {
-                    previewContainer.innerHTML = '';
-                }
-
-                // Cria o preview para os novos arquivos
-                novosArquivos.forEach(file => {
+            if (previewContainer.querySelector('.preview-placeholder')) {
+                previewContainer.innerHTML = '';
+            }
+            const files = e.target.files;
+            if (files) {
+                Array.from(files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        const item = document.createElement('div');
-                        item.className = 'preview-item';
                         const img = document.createElement('img');
                         img.src = event.target.result;
                         img.className = 'preview-image';
-                        img.style.border = '2px solid #3085d6'; // Borda azul para indicar que é nova
-                        item.appendChild(img);
-                        previewContainer.appendChild(item);
-                    };
+                        previewContainer.appendChild(img);
+                    }
                     reader.readAsDataURL(file);
                 });
             }
         });
 
-        // *** ALTERADO: Lógica de submit para usar o array de fotos acumuladas ***
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const originalButtonHtml = btnSalvar.innerHTML;
@@ -141,44 +183,52 @@
             btnSalvar.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Salvando...';
             lucide.createIcons();
 
+            const fotosFiles = fotosInput.files;
+            const fotosURLs = [];
+
             try {
-                const novasFotosURLs = [];
-                if (arquivosDeFotosParaUpload.length > 0) {
-                    const uploadPromises = arquivosDeFotosParaUpload.map(file => {
+                if (fotosFiles.length > 0) {
+                    const uploadPromises = Array.from(fotosFiles).map(file => {
                         const filePath = `ferramentas/${Date.now()}_${file.name}`;
-                        const storageRef = ref(storage, filePath);
-                        return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
+                        const storageRef = storage.ref(filePath);
+                        return storageRef.put(file).then(uploadTask => uploadTask.ref.getDownloadURL());
                     });
-                    novasFotosURLs.push(...await Promise.all(uploadPromises));
+                    const urls = await Promise.all(uploadPromises);
+                    fotosURLs.push(...urls);
                 }
 
-                const todasFotosURLs = [...urlsImagensExistentes, ...novasFotosURLs];
                 const dados = {
                     filial: document.getElementById('ferramenta-filial').value,
                     grupoId: document.getElementById('ferramenta-grupo').value,
-                    codigo: document.getElementById('ferramenta-codigo').value.toUpperCase(),
-                    descricao: document.getElementById('ferramenta-descricao').value.toUpperCase(),
-                    localizacao: localizacaoInput.value,
-                    quantidade: parseInt(document.getElementById('ferramenta-quantidade').value, 10),
-                    fotosURLs: todasFotosURLs
+                    codigo: codigoInput.value,
+                    descricao: descricaoInput.value,
+                    localizacao: document.getElementById('ferramenta-localizacao').value.toUpperCase(),
+                    quantidade: parseInt(document.getElementById('ferramenta-quantidade').value),
+                    reparo: false,
+                    fotosURLs: fotosURLs,
+                    dataCriacao: new Date()
                 };
 
-                if (ferramentaId) {
-                    dados.dataAtualizacao = new Date();
-                    const ferramentaRef = doc(db, 'ferramentas', ferramentaId);
-                    await updateDoc(ferramentaRef, dados);
-                    await Swal.fire('Sucesso!', 'Ferramenta atualizada com sucesso!', 'success');
-                } else {
-                    dados.dataCriacao = new Date();
-                    await addDoc(collection(db, 'ferramentas'), dados);
-                    await Swal.fire('Sucesso!', 'Ferramenta cadastrada com sucesso!', 'success');
-                }
-                
-                document.body.innerHTML = `<div style="padding: 40px; text-align: center;"><h1>Operação Concluída!</h1><p>Você já pode fechar esta página.</p></div>`;
+                await ferramentasCollection.add(dados);
+
+                // Mostra a mensagem de sucesso e limpa o formulário
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Sucesso!',
+                    text: 'Ferramenta cadastrada com sucesso!',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                form.reset();
+                previewContainer.innerHTML = '<span class="preview-placeholder">Pré-visualização das imagens</span>';
 
             } catch (error) {
                 console.error("Erro ao salvar ferramenta: ", error);
-                Swal.fire('Erro!', `Ocorreu uma falha ao salvar: ${error.message}`, 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: `Ocorreu um erro ao salvar: ${error.message}`
+                });
             } finally {
                 btnSalvar.disabled = false;
                 btnSalvar.innerHTML = originalButtonHtml;
@@ -186,44 +236,34 @@
             }
         });
 
-        // *** ALTERADO: Inicialização da página com login anônimo ***
-        document.addEventListener("DOMContentLoaded", async () => {
-            try {
-                const firebase = inicializarFirebase();
-                db = firebase.db;
-                storage = firebase.storage;
-                auth = firebase.auth; // Inicializa o serviço de autenticação
-
-                // Faz o login anônimo
-                await signInAnonymously(auth);
-                console.log("Login anônimo realizado com sucesso.");
-
-                await carregarGrupos();
-                
-                const params = new URLSearchParams(window.location.search);
-                ferramentaId = params.get('id');
-
-                if (ferramentaId) {
-                    document.title = "Editar Ferramenta";
-                    document.getElementById('form-title').textContent = "Editar Ferramenta";
-                    document.getElementById('form-subtitle').textContent = "Altere os dados da ferramenta abaixo.";
-                    await preencherFormularioParaEdicao(ferramentaId);
-                }
-                
-                lucide.createIcons();
-            } catch(error) {
-                console.error("Falha CRÍTICA na inicialização:", error);
-                const homeSection = document.querySelector('.home');
-                if (homeSection) {
-                    homeSection.innerHTML = `<div class="error-container"><h1>Erro Crítico</h1><p>Não foi possível inicializar a página. Verifique o console.</p><p><b>Erro:</b> ${error.message}</p></div>`;
-                }
-            }
+        // --- INICIALIZAÇÃO E FUNÇÕES AUXILIARES ---
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons();
+            carregarGrupos();
         });
 
-        // ... (A função showToast e o estilo do spinner permanecem os mesmos)
-        function showToast(message, icon = 'info') { /* ...código sem alteração... */ }
-        if (!document.querySelector('#spin-animation')) { /* ...código sem alteração... */ }
-    </script>
+        async function carregarGrupos() {
+            const selectGrupo = document.getElementById('ferramenta-grupo');
+            try {
+                const snapshot = await gruposCollection.orderBy('nome').get();
+                selectGrupo.innerHTML = '<option value="">Selecione um Grupo</option>';
+                snapshot.forEach(doc => {
+                    const grupo = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = grupo.nome;
+                    selectGrupo.appendChild(option);
+                });
+            } catch (error) { 
+                console.error("Erro ao carregar grupos: ", error);
+                selectGrupo.innerHTML = '<option value="">Falha ao carregar</option>';
+            }
+        }
 
+        // Estilo para a animação do spinner
+        const style = document.createElement('style');
+        style.innerHTML = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }`;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
