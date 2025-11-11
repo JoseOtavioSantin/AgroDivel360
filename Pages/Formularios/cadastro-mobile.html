@@ -2,13 +2,16 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastro de Ferramenta</title>
+    <title>Cadastrar Nova Ferramenta</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#F0F2F5" />
 
     <!-- LIBS EXTERNAS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     
     <!-- FONTES -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +28,7 @@
             --cor-borda: #DCDCDC;
             --cor-primaria-inicio: #007BFF;
             --cor-primaria-fim: #005C97;
-            --cor-secundaria: #6C757D;
+            --cor-borda-foco: #005C97;
             --shadow-color: rgba(0, 0, 0, 0.08 );
         }
 
@@ -47,7 +50,7 @@
             padding: 2rem;
             border-radius: 16px;
             width: 100%;
-            max-width: 500px;
+            max-width: 550px;
             box-shadow: 0 8px 20px var(--shadow-color);
             border: 1px solid #E5E5E5;
         }
@@ -75,7 +78,7 @@
 
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: var(--cor-primaria-fim);
+            border-color: var(--cor-borda-foco);
             box-shadow: 0 0 0 3px rgba(0, 92, 151, 0.2);
         }
 
@@ -99,8 +102,8 @@
         }
         .file-upload-label.dragover {
             background-color: #f0f8ff;
-            border-color: var(--cor-primaria-fim);
-            color: var(--cor-primaria-fim);
+            border-color: var(--cor-borda-foco);
+            color: var(--cor-borda-foco);
         }
 
         /* Preview de Imagens */
@@ -207,7 +210,7 @@
             </div>
             
             <div class="form-group">
-                <label for="ferramenta-fotos">Fotos</label>
+                <label>Fotos</label>
                 <label for="ferramenta-fotos" class="file-upload-label">
                     <i data-lucide="camera"></i>
                     <span>Adicionar Fotos</span>
@@ -223,17 +226,27 @@
         </form>
     </div>
 
-    <script type="module">
-        import { db, storage } from "/assets/js/firebase-config.js"; 
-        import { collection, addDoc, getDocs, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
+    <script>
+        // --- CONFIGURAÇÃO DO FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
+            authDomain: "agro-divel.firebaseapp.com",
+            projectId: "agro-divel",
+            storageBucket: "agro-divel.firebasestorage.app",
+            messagingSenderId: "583977436505",
+            appId: "1:583977436505:web:3754ec029aebb3d9d67848"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const ferramentasCollection = db.collection('ferramentas');
+        const gruposCollection = db.collection('grupos');
 
         // --- VARIÁVEIS GLOBAIS ---
-        let ferramentaId = null;
-        let urlsImagensExistentes = [];
         let novosArquivos = [];
 
-        const form = document.getElementById('form-ferramenta' );
+        const form = document.getElementById('form-ferramenta');
         const fotosInput = document.getElementById('ferramenta-fotos');
         const previewContainer = document.getElementById('preview-container');
         const btnSalvar = document.getElementById('btn-salvar');
@@ -257,7 +270,6 @@
         const limparFormulario = () => {
             form.reset();
             novosArquivos = [];
-            urlsImagensExistentes = [];
             atualizarPreview();
             document.getElementById('ferramenta-filial').focus();
         };
@@ -265,31 +277,27 @@
         // --- LÓGICA DE UPLOAD E PREVIEW ---
         const atualizarPreview = () => {
             previewContainer.innerHTML = '';
-            const todasImagens = [...urlsImagensExistentes, ...novosArquivos];
-
-            if (todasImagens.length === 0) {
+            if (novosArquivos.length === 0) {
                 previewContainer.innerHTML = '<span class="preview-placeholder">Nenhuma imagem</span>';
                 return;
             }
 
             const fragment = document.createDocumentFragment();
-            todasImagens.forEach(item => {
-                const isUrl = typeof item === 'string';
-                const src = isUrl ? item : URL.createObjectURL(item);
-
+            novosArquivos.forEach(file => {
+                const src = URL.createObjectURL(file);
                 const previewItem = document.createElement('div');
                 previewItem.className = 'preview-item';
                 
                 const img = document.createElement('img');
                 img.src = src;
                 img.className = 'preview-image';
-                if (!isUrl) img.onload = () => URL.revokeObjectURL(src);
+                img.onload = () => URL.revokeObjectURL(src);
 
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'remove-image-btn';
                 removeBtn.innerHTML = '&times;';
-                removeBtn.onclick = () => handleRemoverImagem(item, isUrl);
+                removeBtn.onclick = () => handleRemoverImagem(file);
 
                 previewItem.appendChild(img);
                 previewItem.appendChild(removeBtn);
@@ -298,12 +306,8 @@
             previewContainer.appendChild(fragment);
         };
 
-        const handleRemoverImagem = (item, isUrl) => {
-            if (isUrl) {
-                urlsImagensExistentes = urlsImagensExistentes.filter(url => url !== item);
-            } else {
-                novosArquivos = novosArquivos.filter(file => file !== item);
-            }
+        const handleRemoverImagem = (fileToRemove) => {
+            novosArquivos = novosArquivos.filter(file => file !== fileToRemove);
             atualizarPreview();
         };
 
@@ -349,7 +353,7 @@
             e.preventDefault();
             if (!form.checkValidity()) {
                 showToast('Por favor, preencha todos os campos obrigatórios.', 'warning');
-                form.reportValidity(); // Mostra a validação nativa do navegador
+                form.reportValidity();
                 return;
             }
 
@@ -361,12 +365,11 @@
             try {
                 const uploadPromises = novosArquivos.map(file => {
                     const filePath = `ferramentas/${Date.now()}_${file.name}`;
-                    const storageRef = ref(storage, filePath);
-                    return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
+                    const storageRef = storage.ref(filePath);
+                    return storageRef.put(file).then(uploadTask => uploadTask.ref.getDownloadURL());
                 });
-                const novasFotosURLs = await Promise.all(uploadPromises);
+                const fotosURLs = await Promise.all(uploadPromises);
 
-                const todasFotosURLs = [...urlsImagensExistentes, ...novasFotosURLs];
                 const dados = {
                     filial: document.getElementById('ferramenta-filial').value,
                     grupoId: document.getElementById('ferramenta-grupo').value,
@@ -374,27 +377,21 @@
                     descricao: document.getElementById('ferramenta-descricao').value.toUpperCase(),
                     localizacao: localizacaoInput.value.toUpperCase(),
                     quantidade: parseInt(document.getElementById('ferramenta-quantidade').value, 10),
-                    fotosURLs: todasFotosURLs,
+                    reparo: false,
+                    fotosURLs: fotosURLs,
+                    dataCriacao: new Date()
                 };
 
-                if (ferramentaId) {
-                    dados.dataAtualizacao = new Date();
-                    await updateDoc(doc(db, 'ferramentas', ferramentaId), dados);
-                    await Swal.fire('Sucesso!', 'Ferramenta atualizada com sucesso!', 'success');
-                    window.location.href = "/Pages/Controles/ControleFerramentas.html";
-                } else {
-                    dados.dataCriacao = new Date();
-                    await addDoc(collection(db, 'ferramentas'), dados);
-                    showToast('Nova ferramenta cadastrada!', 'success');
-                    limparFormulario();
-                }
+                await ferramentasCollection.add(dados);
+                showToast('Nova ferramenta cadastrada!', 'success');
+                limparFormulario();
 
             } catch (error) {
                 console.error("Erro ao salvar: ", error);
                 Swal.fire('Erro!', `Ocorreu uma falha ao salvar: ${error.message}`, 'error');
             } finally {
                 btnSalvar.disabled = false;
-                btnSalvar.innerHTML = originalButtonHtml;
+                btnSalvar.innerHTML = '<i data-lucide="save"></i> Salvar';
                 createLucideIcons();
             }
         });
@@ -403,24 +400,10 @@
         const init = async () => {
             try {
                 await carregarGrupos();
-                
-                const params = new URLSearchParams(window.location.search);
-                ferramentaId = params.get('id');
-
-                if (ferramentaId) {
-                    document.title = "Editar Ferramenta";
-                    document.getElementById('form-title').textContent = "Editar Ferramenta";
-                    document.getElementById('form-subtitle').textContent = "Altere os dados da ferramenta.";
-                    btnSalvar.innerHTML = '<i data-lucide="save"></i> Salvar Alterações';
-                    btnCancelar.textContent = "Voltar";
-                    btnCancelar.onclick = () => { window.location.href = "/Pages/Controles/ControleFerramentas.html"; };
-                    await preencherFormularioParaEdicao(ferramentaId);
-                }
-                
                 createLucideIcons();
             } catch(error) {
                 console.error("Falha na inicialização:", error);
-                document.body.innerHTML = `<div style="color:black; text-align:center; padding: 2rem;"><h1>Erro Crítico</h1><p>Não foi possível carregar a página. Verifique a conexão e a configuração do Firebase.</p></div>`;
+                document.body.innerHTML = `<div style="color:black; text-align:center; padding: 2rem;"><h1>Erro Crítico</h1><p>Não foi possível carregar a página.</p></div>`;
             }
         };
 
@@ -428,35 +411,18 @@
             const selectGrupo = document.getElementById('ferramenta-grupo');
             selectGrupo.innerHTML = '<option value="">Buscando...</option>';
             try {
-                const q = query(collection(db, 'grupos'), orderBy('nome'));
-                const snapshot = await getDocs(q);
+                const snapshot = await gruposCollection.orderBy('nome').get();
                 selectGrupo.innerHTML = '<option value="">Selecione um Grupo</option>';
                 snapshot.forEach(doc => {
-                    selectGrupo.innerHTML += `<option value="${doc.id}">${doc.data().nome}</option>`;
+                    const grupo = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = grupo.nome;
+                    selectGrupo.appendChild(option);
                 });
             } catch (error) {
                 console.error("ERRO ao buscar grupos:", error);
                 selectGrupo.innerHTML = '<option value="">Falha ao carregar</option>';
-            }
-        };
-
-        const preencherFormularioParaEdicao = async (id) => {
-            const ferramentaRef = doc(db, 'ferramentas', id);
-            const docSnap = await getDoc(ferramentaRef);
-            if (!docSnap.exists()) {
-                Swal.fire('Erro!', 'Ferramenta não encontrada.', 'error');
-                return;
-            }
-            const data = docSnap.data();
-            document.getElementById('ferramenta-filial').value = data.filial;
-            document.getElementById('ferramenta-grupo').value = data.grupoId;
-            document.getElementById('ferramenta-codigo').value = data.codigo;
-            document.getElementById('ferramenta-descricao').value = data.descricao;
-            document.getElementById('ferramenta-localizacao').value = data.localizacao;
-            document.getElementById('ferramenta-quantidade').value = data.quantidade;
-            if (data.fotosURLs && data.fotosURLs.length > 0) {
-                urlsImagensExistentes = [...data.fotosURLs];
-                atualizarPreview();
             }
         };
 
