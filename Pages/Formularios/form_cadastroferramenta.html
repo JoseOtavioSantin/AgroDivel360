@@ -157,16 +157,26 @@
         // --- FUNÇÕES DE PREENCHIMENTO E LÓGICA DE EDIÇÃO ---
         async function carregarGrupos() {
             const selectGrupo = document.getElementById('ferramenta-grupo');
-            selectGrupo.innerHTML = '<option value="">Carregando...</option>';
+            selectGrupo.innerHTML = '<option value="">Carregando (teste)...</option>';
             try {
-                const q = query(collection(db, 'grupos'), orderBy('nome'));
-                const snapshot = await getDocs(q);
+                // Consulta SIMPLES, sem orderBy
+                const snapshot = await getDocs(collection(db, 'grupos')); 
+                
+                if (snapshot.empty) {
+                    console.log("A consulta à coleção 'grupos' não retornou documentos.");
+                    selectGrupo.innerHTML = '<option value="">Nenhum grupo encontrado</option>';
+                    return;
+                }
+        
                 selectGrupo.innerHTML = '<option value="">Selecione um Grupo</option>';
                 snapshot.forEach(doc => {
-                    selectGrupo.innerHTML += `<option value="${doc.id}">${doc.data().nome}</option>`;
+                    console.log("Grupo encontrado:", doc.id, doc.data()); // Linha de depuração
+                    // Verifique se 'doc.data().nome' existe!
+                    const nomeGrupo = doc.data().nome || 'NOME INDEFINIDO'; 
+                    selectGrupo.innerHTML += `<option value="${doc.id}">${nomeGrupo}</option>`;
                 });
             } catch (error) {
-                console.error("Erro ao carregar grupos: ", error);
+                console.error("Erro ao carregar grupos (teste simples): ", error);
                 selectGrupo.innerHTML = '<option value="">Falha ao carregar</option>';
             }
         }
@@ -373,7 +383,9 @@
     </script>
 
     <!-- Scripts Globais -->
+    <script type="module" src="/assets/js/auth.js"></script>
     <script src="/assets/js/main.js"></script> 
     <script src="/assets/js/components/Sidebar.js"></script>
 </body>
 </html>
+
