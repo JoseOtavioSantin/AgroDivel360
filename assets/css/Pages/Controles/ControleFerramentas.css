@@ -167,3 +167,21 @@
 .toast.success { background-color: var(--cor-sucesso); }
 .toast.error { background-color: var(--cor-alerta); }
 .toast.info { background-color: var(--cor-info); }
+
+.btn-ver-imagem {
+    background-color: #495057; /* Cinza-azulado escuro */
+    color: white !important; /* Garante que o ícone (Lucide) fique branco */
+}
+
+/* Efeito visual ao passar o mouse */
+.btn-ver-imagem:hover:not(:disabled) {
+    background-color: #343a40; /* Um tom mais escuro para o feedback */
+}
+
+/* Estilo para o botão quando estiver desabilitado (sem imagens) */
+.btn-ver-imagem:disabled {
+    background-color: #f8f9fa; /* Fundo bem claro, quase branco */
+    border: 1px solid #dee2e6; /* Borda cinza clara */
+    color: #adb5bd !important; /* Ícone cinza claro */
+    cursor: not-allowed;
+}
