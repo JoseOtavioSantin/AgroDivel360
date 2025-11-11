@@ -4,84 +4,40 @@
     <meta charset="UTF-8">
     <title>Cadastro de Ferramenta</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2c2f3f" />
+    <meta name="theme-color" content="#ffffff" />
 
     <!-- LIBS EXTERNAS -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- *** FIREBASE V9 (COMPAT ) - DO SEU CÓDIGO FUNCIONAL *** -->
+    <!-- FIREBASE V9 (COMPAT ) - Exatamente como no seu formulário que funciona -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-    <!-- CSS -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Estilos base (opcional, mas mantido para consistência ) -->
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/css/Pages/Formularios/style-forms.css">
-
+    <!-- CSS do Layout Mobile (sem alterações ) -->
     <style>
-        /* ESTILOS GERAIS PARA A PÁGINA MOBILE (DO NOSSO LAYOUT BONITO) */
-        body {
-            background-color: #f4f7fa;
-            padding-bottom: 100px; /* Espaço para o rodapé de ações fixo */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-        .home {
-            left: 0;
-            width: 100%;
-            padding: 15px;
-        }
+        body { background-color: #f4f7fa; padding-bottom: 100px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .home { left: 0; width: 100%; padding: 15px; }
         .text h1 { font-size: 1.8rem; color: #333; }
         .text p { color: #666; }
-        .content-card {
-            padding: 20px;
-            border: none;
-            border-radius: 12px;
-            background-color: #ffffff;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-        }
-        .form-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; /* Apenas uma coluna */
-            gap: 15px; 
-        }
-        #preview-container { 
-            display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; 
-            border: 2px dashed #ccc; padding: 10px; border-radius: 8px; 
-            min-height: 100px; align-items: center; justify-content: flex-start; 
-            background-color: #f9f9f9; 
-        }
+        .content-card { padding: 20px; border: none; border-radius: 12px; background-color: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #555; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ccc; background-color: #fff; color: #333; font-size: 16px; }
+        #preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; border: 2px dashed #ccc; padding: 10px; border-radius: 8px; min-height: 100px; align-items: center; justify-content: flex-start; background-color: #f9f9f9; }
         .preview-image { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; }
         .preview-placeholder { color: #888; font-size: 0.9rem; width: 100%; text-align: center; }
         .upload-btn-wrapper { position: relative; overflow: hidden; display: block; width: 100%; text-align: center; }
-        .btn-upload {
-            border: 2px solid #007bff; color: #007bff; background-color: white;
-            padding: 12px 20px; border-radius: 8px; font-size: 1rem; font-weight: bold;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .upload-btn-wrapper input[type=file] {
-            font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer;
-        }
-        .mobile-actions-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background-color: #ffffff; padding: 15px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            display: flex; gap: 10px; z-index: 100;
-        }
-        .mobile-actions-footer .btn-secondary,
-        .mobile-actions-footer .btn-primary {
-            flex: 1; padding: 15px; font-size: 1rem; text-align: center;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .status-message {
-            padding: 12px; margin-top: 20px; border-radius: 6px;
-            text-align: center; font-weight: bold; display: none;
-            color: white;
-        }
-        .status-message.success { background-color: #40c057; }
-        .status-message.error { background-color: #fa5252; }
+        .btn-upload { border: 2px solid #007bff; color: #007bff; background-color: white; padding: 12px 20px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+        .upload-btn-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; }
+        .mobile-actions-footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #ffffff; padding: 15px; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); display: flex; gap: 10px; z-index: 100; }
+        .btn { border: none; padding: 12px 25px; border-radius: 8px; color: white; cursor: pointer; font-size: 16px; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; transition: filter 0.2s; }
+        .btn-primary { background-color: #007bff; }
+        .btn-secondary { background-color: #6c757d; }
+        .mobile-actions-footer .btn-secondary, .mobile-actions-footer .btn-primary { flex: 1; padding: 15px; font-size: 1rem; text-align: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -103,37 +59,31 @@
                         <div class="form-group"><label for="ferramenta-localizacao">Localização (Ex: 14 A 9)</label><input type="text" id="ferramenta-localizacao" required placeholder="Prateleira e Nível"></div>
                         <div class="form-group"><label for="ferramenta-quantidade">Quantidade</label><input type="number" id="ferramenta-quantidade" required min="1" value="1"></div>
                     </div>
-
                     <div class="form-group" style="margin-top: 20px;">
                         <label>Fotos da Ferramenta</label>
                         <div class="upload-btn-wrapper">
                             <button type="button" class="btn-upload"><i data-lucide="camera"></i> Adicionar Fotos</button>
                             <input type="file" id="ferramenta-fotos" accept="image/*" multiple>
                         </div>
-                        <div id="preview-container">
-                            <span class="preview-placeholder">Pré-visualização das imagens</span>
-                        </div>
+                        <div id="preview-container"><span class="preview-placeholder">Pré-visualização das imagens</span></div>
                     </div>
-                    
-                    <div id="status-message" class="status-message"></div>
-
                     <div class="mobile-actions-footer">
-                        <a href="/Pages/Controles/ControleFerramentas.html" class="btn-secondary">Cancelar</a>
-                        <button type="submit" class="btn-primary" id="btn-salvar"><i data-lucide="save"></i> Salvar</button>
+                        <a href="/Pages/Controles/ControleFerramentas.html" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary" id="btn-salvar"><i data-lucide="save"></i> Salvar</button>
                     </div>
                 </form>
             </div>
         </div>
     </section>
 
-    <!-- *** SCRIPT FUNCIONAL (DO SEU CÓDIGO ANTIGO) *** -->
+    <!-- SCRIPT SEGUINDO O MODELO DO SEU CÓDIGO QUE FUNCIONA -->
     <script>
         // --- CONFIGURAÇÃO DO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
             authDomain: "agro-divel.firebaseapp.com",
             projectId: "agro-divel",
-            storageBucket: "agro-divel.appspot.com", // Corrigido para o domínio correto do storage
+            storageBucket: "agro-divel.firebasestorage.app", // Bucket correto
             messagingSenderId: "583977436505",
             appId: "1:583977436505:web:3754ec029aebb3d9d67848"
         };
@@ -141,26 +91,34 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const storage = firebase.storage();
+        const auth = firebase.auth();
         const ferramentasCollection = db.collection('ferramentas');
-        const gruposCollection = db.collection('grupos');
+        // *** CAMINHO CORRETO DA SUBCOLEÇÃO ***
+        const gruposCollection = db.collection('grupos/5iG3g8ehGMSkT6Wh4h7l/grupos');
 
         // --- ELEMENTOS DO DOM ---
         const form = document.getElementById('form-ferramenta');
         const fotosInput = document.getElementById('ferramenta-fotos');
         const previewContainer = document.getElementById('preview-container');
-        const statusMessage = document.getElementById('status-message');
         const btnSalvar = document.getElementById('btn-salvar');
         const codigoInput = document.getElementById('ferramenta-codigo');
         const descricaoInput = document.getElementById('ferramenta-descricao');
+        const localizacaoInput = document.getElementById('ferramenta-localizacao');
+
+        // --- FUNÇÕES DE FORMATAÇÃO ---
+        function formatarLocalizacao(input) {
+            const numeros = input.match(/\d+/g);
+            if (!numeros || numeros.length < 2) return input.toUpperCase();
+            return `${numeros[0]} A ${numeros[1]}`;
+        }
 
         // --- EVENT LISTENERS ---
         codigoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
         descricaoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
+        localizacaoInput.addEventListener('blur', (e) => { e.target.value = formatarLocalizacao(e.target.value); });
 
         fotosInput.addEventListener('change', (e) => {
-            if (previewContainer.querySelector('.preview-placeholder')) {
-                previewContainer.innerHTML = '';
-            }
+            if (previewContainer.querySelector('.preview-placeholder')) { previewContainer.innerHTML = ''; }
             const files = e.target.files;
             if (files) {
                 Array.from(files).forEach(file => {
@@ -170,7 +128,7 @@
                         img.src = event.target.result;
                         img.className = 'preview-image';
                         previewContainer.appendChild(img);
-                    }
+                    };
                     reader.readAsDataURL(file);
                 });
             }
@@ -182,64 +140,61 @@
             btnSalvar.disabled = true;
             btnSalvar.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Salvando...';
             lucide.createIcons();
-
-            const fotosFiles = fotosInput.files;
-            const fotosURLs = [];
-
             try {
+                const fotosFiles = fotosInput.files;
+                const fotosURLs = [];
                 if (fotosFiles.length > 0) {
                     const uploadPromises = Array.from(fotosFiles).map(file => {
                         const filePath = `ferramentas/${Date.now()}_${file.name}`;
                         const storageRef = storage.ref(filePath);
                         return storageRef.put(file).then(uploadTask => uploadTask.ref.getDownloadURL());
                     });
-                    const urls = await Promise.all(uploadPromises);
-                    fotosURLs.push(...urls);
+                    fotosURLs.push(...await Promise.all(uploadPromises));
                 }
-
                 const dados = {
                     filial: document.getElementById('ferramenta-filial').value,
                     grupoId: document.getElementById('ferramenta-grupo').value,
                     codigo: codigoInput.value,
                     descricao: descricaoInput.value,
-                    localizacao: document.getElementById('ferramenta-localizacao').value.toUpperCase(),
+                    localizacao: localizacaoInput.value,
                     quantidade: parseInt(document.getElementById('ferramenta-quantidade').value),
                     reparo: false,
                     fotosURLs: fotosURLs,
                     dataCriacao: new Date()
                 };
-
                 await ferramentasCollection.add(dados);
-
-                // Mostra a mensagem de sucesso e limpa o formulário
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Sucesso!',
-                    text: 'Ferramenta cadastrada com sucesso!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+                Swal.fire({ icon: 'success', title: 'Sucesso!', text: 'Ferramenta cadastrada com sucesso!', timer: 2000, showConfirmButton: false });
                 form.reset();
                 previewContainer.innerHTML = '<span class="preview-placeholder">Pré-visualização das imagens</span>';
-
             } catch (error) {
                 console.error("Erro ao salvar ferramenta: ", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: `Ocorreu um erro ao salvar: ${error.message}`
-                });
+                Swal.fire({ icon: 'error', title: 'Oops...', text: `Ocorreu um erro ao salvar: ${error.message}` });
             } finally {
                 btnSalvar.disabled = false;
-                btnSalvar.innerHTML = originalButtonHtml;
+                btnSalvar.innerHTML = '<i data-lucide="save"></i> Salvar';
                 lucide.createIcons();
             }
         });
 
-        // --- INICIALIZAÇÃO E FUNÇÕES AUXILIARES ---
+        // --- INICIALIZAÇÃO ---
         document.addEventListener("DOMContentLoaded", () => {
             lucide.createIcons();
-            carregarGrupos();
+            // *** VERIFICAÇÃO DE LOGIN ANTES DE CARREGAR OS GRUPOS ***
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // Usuário está logado, pode carregar os grupos
+                    console.log("Usuário logado, carregando grupos...");
+                    carregarGrupos();
+                } else {
+                    // Usuário não está logado, mostra erro e redireciona
+                    console.error("Nenhum usuário logado. Acesso negado.");
+                    Swal.fire('Acesso Negado', 'Você precisa estar logado para acessar esta página.', 'error')
+                        .then(() => {
+                            // Tente redirecionar para a página de login que você usa
+                            window.location.href = '/login.html'; 
+                        });
+                }
+            });
         });
 
         async function carregarGrupos() {
@@ -260,7 +215,6 @@
             }
         }
 
-        // Estilo para a animação do spinner
         const style = document.createElement('style');
         style.innerHTML = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }`;
         document.head.appendChild(style);
