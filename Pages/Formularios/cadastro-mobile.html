@@ -10,13 +10,13 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- FIREBASE V9 (COMPAT ) - Exatamente como no seu formulário que funciona -->
+    <!-- FIREBASE V9 (COMPAT ) -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
-    <!-- CSS do Layout Mobile (sem alterações ) -->
+    <!-- CSS (sem alterações ) -->
     <style>
         body { background-color: #f4f7fa; padding-bottom: 100px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .home { left: 0; width: 100%; padding: 15px; }
@@ -76,14 +76,13 @@
         </div>
     </section>
 
-    <!-- SCRIPT SEGUINDO O MODELO DO SEU CÓDIGO QUE FUNCIONA -->
     <script>
         // --- CONFIGURAÇÃO DO FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
             authDomain: "agro-divel.firebaseapp.com",
             projectId: "agro-divel",
-            storageBucket: "agro-divel.firebasestorage.app", // Bucket correto
+            storageBucket: "agro-divel.firebasestorage.app",
             messagingSenderId: "583977436505",
             appId: "1:583977436505:web:3754ec029aebb3d9d67848"
         };
@@ -93,10 +92,9 @@
         const storage = firebase.storage();
         const auth = firebase.auth();
         const ferramentasCollection = db.collection('ferramentas');
-        // *** CAMINHO CORRETO DA SUBCOLEÇÃO ***
         const gruposCollection = db.collection('grupos/5iG3g8ehGMSkT6Wh4h7l/grupos');
 
-        // --- ELEMENTOS DO DOM ---
+        // --- ELEMENTOS DO DOM (sem alterações) ---
         const form = document.getElementById('form-ferramenta');
         const fotosInput = document.getElementById('ferramenta-fotos');
         const previewContainer = document.getElementById('preview-container');
@@ -105,18 +103,17 @@
         const descricaoInput = document.getElementById('ferramenta-descricao');
         const localizacaoInput = document.getElementById('ferramenta-localizacao');
 
-        // --- FUNÇÕES DE FORMATAÇÃO ---
+        // --- FUNÇÕES DE FORMATAÇÃO (sem alterações) ---
         function formatarLocalizacao(input) {
             const numeros = input.match(/\d+/g);
             if (!numeros || numeros.length < 2) return input.toUpperCase();
             return `${numeros[0]} A ${numeros[1]}`;
         }
 
-        // --- EVENT LISTENERS ---
+        // --- EVENT LISTENERS (sem alterações) ---
         codigoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
         descricaoInput.addEventListener('input', (e) => { e.target.value = e.target.value.toUpperCase(); });
         localizacaoInput.addEventListener('blur', (e) => { e.target.value = formatarLocalizacao(e.target.value); });
-
         fotosInput.addEventListener('change', (e) => {
             if (previewContainer.querySelector('.preview-placeholder')) { previewContainer.innerHTML = ''; }
             const files = e.target.files;
@@ -133,7 +130,6 @@
                 });
             }
         });
-
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const originalButtonHtml = btnSalvar.innerHTML;
@@ -179,41 +175,50 @@
         // --- INICIALIZAÇÃO ---
         document.addEventListener("DOMContentLoaded", () => {
             lucide.createIcons();
-            // *** VERIFICAÇÃO DE LOGIN ANTES DE CARREGAR OS GRUPOS ***
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    // Usuário está logado, pode carregar os grupos
                     console.log("Usuário logado, carregando grupos...");
                     carregarGrupos();
                 } else {
-                    // Usuário não está logado, mostra erro e redireciona
                     console.error("Nenhum usuário logado. Acesso negado.");
                     Swal.fire('Acesso Negado', 'Você precisa estar logado para acessar esta página.', 'error')
-                        .then(() => {
-                            // Tente redirecionar para a página de login que você usa
-                            window.location.href = '/login.html'; 
-                        });
+                        .then(() => { window.location.href = '/login.html'; });
                 }
             });
         });
 
+        // ########## FUNÇÃO CARREGAR GRUPOS CORRIGIDA ##########
         async function carregarGrupos() {
             const selectGrupo = document.getElementById('ferramenta-grupo');
+            selectGrupo.innerHTML = '<option value="">Buscando grupos...</option>';
             try {
+                // Esta é a sintaxe correta para a versão de compatibilidade
                 const snapshot = await gruposCollection.orderBy('nome').get();
-                selectGrupo.innerHTML = '<option value="">Selecione um Grupo</option>';
-                snapshot.forEach(doc => {
-                    const grupo = doc.data();
-                    const option = document.createElement('option');
-                    option.value = doc.id;
-                    option.textContent = grupo.nome;
-                    selectGrupo.appendChild(option);
-                });
-            } catch (error) { 
-                console.error("Erro ao carregar grupos: ", error);
+
+                if (snapshot.empty) {
+                    console.log("Nenhum documento encontrado na subcoleção de grupos.");
+                    selectGrupo.innerHTML = '<option value="">Nenhum grupo encontrado</option>';
+                } else {
+                    console.log(`Encontrados ${snapshot.size} grupos.`);
+                    selectGrupo.innerHTML = '<option value="">Selecione um Grupo</option>';
+                    snapshot.forEach(doc => {
+                        const grupo = doc.data();
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.textContent = grupo.nome;
+                        selectGrupo.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("ERRO ao buscar grupos:", error);
                 selectGrupo.innerHTML = '<option value="">Falha ao carregar</option>';
+                if (error.code === 'failed-precondition') {
+                    console.error("DICA: O índice para a subcoleção 'grupos' ordenado por 'nome' está faltando. Crie-o no console do Firebase.");
+                    Swal.fire('Erro de Banco de Dados', 'Índice ausente. Peça ao administrador para criar o índice necessário no Firestore.', 'error');
+                }
             }
         }
+        // ######################################################
 
         const style = document.createElement('style');
         style.innerHTML = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } .spin { animation: spin 1s linear infinite; }`;
