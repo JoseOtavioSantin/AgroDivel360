@@ -294,10 +294,10 @@
     </div>
 
     <script type="module">
-        import { db, auth, storage } from "/assets/js/firebase-config.js"; 
+        // Importa apenas o que é necessário para o banco de dados e armazenamento
+        import { db, storage } from "/assets/js/firebase-config.js"; 
         import { collection, addDoc, getDocs, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
-        import { garantirAutenticacao } from '/assets/js/auth-guard.js';
 
         // --- VARIÁVEIS GLOBAIS ---
         let ferramentaId = null;
@@ -321,10 +321,6 @@
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true,
-                didOpen: (toast) => {
-                    toast.addEventListener('mouseenter', Swal.stopTimer);
-                    toast.addEventListener('mouseleave', Swal.resumeTimer);
-                }
             });
             Toast.fire({ icon, title: message });
         }
@@ -469,7 +465,7 @@
                     await updateDoc(doc(db, 'ferramentas', ferramentaId), dados);
                     mensagemSucesso = 'Ferramenta atualizada com sucesso!';
                     await Swal.fire('Sucesso!', mensagemSucesso, 'success');
-                    // Se editou, talvez seja melhor redirecionar
+                    // No modo de edição, é comum redirecionar de volta para a lista
                     window.location.href = "/Pages/Controles/ControleFerramentas.html";
                 } else {
                     dados.dataCriacao = new Date();
@@ -494,7 +490,6 @@
         // --- INICIALIZAÇÃO ---
         document.addEventListener("DOMContentLoaded", async () => {
             try {
-                await garantirAutenticacao(auth); 
                 await carregarGrupos();
                 
                 const params = new URLSearchParams(window.location.search);
@@ -513,7 +508,7 @@
                 createLucideIcons();
             } catch(error) {
                 console.error("Falha na inicialização:", error);
-                document.body.innerHTML = `<div style="color:black; text-align:center; padding: 2rem;"><h1>Erro Crítico</h1><p>Não foi possível carregar a página. Verifique a autenticação e a conexão.</p></div>`;
+                document.body.innerHTML = `<div style="color:black; text-align:center; padding: 2rem;"><h1>Erro Crítico</h1><p>Não foi possível carregar a página. Verifique a conexão e a configuração do Firebase.</p></div>`;
             }
         });
     </script>
