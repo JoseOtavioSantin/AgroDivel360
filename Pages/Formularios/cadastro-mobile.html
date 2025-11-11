@@ -29,16 +29,8 @@
             --shadow-color: rgba(0, 0, 0, 0.08 );
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html {
-            font-size: 16px;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 16px; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--cor-fundo);
@@ -60,46 +52,15 @@
             border: 1px solid #E5E5E5;
         }
 
-        .form-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        #form-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--cor-texto);
-            margin-bottom: 0.25rem;
-        }
-        #form-subtitle {
-            font-size: 0.9rem;
-            color: #777;
-        }
+        .form-header { text-align: center; margin-bottom: 2rem; }
+        #form-title { font-size: 1.5rem; font-weight: 600; color: var(--cor-texto); margin-bottom: 0.25rem; }
+        #form-subtitle { font-size: 0.9rem; color: #777; }
 
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--cor-texto-label);
-        }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 600; color: var(--cor-texto-label); }
         
-        .input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        .input-wrapper .lucide {
-            position: absolute;
-            left: 1rem;
-            color: #999;
-            width: 1.25rem;
-            height: 1.25rem;
-        }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper .lucide { position: absolute; left: 1rem; color: #999; width: 1.25rem; height: 1.25rem; }
 
         .form-group input, .form-group select {
             width: 100%;
@@ -128,35 +89,24 @@
             justify-content: center;
             gap: 0.75rem;
             width: 100%;
-            padding: 0.875rem;
+            padding: 1.5rem;
             border-radius: 8px;
             border: 2px dashed var(--cor-borda);
             background-color: #FAFAFA;
             color: #888;
             cursor: pointer;
-            transition: background-color 0.2s, border-color 0.2s;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
         }
-        .file-upload-label:hover {
-            background-color: #F5F5F5;
+        .file-upload-label.dragover {
+            background-color: #f0f8ff;
             border-color: var(--cor-primaria-fim);
             color: var(--cor-primaria-fim);
         }
 
         /* Preview de Imagens */
-        #preview-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
+        #preview-container { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem; }
         .preview-item { position: relative; }
-        .preview-image {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid var(--cor-borda);
-        }
+        .preview-image { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--cor-borda); }
         .remove-image-btn {
             position: absolute;
             top: -8px;
@@ -176,14 +126,7 @@
         .preview-placeholder { color: #AAA; font-size: 0.9rem; width: 100%; text-align: center; padding: 1rem 0; }
 
         /* Botões */
-        .form-actions {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #EEE;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
+        .form-actions { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #EEE; display: flex; flex-direction: column; gap: 0.75rem; }
         .btn {
             width: 100%;
             border: none;
@@ -200,24 +143,11 @@
             transition: filter 0.2s ease;
         }
         .btn .lucide { width: 1.25rem; height: 1.25rem; }
-        .btn:disabled {
-            cursor: not-allowed;
-            filter: grayscale(0.5) brightness(0.8);
-        }
-        .btn-primary {
-            background: linear-gradient(145deg, var(--cor-primaria-inicio), var(--cor-primaria-fim));
-        }
-        .btn-primary:hover:not(:disabled) {
-            filter: brightness(1.1);
-        }
-        .btn-secondary {
-            background-color: #F0F0F0;
-            border: 1px solid #DCDCDC;
-            color: #555;
-        }
-        .btn-secondary:hover:not(:disabled) {
-            background-color: #E5E5E5;
-        }
+        .btn:disabled { cursor: not-allowed; filter: grayscale(0.5) brightness(0.8); }
+        .btn-primary { background: linear-gradient(145deg, var(--cor-primaria-inicio), var(--cor-primaria-fim)); }
+        .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+        .btn-secondary { background-color: #F0F0F0; border: 1px solid #DCDCDC; color: #555; }
+        .btn-secondary:hover:not(:disabled) { background-color: #E5E5E5; }
 
         /* Animação de Spin */
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -232,7 +162,7 @@
             <p id="form-subtitle">Preencha os dados abaixo.</p>
         </div>
 
-        <form id="form-ferramenta">
+        <form id="form-ferramenta" novalidate>
             <div class="form-group">
                 <label for="ferramenta-filial">Filial</label>
                 <div class="input-wrapper">
@@ -294,7 +224,6 @@
     </div>
 
     <script type="module">
-        // Importa apenas o que é necessário para o banco de dados e armazenamento
         import { db, storage } from "/assets/js/firebase-config.js"; 
         import { collection, addDoc, getDocs, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
@@ -310,43 +239,31 @@
         const btnSalvar = document.getElementById('btn-salvar');
         const btnCancelar = document.getElementById('btn-cancelar');
         const localizacaoInput = document.getElementById('ferramenta-localizacao');
+        const fileUploadLabel = document.querySelector('.file-upload-label');
 
         // --- FUNÇÕES DE UI ---
         const createLucideIcons = () => lucide.createIcons();
         
-        function showToast(message, icon = 'success') {
-            const Toast = Swal.mixin({
+        const showToast = (message, icon = 'success') => {
+            Swal.mixin({
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
                 timer: 3000,
                 timerProgressBar: true,
-            });
-            Toast.fire({ icon, title: message });
-        }
+            }).fire({ icon, title: message });
+        };
 
-        function limparFormulario() {
+        const limparFormulario = () => {
             form.reset();
             novosArquivos = [];
             urlsImagensExistentes = [];
             atualizarPreview();
             document.getElementById('ferramenta-filial').focus();
-        }
-
-        // --- LÓGICA DE LOCALIZAÇÃO ---
-        localizacaoInput.addEventListener('input', (e) => {
-            let valor = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            let match = valor.match(/^(\d+)([A-Z]?)(\d*)/);
-            if (match) {
-                let prateleira = match[1] || '', letra = match[2] || '', nivel = match[3] || '';
-                e.target.value = letra ? `${prateleira} ${letra} ${nivel}`.trim() : prateleira;
-            } else {
-                e.target.value = valor;
-            }
-        });
+        };
 
         // --- LÓGICA DE UPLOAD E PREVIEW ---
-        function atualizarPreview() {
+        const atualizarPreview = () => {
             previewContainer.innerHTML = '';
             const todasImagens = [...urlsImagensExistentes, ...novosArquivos];
 
@@ -355,7 +272,8 @@
                 return;
             }
 
-            todasImagens.forEach((item) => {
+            const fragment = document.createDocumentFragment();
+            todasImagens.forEach(item => {
                 const isUrl = typeof item === 'string';
                 const src = isUrl ? item : URL.createObjectURL(item);
 
@@ -375,26 +293,138 @@
 
                 previewItem.appendChild(img);
                 previewItem.appendChild(removeBtn);
-                previewContainer.appendChild(previewItem);
+                fragment.appendChild(previewItem);
             });
-        }
+            previewContainer.appendChild(fragment);
+        };
 
-        function handleRemoverImagem(item, isUrl) {
+        const handleRemoverImagem = (item, isUrl) => {
             if (isUrl) {
                 urlsImagensExistentes = urlsImagensExistentes.filter(url => url !== item);
             } else {
                 novosArquivos = novosArquivos.filter(file => file !== item);
             }
             atualizarPreview();
-        }
+        };
 
-        fotosInput.addEventListener('change', e => {
-            novosArquivos.push(...Array.from(e.target.files));
-            atualizarPreview();
+        const handleFiles = (files) => {
+            const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+            if (imageFiles.length > 0) {
+                novosArquivos.push(...imageFiles);
+                atualizarPreview();
+            }
+        };
+
+        // --- EVENT LISTENERS ---
+        localizacaoInput.addEventListener('input', (e) => {
+            let valor = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            let match = valor.match(/^(\d+)([A-Z]?)(\d*)/);
+            if (match) {
+                let prateleira = match[1] || '', letra = match[2] || '', nivel = match[3] || '';
+                e.target.value = letra ? `${prateleira} ${letra} ${nivel}`.trim() : prateleira;
+            } else {
+                e.target.value = valor;
+            }
         });
 
-        // --- LÓGICA PRINCIPAL (Firebase, etc.) ---
-        async function carregarGrupos() {
+        fotosInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        btnCancelar.addEventListener('click', limparFormulario);
+
+        // Drag & Drop Events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileUploadLabel.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileUploadLabel.addEventListener(eventName, () => fileUploadLabel.classList.add('dragover'), false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileUploadLabel.addEventListener(eventName, () => fileUploadLabel.classList.remove('dragover'), false);
+        });
+        fileUploadLabel.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!form.checkValidity()) {
+                showToast('Por favor, preencha todos os campos obrigatórios.', 'warning');
+                form.reportValidity(); // Mostra a validação nativa do navegador
+                return;
+            }
+
+            const originalButtonHtml = btnSalvar.innerHTML;
+            btnSalvar.disabled = true;
+            btnSalvar.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Salvando...';
+            createLucideIcons();
+
+            try {
+                const uploadPromises = novosArquivos.map(file => {
+                    const filePath = `ferramentas/${Date.now()}_${file.name}`;
+                    const storageRef = ref(storage, filePath);
+                    return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
+                });
+                const novasFotosURLs = await Promise.all(uploadPromises);
+
+                const todasFotosURLs = [...urlsImagensExistentes, ...novasFotosURLs];
+                const dados = {
+                    filial: document.getElementById('ferramenta-filial').value,
+                    grupoId: document.getElementById('ferramenta-grupo').value,
+                    codigo: document.getElementById('ferramenta-codigo').value.toUpperCase(),
+                    descricao: document.getElementById('ferramenta-descricao').value.toUpperCase(),
+                    localizacao: localizacaoInput.value.toUpperCase(),
+                    quantidade: parseInt(document.getElementById('ferramenta-quantidade').value, 10),
+                    fotosURLs: todasFotosURLs,
+                };
+
+                if (ferramentaId) {
+                    dados.dataAtualizacao = new Date();
+                    await updateDoc(doc(db, 'ferramentas', ferramentaId), dados);
+                    await Swal.fire('Sucesso!', 'Ferramenta atualizada com sucesso!', 'success');
+                    window.location.href = "/Pages/Controles/ControleFerramentas.html";
+                } else {
+                    dados.dataCriacao = new Date();
+                    await addDoc(collection(db, 'ferramentas'), dados);
+                    showToast('Nova ferramenta cadastrada!', 'success');
+                    limparFormulario();
+                }
+
+            } catch (error) {
+                console.error("Erro ao salvar: ", error);
+                Swal.fire('Erro!', `Ocorreu uma falha ao salvar: ${error.message}`, 'error');
+            } finally {
+                btnSalvar.disabled = false;
+                btnSalvar.innerHTML = originalButtonHtml;
+                createLucideIcons();
+            }
+        });
+
+        // --- INICIALIZAÇÃO ---
+        const init = async () => {
+            try {
+                await carregarGrupos();
+                
+                const params = new URLSearchParams(window.location.search);
+                ferramentaId = params.get('id');
+
+                if (ferramentaId) {
+                    document.title = "Editar Ferramenta";
+                    document.getElementById('form-title').textContent = "Editar Ferramenta";
+                    document.getElementById('form-subtitle').textContent = "Altere os dados da ferramenta.";
+                    btnSalvar.innerHTML = '<i data-lucide="save"></i> Salvar Alterações';
+                    btnCancelar.textContent = "Voltar";
+                    btnCancelar.onclick = () => { window.location.href = "/Pages/Controles/ControleFerramentas.html"; };
+                    await preencherFormularioParaEdicao(ferramentaId);
+                }
+                
+                createLucideIcons();
+            } catch(error) {
+                console.error("Falha na inicialização:", error);
+                document.body.innerHTML = `<div style="color:black; text-align:center; padding: 2rem;"><h1>Erro Crítico</h1><p>Não foi possível carregar a página. Verifique a conexão e a configuração do Firebase.</p></div>`;
+            }
+        };
+
+        const carregarGrupos = async () => {
             const selectGrupo = document.getElementById('ferramenta-grupo');
             selectGrupo.innerHTML = '<option value="">Buscando...</option>';
             try {
@@ -408,9 +438,9 @@
                 console.error("ERRO ao buscar grupos:", error);
                 selectGrupo.innerHTML = '<option value="">Falha ao carregar</option>';
             }
-        }
+        };
 
-        async function preencherFormularioParaEdicao(id) {
+        const preencherFormularioParaEdicao = async (id) => {
             const ferramentaRef = doc(db, 'ferramentas', id);
             const docSnap = await getDoc(ferramentaRef);
             if (!docSnap.exists()) {
@@ -428,89 +458,9 @@
                 urlsImagensExistentes = [...data.fotosURLs];
                 atualizarPreview();
             }
-        }
+        };
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const originalButtonHtml = btnSalvar.innerHTML;
-            btnSalvar.disabled = true;
-            btnSalvar.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Salvando...';
-            createLucideIcons();
-
-            try {
-                const novasFotosURLs = [];
-                if (novosArquivos.length > 0) {
-                    const uploadPromises = novosArquivos.map(file => {
-                        const filePath = `ferramentas/${Date.now()}_${file.name}`;
-                        const storageRef = ref(storage, filePath);
-                        return uploadBytes(storageRef, file).then(snapshot => getDownloadURL(snapshot.ref));
-                    });
-                    novasFotosURLs.push(...await Promise.all(uploadPromises));
-                }
-
-                const todasFotosURLs = [...urlsImagensExistentes, ...novasFotosURLs];
-                const dados = {
-                    filial: document.getElementById('ferramenta-filial').value,
-                    grupoId: document.getElementById('ferramenta-grupo').value,
-                    codigo: document.getElementById('ferramenta-codigo').value.toUpperCase(),
-                    descricao: document.getElementById('ferramenta-descricao').value.toUpperCase(),
-                    localizacao: localizacaoInput.value.toUpperCase(),
-                    quantidade: parseInt(document.getElementById('ferramenta-quantidade').value, 10),
-                    fotosURLs: todasFotosURLs
-                };
-
-                let mensagemSucesso = '';
-                if (ferramentaId) {
-                    dados.dataAtualizacao = new Date();
-                    await updateDoc(doc(db, 'ferramentas', ferramentaId), dados);
-                    mensagemSucesso = 'Ferramenta atualizada com sucesso!';
-                    await Swal.fire('Sucesso!', mensagemSucesso, 'success');
-                    // No modo de edição, é comum redirecionar de volta para a lista
-                    window.location.href = "/Pages/Controles/ControleFerramentas.html";
-                } else {
-                    dados.dataCriacao = new Date();
-                    await addDoc(collection(db, 'ferramentas'), dados);
-                    mensagemSucesso = 'Nova ferramenta cadastrada!';
-                    showToast(mensagemSucesso, 'success');
-                    limparFormulario();
-                }
-
-            } catch (error) {
-                console.error("Erro ao salvar: ", error);
-                Swal.fire('Erro!', `Ocorreu uma falha: ${error.message}`, 'error');
-            } finally {
-                btnSalvar.disabled = false;
-                btnSalvar.innerHTML = originalButtonHtml;
-                createLucideIcons();
-            }
-        });
-
-        btnCancelar.addEventListener('click', limparFormulario);
-
-        // --- INICIALIZAÇÃO ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            try {
-                await carregarGrupos();
-                
-                const params = new URLSearchParams(window.location.search);
-                ferramentaId = params.get('id');
-
-                if (ferramentaId) {
-                    document.title = "Editar Ferramenta";
-                    document.getElementById('form-title').textContent = "Editar Ferramenta";
-                    document.getElementById('form-subtitle').textContent = "Altere os dados da ferramenta.";
-                    btnSalvar.innerHTML = '<i data-lucide="save"></i> Salvar Alterações';
-                    btnCancelar.textContent = "Voltar"; // Muda o texto do botão no modo de edição
-                    btnCancelar.onclick = () => { window.location.href = "/Pages/Controles/ControleFerramentas.html"; };
-                    await preencherFormularioParaEdicao(ferramentaId);
-                }
-                
-                createLucideIcons();
-            } catch(error) {
-                console.error("Falha na inicialização:", error);
-                document.body.innerHTML = `<div style="color:black; text-align:center; padding: 2rem;"><h1>Erro Crítico</h1><p>Não foi possível carregar a página. Verifique a conexão e a configuração do Firebase.</p></div>`;
-            }
-        });
+        document.addEventListener("DOMContentLoaded", init);
     </script>
 
 </body>
