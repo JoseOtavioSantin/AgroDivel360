@@ -122,18 +122,83 @@ document.addEventListener("DOMContentLoaded", () => {
         lucide.createIcons();
     }
 
+    // --- FUNÇÃO ATUALIZADA PARA RENDERIZAR ALOCAÇÕES ---
     function renderizarTabelaAlocacao(alocacoes) {
         const tabelaBody = document.getElementById('tabela-alocacao');
         tabelaBody.innerHTML = '';
+        
+        if (alocacoes.length === 0) {
+            tabelaBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
+                        <i data-lucide="inbox" style="width: 40px; height: 40px; margin-bottom: 10px;"></i>
+                        <br>Nenhuma ferramenta alocada
+                    </td>
+                </tr>
+            `;
+            lucide.createIcons();
+            return;
+        }
+
         alocacoes.forEach(a => {
             const ferramenta = todasFerramentas.find(f => f.id === a.ferramentaId);
             const tr = document.createElement('tr');
+            
+            // Formata a data
+            const dataAlocacao = formatarDataHora(a.dataAlocacao);
+            
+            // Status de disponibilidade
+            const statusHTML = ferramenta ? 
+                `<span class="status-alocado">🟢 Alocada</span>` : 
+                `<span class="status-erro">🔴 Ferramenta não encontrada</span>`;
+
             tr.innerHTML = `
-                <td>${ferramenta ? `${ferramenta.descricao} (${ferramenta.filial})` : 'Ferramenta não encontrada'}</td>
-                <td>${a.funcionario}</td>
-                <td>${formatarDataHora(a.dataAlocacao)}</td>
+                <td>
+                    <strong style="color: #2c5aa0;">${a.ordemServico || 'N/A'}</strong>
+                </td>
+                <td>
+                    <div class="ferramenta-info">
+                        <strong>${ferramenta ? ferramenta.descricao : 'Ferramenta não encontrada'}</strong>
+                        <div class="ferramenta-detalhes">
+                            ${ferramenta ? `
+                                <span class="codigo">Código: ${ferramenta.codigo}</span>
+                                <span class="filial">Filial: ${ferramenta.filial}</span>
+                            ` : ''}
+                        </div>
+                        ${statusHTML}
+                    </div>
+                </td>
+                <td>
+                    <div class="funcionario-info">
+                        <strong>${a.funcionario}</strong>
+                        ${a.responsavelLancamento ? `
+                            <div class="responsavel">Lançado por: ${a.responsavelLancamento}</div>
+                        ` : ''}
+                    </div>
+                </td>
+                <td>
+                    <div class="data-info">
+                        <strong>${dataAlocacao.split(' ')[0]}</strong>
+                        <div class="hora">${dataAlocacao.split(' ')[1]}</div>
+                    </div>
+                </td>
                 <td style="text-align: center;">
-                    <button class="btn btn-sucesso btn-devolver" data-id="${a.id}" data-ferramenta-id="${a.ferramentaId}" data-funcionario="${a.funcionario}" title="Registrar Devolução"><i data-lucide="arrow-left-circle"></i> Devolver</button>
+                    <div class="acoes-container">
+                        <button class="btn btn-sucesso btn-devolver" 
+                                data-id="${a.id}" 
+                                data-ferramenta-id="${a.ferramentaId}" 
+                                data-funcionario="${a.funcionario}" 
+                                title="Registrar Devolução">
+                            <i data-lucide="arrow-left-circle"></i> Devolver
+                        </button>
+                        ${a.ordemServico ? `
+                            <a href="/Pages/Formularios/os.html?os=${a.ordemServico}" 
+                               class="btn-pdf" 
+                               title="Gerar PDF desta OS">
+                                <i data-lucide="file-text"></i> PDF
+                            </a>
+                        ` : ''}
+                    </div>
                 </td>
             `;
             tabelaBody.appendChild(tr);
@@ -360,18 +425,36 @@ document.addEventListener("DOMContentLoaded", () => {
         renderizarTabelaFerramentas(filtrado);
     }
 
+    // --- FUNÇÃO ATUALIZADA PARA FILTRAR ALOCAÇÕES ---
     function aplicarFiltrosAlocacao() {
-        const filialFiltro = document.getElementById('filtro-aloc-filial').value;
-        const ferrFiltro = document.getElementById('filtro-aloc-ferramenta').value.toLowerCase();
-        const funcFiltro = document.getElementById('filtro-aloc-funcionario').value.toLowerCase();
-
+        const filial = document.getElementById('filtro-aloc-filial').value;
+        const ferramenta = document.getElementById('filtro-aloc-ferramenta').value.toLowerCase();
+        const funcionario = document.getElementById('filtro-aloc-funcionario').value.toLowerCase();
+        const os = document.getElementById('filtro-aloc-os').value.toLowerCase();
+        
         const filtrado = todasAlocacoes.filter(a => {
-            const ferramenta = todasFerramentas.find(f => f.id === a.ferramentaId);
-            const descFerramenta = ferramenta ? ferramenta.descricao.toLowerCase() : '';
-            return (!filialFiltro || (ferramenta && ferramenta.filial === filialFiltro)) &&
-                   descFerramenta.includes(ferrFiltro) &&
-                   a.funcionario.toLowerCase().includes(funcFiltro);
+            const ferramentaObj = todasFerramentas.find(f => f.id === a.ferramentaId);
+            const descricaoFerramenta = ferramentaObj ? ferramentaObj.descricao.toLowerCase() : '';
+            const codigoFerramenta = ferramentaObj ? ferramentaObj.codigo.toLowerCase() : '';
+            const filialFerramenta = ferramentaObj ? ferramentaObj.filial : '';
+            
+            return (
+                (!filial || filialFerramenta === filial) &&
+                (!ferramenta || 
+                 descricaoFerramenta.includes(ferramenta) || 
+                 codigoFerramenta.includes(ferramenta)) &&
+                (!funcionario || a.funcionario.toLowerCase().includes(funcionario)) &&
+                (!os || (a.ordemServico && a.ordemServico.toLowerCase().includes(os)))
+            );
         });
+        
+        // Ordenar por data mais recente primeiro
+        filtrado.sort((a, b) => {
+            const dataA = a.dataAlocacao?.toDate?.() || new Date(0);
+            const dataB = b.dataAlocacao?.toDate?.() || new Date(0);
+            return dataB - dataA;
+        });
+        
         renderizarTabelaAlocacao(filtrado);
     }
 
@@ -395,7 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
         el.addEventListener('input', aplicarFiltrosEstoque);
         el.addEventListener('change', aplicarFiltrosEstoque);
     });
-    document.querySelectorAll('#filtro-aloc-filial, #filtro-aloc-ferramenta, #filtro-aloc-funcionario').forEach(el => {
+    document.querySelectorAll('#filtro-aloc-filial, #filtro-aloc-ferramenta, #filtro-aloc-funcionario, #filtro-aloc-os').forEach(el => {
         el.addEventListener('input', aplicarFiltrosAlocacao);
     });
     document.querySelectorAll('#filtro-hist-filial, #filtro-hist-ferramenta, #filtro-hist-funcionario, #filtro-hist-tipo').forEach(el => {
