@@ -79,7 +79,7 @@ onAuthStateChanged(auth, async (user) => {
     } else {
 
         console.log("Nenhum usuário logado. Redirecionando para a página de login.");
-        window.location.href = '/Pages/Login.html';
+        window.location.href = '/Pages/Login/Login.html';
     }
 });
 
@@ -118,7 +118,3 @@ if (logoutButton) {
         });
     });
 }
-
-
-
-
