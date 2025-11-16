@@ -1,5 +1,3 @@
-// /assets/js/Formularios/form-alocacao.js
-
 import { garantirAutenticacao } from '/assets/js/auth-guard.js';
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -16,13 +14,13 @@ const firebaseConfig = {
 
 let app, db, storage, userData;
 let todasFerramentas = [], todosTecnicos = [], todasAlocacoes = [];
-let tomSelectFerramentas;
+let tomSelectFerramentas, tomSelectOS;
 
 // ==================================================================
 // VERSÃO FINALÍSSIMA DA FUNÇÃO DE CARREGAR IMAGEM
 // Lê o array 'fotosURLs' e exibe todas as imagens encontradas.
 // ==================================================================
-function carregarImagensFerramenta(ferramenta ) {
+function carregarImagensFerramenta(ferramenta) {
     const imagensContainer = document.getElementById('ferramenta-imagens');
     const containerPrincipal = document.getElementById('ferramenta-imagens-container');
     
@@ -51,7 +49,42 @@ function carregarImagensFerramenta(ferramenta ) {
 }
 
 // ==================================================================
-// FUNÇÃO DE INICIALIZAÇÃO - A lógica aqui está correta
+// FUNÇÃO PARA PREENCHER TÉCNICO AUTOMATICAMENTE POR OS
+// ==================================================================
+function preencherTecnicoPorOS(os) {
+    if (!os) return;
+    
+    // Busca alocações com esta OS, ordenando pela mais recente
+    const alocacoesDaOS = todasAlocacoes
+        .filter(a => a.ordemServico === os)
+        .sort((a, b) => {
+            const dataA = a.dataAlocacao?.toDate?.() || new Date(0);
+            const dataB = b.dataAlocacao?.toDate?.() || new Date(0);
+            return dataB - dataA; // Mais recente primeiro
+        });
+
+    if (alocacoesDaOS.length > 0) {
+        const ultimaAlocacao = alocacoesDaOS[0];
+        const tecnicoSelect = document.getElementById('tecnico-select');
+        
+        if (ultimaAlocacao.funcionario) {
+            // Define o valor do técnico
+            tecnicoSelect.value = ultimaAlocacao.funcionario;
+            
+            // Feedback visual para o usuário
+            Swal.fire({
+                title: 'Técnico preenchido!',
+                text: `Técnico definido como: ${ultimaAlocacao.funcionario}`,
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+    }
+}
+
+// ==================================================================
+// FUNÇÃO DE INICIALIZAÇÃO - COM AUTO-COMPLETE PARA OS
 // ==================================================================
 async function iniciarPagina() {
     try {
@@ -62,6 +95,7 @@ async function iniciarPagina() {
         db = getFirestore(app);
         storage = getStorage(app);
 
+        // Configura Tom Select para ferramentas
         tomSelectFerramentas = new TomSelect('#ferramenta-select', {
             create: false,
             sortField: { field: "text", direction: "asc" },
@@ -75,6 +109,32 @@ async function iniciarPagina() {
                 } else {
                     document.getElementById('ferramenta-imagens-container').style.display = 'none';
                 }
+            }
+        });
+
+        // Configura Tom Select para Ordem de Serviço com histórico
+        // Primeiro obtém as OSs únicas das alocações existentes
+        const osUnicas = [...new Set(todasAlocacoes
+            .map(a => a.ordemServico)
+            .filter(os => os && os.trim() !== '')
+        )];
+
+        const opcoesOS = osUnicas.map(os => ({
+            value: os,
+            text: `OS: ${os}`
+        }));
+
+        tomSelectOS = new TomSelect('#ordem-servico', {
+            options: opcoesOS,
+            create: true,
+            createFilter: function(input) {
+                return input.length >= 2; // Permite criar nova OS apenas com 2+ caracteres
+            },
+            searchField: ['text'],
+            sortField: { field: 'text', direction: 'asc' },
+            onChange: function(os) {
+                // Quando seleciona uma OS, preenche automaticamente o técnico
+                preencherTecnicoPorOS(os);
             }
         });
 
@@ -93,6 +153,21 @@ async function iniciarPagina() {
         todosTecnicos = tecnicosSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         todasAlocacoes = alocacoesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+        // Atualiza as opções do Tom Select OS com os dados carregados
+        const osUnicasAtualizadas = [...new Set(todasAlocacoes
+            .map(a => a.ordemServico)
+            .filter(os => os && os.trim() !== '')
+        )];
+
+        const opcoesOSAtualizadas = osUnicasAtualizadas.map(os => ({
+            value: os,
+            text: `OS: ${os}`
+        }));
+
+        tomSelectOS.clear();
+        tomSelectOS.clearOptions();
+        tomSelectOS.addOptions(opcoesOSAtualizadas);
+
         atualizarOpcoesFerramentas();
         atualizarSelectTecnicos();
 
@@ -108,7 +183,7 @@ async function iniciarPagina() {
     }
 }
 
-// As funções abaixo não precisam de alteração
+// As funções abaixo não precisam de alteração (mantidas do seu código original)
 function atualizarOpcoesFerramentas() {
     const filialFiltro = document.getElementById('filtro-filial').value.toUpperCase();
     let ferramentasFiltradas = todasFerramentas;
@@ -152,7 +227,13 @@ async function salvarAlocacao(event) {
     if (!ferramentaId) {
         return Swal.fire("Atenção", "Nenhuma ferramenta foi selecionada.", "warning");
     }
+    const os = tomSelectOS.getValue(); // Agora pega do Tom Select
+    if (!os) {
+        return Swal.fire("Atenção", "O campo Ordem de Serviço é obrigatório.", "warning");
+    }
+
     const dadosAlocacao = {
+        ordemServico: os,
         ferramentaId: ferramentaId,
         funcionario: document.getElementById("tecnico-select").value,
         dataAlocacao: new Date(document.getElementById("data-alocacao").value + "T12:00:00"),
@@ -161,6 +242,7 @@ async function salvarAlocacao(event) {
     if (!dadosAlocacao.funcionario || !document.getElementById("data-alocacao").value) {
         return Swal.fire("Atenção", "O técnico e a data são obrigatórios.", "warning");
     }
+
     Swal.fire({ title: 'Salvando...', text: 'Aguarde um momento.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
         await addDoc(collection(db, "alocacoes"), dadosAlocacao);
@@ -173,7 +255,7 @@ async function salvarAlocacao(event) {
                 ferramentaDescricao: ferramenta.descricao,
                 filial: ferramenta.filial,
                 timestamp: new Date(),
-                detalhes: { funcionario: dadosAlocacao.funcionario }
+                detalhes: { funcionario: dadosAlocacao.funcionario, ordemServico: dadosAlocacao.ordemServico }
             };
             await addDoc(collection(db, "historico"), historico);
         }
