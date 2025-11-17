@@ -3,42 +3,32 @@ import { db, auth, onAuthStateChanged, signOut, doc, getDoc } from './firebase-c
 
 // --- MAPA DE PERMISSÕES ---
 const menuPermissions = {
-
-// --- ADMIN ---
-
+    // --- ADMIN ---
     'admin-CadastroGestores': ['admin'],
     'admin-CadastroTecnicos': ['admin'],
 
-// --- DIRETORIA ---
+    // --- DIRETORIA ---
+    'dash-geral': ['admin', 'diretoria'],
 
-    'dash-geral':             ['admin', 'diretoria'],
+    // --- COMERCIAL ---
+    'dash-comercial': ['admin', 'diretoria', 'comercial'],
+    'dash-Seguro': ['admin', 'diretoria', 'comercial', 'pecas'], // Adicione 'pecas' aqui
+    'dash-Consorcio': ['admin', 'diretoria', 'comercial'],
 
-// --- COMERCIAL ---
+    // --- PECAS ---
+    'dash-pecas': ['admin', 'diretoria', 'pecas'],
+    'ctrl-Kit50': ['admin', 'diretoria', 'pecas'],
+    'ctrl-ContagemDiaria': ['admin', 'diretoria', 'pecas'],
+    'ctrl-PedidosPecas': ['admin', 'diretoria', 'pecas'],
+    'ctrl-ControleFerramentas': ['admin', 'diretoria', 'pecas'],
 
-    'dash-comercial':         ['admin', 'diretoria', 'comercial'],
-    'dash-Seguro':            ['admin', 'diretoria', 'comercial'],
-    'dash-Consorcio':         ['admin', 'diretoria', 'comercial'],
-
-// --- PECAS ---
-
-    'dash-pecas':                    ['admin', 'diretoria', 'pecas'],
-    'ctrl-Kit50':                    ['admin', 'diretoria', 'pecas'],
-    'ctrl-ContagemDiaria':           ['admin', 'diretoria', 'pecas'],
-    'ctrl-PedidosPecas':             ['admin', 'diretoria', 'pecas'],
-    'ctrl-ControleFerramentas':      ['admin', 'diretoria', 'pecas'],
-
-    
-
-// --- SERVICOS ---
-
-    'dash-servicos':          ['admin', 'diretoria', 'servicos'],
-    'dash-PLM':               ['admin', 'diretoria', 'servicos'],
+    // --- SERVICOS ---
+    'dash-servicos': ['admin', 'diretoria', 'servicos'],
+    'dash-PLM': ['admin', 'diretoria', 'servicos'],
     'dash-planos-manutencao': ['admin', 'diretoria', 'servicos'],
-    'ctrl-PlanosVigentes':    ['admin', 'diretoria', 'servicos'],
-    'ctrl-MaquinaParada':     ['admin', 'diretoria', 'servicos'],
-
+    'ctrl-PlanosVigentes': ['admin', 'diretoria', 'servicos'],
+    'ctrl-MaquinaParada': ['admin', 'diretoria', 'servicos'],
 };
-
 
 // Função principal que roda quando o estado de autenticação muda
 onAuthStateChanged(auth, async (user) => {
@@ -52,6 +42,8 @@ onAuthStateChanged(auth, async (user) => {
             const userData = userDoc.data();
             const userGroup = userData.grupo; 
             const userName = userData.nome;
+            // Novo campo para permissões individuais (usa array vazio se não existir)
+            const permissoesIndividuais = userData.permissoes || [];
 
             const userNameElement = document.getElementById('user-name');
 
@@ -67,8 +59,9 @@ onAuthStateChanged(auth, async (user) => {
             
             console.log("Grupo do usuário:", userGroup);
             console.log("Nome do usuário:", userName);
+            console.log("Permissões individuais:", permissoesIndividuais);
 
-            applyMenuPermissions(userGroup);
+            applyMenuPermissions(userGroup, permissoesIndividuais);
 
         } else {
             console.error("Documento do usuário não encontrado no Firestore!");
@@ -77,27 +70,47 @@ onAuthStateChanged(auth, async (user) => {
         }
 
     } else {
-
         console.log("Nenhum usuário logado. Redirecionando para a página de login.");
         window.location.href = '/Pages/Login/Login.html';
     }
 });
 
-// Função que percorre o mapa de permissões e esconde os itens
-function applyMenuPermissions(userGroup) {
+// Função que verifica se o usuário tem acesso a um item de menu
+function hasPermission(menuItemId, userGroup, permissoesIndividuais) {
+    const allowedGroups = menuPermissions[menuItemId];
+    
+    // Verifica se o grupo principal tem acesso
+    if (allowedGroups.includes(userGroup)) {
+        return true;
+    }
+    
+    // Verifica se tem permissão individual específica
+    if (permissoesIndividuais.includes(menuItemId)) {
+        return true;
+    }
+    
+    return false;
+}
 
+// Função que percorre o mapa de permissões e esconde os itens
+function applyMenuPermissions(userGroup, permissoesIndividuais = []) {
     for (const menuItemId in menuPermissions) {
-        const allowedGroups = menuPermissions[menuItemId];
         const element = document.getElementById(menuItemId);
 
-        if (element && !allowedGroups.includes(userGroup)) {
-            element.style.display = 'none';
+        if (element) {
+            const temAcesso = hasPermission(menuItemId, userGroup, permissoesIndividuais);
+            
+            if (!temAcesso) {
+                element.style.display = 'none';
+            } else {
+                element.style.display = ''; // Garante que está visível
+            }
         }
     }
 
+    // Esconde menus pais sem itens visíveis
     document.querySelectorAll('.submenu-parent').forEach(menu => {
         const totalItems = menu.querySelectorAll('ul.submenu > li');
-
         const visibleItems = Array.from(totalItems).filter(item => item.style.display !== 'none');
 
         if (visibleItems.length === 0 && totalItems.length > 0) {
@@ -106,7 +119,7 @@ function applyMenuPermissions(userGroup) {
     });
 }
 
-// Lógica do botão de Logout
+// Lógica do botão de Logout (mantido igual)
 const logoutButton = document.getElementById('logout-button');
 if (logoutButton) {
     logoutButton.addEventListener('click', () => {
