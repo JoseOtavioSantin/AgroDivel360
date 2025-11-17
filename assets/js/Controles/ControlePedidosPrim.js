@@ -3,150 +3,210 @@
 // Importações essenciais do Firebase e do nosso sistema de autenticação.
 import { garantirAutenticacao } from '/assets/js/auth-guard.js';
 import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, deleteDoc, query, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+// Adicionando writeBatch e getDoc, que estavam no código antigo
+import { getFirestore, collection, getDocs, doc, deleteDoc, query, addDoc, writeBatch, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // ==================================================================
-// LÓGICA DE IMPORTAÇÃO DE EXCEL (SheetJS)
+// LÓGICA DE IMPORTAÇÃO DE EXCEL (RESTAURADA DO CÓDIGO ANTIGO)
 // ==================================================================
 
 /**
- * Processa o arquivo Excel e extrai os pedidos válidos.
- * @param {File} file - O arquivo Excel.
- * @returns {Promise<Array<Object>>} Uma promessa que resolve com um array de objetos de pedidos.
+ * Função para exibir mensagens de feedback (Toast ou Alert simples se SweetAlert não estiver disponível).
+ * Esta função simula a showToast do código antigo.
  */
-function processarExcel(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-            try {
-                const data = new Uint8Array(e.target.result);
-                // XLSX é carregado via CDN no HTML (linha 13)
-                const workbook = XLSX.read(data, { type: 'array' });
-                
-                // Assumindo que a primeira aba é a que contém os dados
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                
-                // Converte a planilha para um array de objetos JSON, pulando as primeiras 9 linhas de cabeçalho
-                // O cabeçalho real está na linha 9 (índice 8 no array)
-                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1, range: 9 });
-
-                const headers = json[0];
-                const dataRows = json.slice(1);
-
-                // Mapeamento das colunas baseado na análise da planilha
-                const colMap = {
-                    'Código da Peça': headers.indexOf('Código da Peça'),
-                    'Quantidade Modificada': headers.indexOf('Quantidade Modificada'),
-                    'Cidade': headers.indexOf('Cidade')
-                };
-
-                const pedidosParaSalvar = [];
-                // Data de importação no formato YYYY-MM-DD
-                const dataAtual = new Date().toISOString().split('T')[0]; 
-
-                dataRows.forEach(row => {
-                    const codigoIndex = colMap['Código da Peça'];
-                    const quantidadeIndex = colMap['Quantidade Modificada'];
-                    const cidadeIndex = colMap['Cidade'];
-
-                    // Verifica se a linha tem dados suficientes e se o código da peça existe
-                    if (row.length > codigoIndex && row[codigoIndex]) {
-                        const codigo = String(row[codigoIndex]).trim();
-                        // Garante que a quantidade é um número e trata valores nulos/inválidos como 0
-                        const quantidade = parseInt(row[quantidadeIndex], 10) || 0;
-                        const cidade = String(row[cidadeIndex] || '').trim().toUpperCase();
-
-                        // Apenas importa se a quantidade modificada for maior que zero
-                        if (quantidade > 0 && codigo && cidade) {
-                            pedidosParaSalvar.push({
-                                codigo: codigo,
-                                quantidade: quantidade,
-                                pedidoPara: cidade, // Mapeado para Cidade
-                                fornecedor: 'PRIM', // Fixo
-                                status: 'AGUARDANDO PEÇA', // Status inicial
-                                data: dataAtual, // Data de importação
-                            });
-                        }
-                    }
-                });
-
-                resolve(pedidosParaSalvar);
-
-            } catch (error) {
-                reject(new Error("Erro ao processar o arquivo Excel: " + error.message));
-            }
+function showFeedback(message, type = 'info') {
+    if (typeof Swal !== 'undefined') {
+        // Mapeia os tipos para os ícones do SweetAlert
+        const iconMap = {
+            'sucesso': 'success',
+            'erro': 'error',
+            'info': 'info',
+            'aviso': 'warning'
         };
-
-        reader.onerror = (error) => {
-            reject(new Error("Erro ao ler o arquivo: " + error));
-        };
-
-        reader.readAsArrayBuffer(file);
-    });
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: iconMap[type] || 'info',
+            title: message,
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true
+        });
+    } else {
+        alert(`${type.toUpperCase()}: ${message}`);
+    }
 }
 
 /**
  * Função principal de importação que será chamada no evento 'change' do input file.
+ * Restaurada a lógica completa do código antigo, incluindo a verificação de duplicidade e o uso de batch.
  * @param {Event} event - O evento de 'change' do input file.
  * @param {Firestore} db - A instância do Firestore.
- * @param {string} collectionName - O nome da coleção ('pedidosPrim').
+ * @param {string} pedidosCollectionName - O nome da coleção de pedidos ('pedidosPrim').
+ * @param {string} importacoesCollectionName - O nome da coleção de registros de importação ('importacoesPrim').
  * @param {Function} carregarDadosDoFirebase - Função para recarregar a tabela após a importação.
  */
-async function importarPedidos(event, db, collectionName, carregarDadosDoFirebase) {
+async function importarPedidos(event, db, pedidosCollectionName, importacoesCollectionName, carregarDadosDoFirebase) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (typeof Swal === 'undefined') {
-        alert("A biblioteca SweetAlert2 não está carregada. A importação continuará, mas as mensagens de feedback serão simples.");
-    }
-
     if (typeof XLSX === 'undefined') {
-        Swal.fire('Erro', 'A biblioteca XLSX (SheetJS) não está carregada. Verifique o HTML.', 'error');
+        showFeedback('A biblioteca XLSX (SheetJS) não está carregada. Verifique o HTML.', 'erro');
         return;
     }
 
+    const loaderOverlay = document.getElementById('loader-overlay');
+    if (loaderOverlay) loaderOverlay.style.display = 'flex';
+
     try {
-        Swal.fire({
-            title: 'Processando...',
-            text: 'Lendo e validando os dados do arquivo Excel.',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        const pedidosParaSalvar = await processarExcel(file);
-
-        if (pedidosParaSalvar.length === 0) {
-            Swal.fire('Atenção', 'Nenhum pedido válido encontrado no arquivo para importação (Quantidade Modificada > 0).', 'warning');
-            return;
-        }
-
-        Swal.update({
-            title: 'Salvando no Banco de Dados...',
-            text: `Encontrados ${pedidosParaSalvar.length} pedidos válidos. Salvando no Firebase...`,
-        });
-
-        const collectionRef = collection(db, collectionName);
-        let count = 0;
+        const reader = new FileReader();
         
-        // Salva cada pedido no Firestore
-        for (const pedido of pedidosParaSalvar) {
-            await addDoc(collectionRef, pedido);
-            count++;
-        }
+        // Promessa para encapsular a leitura do arquivo
+        await new Promise((resolve, reject) => {
+            reader.onload = async (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    // Usando cellDates: true como no código antigo
+                    const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    // Usando raw: false para obter valores formatados, como no código antigo
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
+                    
+                    // 1. ENCONTRAR E FORMATAR A DATA DO RELATÓRIO
+                    let dataRelatorio = null;
+                    for (let i = 0; i < 20; i++) {
+                        if (!jsonData[i]) continue;
+                        const row = jsonData[i];
+                        // Procura a célula que contém "Data do Relatório"
+                        const cellIndex = row.findIndex(cell => typeof cell === 'string' && cell.includes('Data do Relatório'));
+                        
+                        if (cellIndex !== -1) {
+                            const valorData = row[cellIndex + 1];
+                            if (valorData instanceof Date) {
+                                // Formato YYYY-MM-DD
+                                const ano = valorData.getFullYear();
+                                const mes = String(valorData.getMonth() + 1).padStart(2, '0');
+                                const dia = String(valorData.getDate()).padStart(2, '0');
+                                dataRelatorio = `${ano}-${mes}-${dia}`;
+                            } else if (typeof valorData === 'string') {
+                                // Tenta parsear string DD/MM/YYYY
+                                const partes = valorData.split('/');
+                                if (partes.length === 3) {
+                                    dataRelatorio = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                                }
+                            }
+                            break; 
+                        }
+                    }
 
-        Swal.fire('Sucesso!', `${count} pedidos foram importados e salvos com sucesso!`, 'success');
-        
-        // Recarrega os dados na tabela
-        await carregarDadosDoFirebase();
+                    if (!dataRelatorio) {
+                        showFeedback('Não foi possível encontrar ou formatar a "Data do Relatório" no arquivo.', 'erro');
+                        reject(new Error('Data do Relatório não encontrada.'));
+                        return;
+                    }
+
+                    // 2. VERIFICAR DUPLICIDADE DE IMPORTAÇÃO
+                    const docIdData = dataRelatorio;
+                    const importacoesCollectionRef = collection(db, importacoesCollectionName);
+                    const docRefVerificacao = doc(importacoesCollectionRef, docIdData);
+                    const docSnap = await getDoc(docRefVerificacao);
+
+                    if (docSnap.exists()) {
+                        showFeedback(`O relatório do dia ${dataRelatorio.split('-').reverse().join('/')} já foi importado.`, 'erro');
+                        reject(new Error('Relatório duplicado.'));
+                        return;
+                    }
+
+                    // 3. ENCONTRAR O CABEÇALHO E OS ÍNDICES DAS COLUNAS
+                    let headerRowIndex = -1;
+                    for (let i = 0; i < jsonData.length; i++) {
+                        if (jsonData[i] && jsonData[i].includes('Código da Peça')) {
+                            headerRowIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (headerRowIndex === -1) {
+                        showFeedback('Cabeçalho "Código da Peça" não encontrado.', 'erro');
+                        reject(new Error('Cabeçalho não encontrado.'));
+                        return;
+                    }
+
+                    const headers = jsonData[headerRowIndex];
+                    const codigoIndex = headers.indexOf('Código da Peça');
+                    const quantidadeIndex = headers.indexOf('Quantidade Modificada');
+                    const cidadeIndex = headers.indexOf('Cidade');
+
+                    if (codigoIndex === -1 || quantidadeIndex === -1 || cidadeIndex === -1) {
+                        showFeedback('Colunas necessárias ("Código da Peça", "Quantidade Modificada", "Cidade") não encontradas no Excel.', 'erro');
+                        reject(new Error('Colunas necessárias não encontradas.'));
+                        return;
+                    }
+
+                    // 4. PROCESSAR E SALVAR OS DADOS USANDO BATCH
+                    const batch = writeBatch(db);
+                    const pedidosCollectionRef = collection(db, pedidosCollectionName);
+                    let pedidosImportados = 0;
+
+                    for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if (!row || row.length === 0) continue;
+
+                        const codigo = row[codigoIndex];
+                        const quantidade = row[quantidadeIndex];
+                        const cidade = row[cidadeIndex];
+
+                        // Condição de importação: código e cidade existem, e quantidade > 0
+                        if (codigo && cidade && Number(quantidade) > 0) {
+                            const novoPedido = {
+                                codigo: String(codigo).trim().toUpperCase(),
+                                quantidade: parseInt(quantidade, 10),
+                                pedidoPara: String(cidade).trim().toUpperCase(),
+                                status: 'AGUARDANDO PEÇA',
+                                fornecedor: 'PRIM',
+                                data: dataRelatorio,
+                                chegouEstoque: false
+                            };
+                            
+                            const docRef = doc(pedidosCollectionRef); // Cria um novo doc ID
+                            batch.set(docRef, novoPedido);
+                            pedidosImportados++;
+                        }
+                    }
+
+                    if (pedidosImportados > 0) {
+                        // Registra a importação na coleção de controle
+                        const docRefRegistro = doc(importacoesCollectionRef, docIdData);
+                        batch.set(docRefRegistro, { importadoEm: new Date().toISOString(), nomeArquivo: file.name, totalPedidos: pedidosImportados });
+
+                        await batch.commit();
+                        showFeedback(`${pedidosImportados} pedidos do relatório de ${dataRelatorio.split('-').reverse().join('/')} importados!`, 'sucesso');
+                        await carregarDadosDoFirebase();
+                    } else {
+                        showFeedback('Nenhum pedido válido encontrado no arquivo Excel.', 'info');
+                    }
+                    resolve();
+
+                } catch (error) {
+                    console.error("Erro ao processar Excel:", error);
+                    showFeedback("Erro crítico ao processar o arquivo Excel. Verifique o console.", 'erro');
+                    reject(error);
+                }
+            };
+            
+            reader.onerror = (error) => {
+                showFeedback("Erro ao ler o arquivo Excel.", 'erro');
+                reject(error);
+            };
+            
+            reader.readAsArrayBuffer(file);
+        });
 
     } catch (error) {
-        console.error("Erro durante a importação:", error);
-        Swal.fire('Erro', 'Ocorreu um erro durante a importação: ' + error.message, 'error');
+        // Erro já tratado dentro da Promise
     } finally {
+        if (loaderOverlay) loaderOverlay.style.display = 'none';
         // Limpa o input de arquivo para permitir a importação do mesmo arquivo novamente
         event.target.value = null;
     }
@@ -162,19 +222,22 @@ async function importarPedidos(event, db, collectionName, carregarDadosDoFirebas
 async function iniciarPagina( ) {
     try {
         // 1. GARANTIR AUTENTICAÇÃO
+        // O código antigo não tinha auth-guard, mas o seu código mais recente sim. 
+        // Mantemos o auth-guard para segurança.
         const userData = await garantirAutenticacao();
 
         const app = getApp();
         const db = getFirestore(app);
-        const collectionName = "pedidosPrim";
-        const pedidosCollection = collection(db, collectionName);
+        const pedidosCollectionName = "pedidosPrim";
+        const importacoesCollectionName = "importacoesPrim"; // Nova coleção de controle
+        const pedidosCollection = collection(db, pedidosCollectionName);
 
         // --- Captura dos elementos do HTML ---
         const tabelaBody = document.getElementById('tabela-pedidos');
         const loaderOverlay = document.getElementById('loader-overlay');
         const filtroCodigo = document.getElementById('filtro-codigo');
         // O HTML usa 'filtro-cidade', mas o JS original usava 'filtro-pedido-para'. 
-        // Vou manter o nome do JS original para compatibilidade, mas o input correto é 'filtro-cidade'
+        // Vamos usar o ID do HTML que você forneceu: 'filtro-cidade'
         const filtroPedidoPara = document.getElementById('filtro-cidade'); 
         const dynamicTitle = document.getElementById('dynamic-title');
         const btnImportarExcel = document.getElementById('btn-importar-excel');
@@ -186,12 +249,12 @@ async function iniciarPagina( ) {
         // --- Funções do Sistema ---
 
         // ==================================================================
-        // AQUI ESTÁ A FUNÇÃO COM A LÓGICA DE FILTRAGEM PADRONIZADA
+        // FUNÇÃO DE CARREGAMENTO DE DADOS
         // ==================================================================
         async function carregarDadosDoFirebase() {
             if (loaderOverlay) loaderOverlay.style.display = 'flex';
             
-            // Lógica padrão para o título
+            // Lógica padrão para o título (mantida do seu código anterior)
             if (dynamicTitle) {
                 const filiaisLogadas = userData.filial || [];
                 if (userData.grupo && userData.grupo.includes('admin')) {
@@ -206,21 +269,15 @@ async function iniciarPagina( ) {
             const querySnapshot = await getDocs(q);
             const todosOsPedidos = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Se o usuário NÃO for admin, aplica o filtro de filial
+            // Se o usuário NÃO for admin, aplica o filtro de filial (mantida do seu código anterior)
             if (userData && userData.grupo && !userData.grupo.includes('admin')) {
                 const filiaisDoUsuario = userData.filial || [];
                 dadosCompletos = todosOsPedidos.filter(pedido => {
-                    // Usa o campo 'pedidoPara' para verificar a filial
                     const filialDoPedido = (pedido.pedidoPara || "").toLowerCase().trim();
-                    
-                    // Se o pedido não tiver uma filial definida, ele não será mostrado para usuários comuns
                     if (!filialDoPedido) return false; 
-                    
-                    // Verifica se a filial do pedido está na lista de filiais permitidas para o usuário
                     return filiaisDoUsuario.some(f => f.toLowerCase().trim() === filialDoPedido);
                 });
             } else {
-                // Se for admin, carrega todos os pedidos sem filtro
                 dadosCompletos = todosOsPedidos;
             }
 
@@ -238,6 +295,7 @@ async function iniciarPagina( ) {
                 (pedido.pedidoPara || '').toUpperCase().includes(pedidoParaFiltro)
             );
 
+            // Lógica de ordenação (mantida do seu código anterior)
             dadosFiltrados.sort((a, b) => {
                 const aChegou = a.status === 'AGUARDANDO PEÇA' && a.chegouEstoque;
                 const bChegou = b.status === 'AGUARDANDO PEÇA' && b.chegouEstoque;
@@ -321,7 +379,7 @@ async function iniciarPagina( ) {
 
             if (typeof Swal === 'undefined') {
                 if (confirm(`Tem certeza que deseja apagar o pedido da peça "${pedido.codigo}"?`)) {
-                    await deleteDoc(doc(db, collectionName, id));
+                    await deleteDoc(doc(db, pedidosCollectionName, id));
                     await carregarDadosDoFirebase();
                 }
                 return;
@@ -340,12 +398,12 @@ async function iniciarPagina( ) {
 
             if (result.isConfirmed) {
                 try {
-                    await deleteDoc(doc(db, collectionName, id));
-                    Swal.fire('Apagado!', 'O pedido foi removido com sucesso.', 'success');
+                    await deleteDoc(doc(db, pedidosCollectionName, id));
+                    showFeedback('O pedido foi removido com sucesso.', 'sucesso');
                     await carregarDadosDoFirebase();
                 } catch (error) {
                     console.error("Erro ao apagar pedido:", error);
-                    Swal.fire('Erro!', 'Não foi possível apagar o pedido.', 'error');
+                    showFeedback('Não foi possível apagar o pedido.', 'erro');
                 }
             }
         }
@@ -360,11 +418,11 @@ async function iniciarPagina( ) {
             });
         }
         
-        // AQUI ESTÁ A NOVA LÓGICA DE IMPORTAÇÃO
+        // INTEGRAÇÃO DA LÓGICA DE IMPORTAÇÃO
         if (excelUploader) {
             excelUploader.addEventListener('change', (event) => {
-                // Chama a função de importação, passando as dependências necessárias
-                importarPedidos(event, db, collectionName, carregarDadosDoFirebase);
+                // Passa as coleções corretas e a função de recarregar
+                importarPedidos(event, db, pedidosCollectionName, importacoesCollectionName, carregarDadosDoFirebase);
             });
         }
 
