@@ -370,7 +370,8 @@ async function iniciarPagina( ) {
         function formatarData(dataString) {
             if (!dataString || !dataString.includes('-')) return 'Inválida';
             const [ano, mes, dia] = dataString.split('-');
-            return `${dia}/${mes}/${ano}`;
+            // Retorna DD/MM/YY (os dois últimos dígitos do ano)
+            return `${dia}/${mes}/${ano.substring(2)}`;
         }
 
         async function apagarPedido(id) {
@@ -451,3 +452,4 @@ async function iniciarPagina( ) {
 
 // Inicia todo o processo da página.
 iniciarPagina();
+
