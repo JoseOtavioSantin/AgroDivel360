@@ -20,6 +20,7 @@ const menuPermissions = {
     'ctrl-Kit50': ['admin', 'diretoria', 'pecas'],
     'ctrl-ContagemDiaria': ['admin', 'diretoria', 'pecas'],
     'ctrl-PedidosPecas': ['admin', 'diretoria', 'pecas'],
+    'ctrl-PedidosPrim': ['admin', 'diretoria', 'pecas'],
     'ctrl-ControleFerramentas': ['admin', 'diretoria', 'pecas'],
 
     // --- SERVICOS ---
@@ -43,6 +44,7 @@ const pagePermissions = {
     '/Pages/Controles/Kits50Horas.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/ContagemDiaria.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/PedidosPecas.html': ['admin', 'diretoria', 'pecas'],
+    '/Pages/Controles/PedidosPrim.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/ControleFerramentas.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/PlanosVigentes.html': ['admin', 'diretoria', 'servicos'],
     '/Pages/Controles/MaquinasParadas.html': ['admin', 'diretoria', 'servicos'],
@@ -95,7 +97,8 @@ function checkPageAccess(userGroup, permissoesIndividuais) {
                 '/Pages/Dashboards/DashboardPlanosManutencao.html': 'dash-planos-manutencao',
                 '/Pages/Controles/CtrlKit50.html': 'ctrl-Kit50',
                 '/Pages/Controles/CtrlContagemDiaria.html': 'ctrl-ContagemDiaria',
-                '/Pages/Controles/CtrlPedidosPecas.html': 'ctrl-PedidosPecas',
+                '/Pages/Controles/PedidosPecas.html': 'ctrl-PedidosPecas',
+                '/Pages/Controles/PedidosPrim.html': 'ctrl-PedidosPecas',
                 '/Pages/Controles/CtrlControleFerramentas.html': 'ctrl-ControleFerramentas',
                 '/Pages/Controles/CtrlPlanosVigentes.html': 'ctrl-PlanosVigentes',
                 '/Pages/Controles/CtrlMaquinaParada.html': 'ctrl-MaquinaParada',
@@ -225,4 +228,5 @@ if (logoutButton) {
         });
     });
 }
+
 
