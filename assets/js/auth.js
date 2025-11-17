@@ -32,14 +32,14 @@ const menuPermissions = {
 
 // --- MAPA DE PÁGINAS PARA VERIFICAÇÃO ---
 const pagePermissions = {
-    '/Pages/Dashboards/DashboardGeral.html': ['admin', 'diretoria'],
-    '/Pages/Dashboards/DashboardComercial.html': ['admin', 'diretoria', 'comercial'],
-    '/Pages/Dashboards/DashboardSeguro.html': ['admin', 'diretoria', 'comercial'],
-    '/Pages/Dashboards/DashboardConsorcio.html': ['admin', 'diretoria', 'comercial'],
-    '/Pages/Dashboards/DashboardPecas.html': ['admin', 'diretoria', 'pecas'],
-    '/Pages/Dashboards/DashboardServicos.html': ['admin', 'diretoria', 'servicos'],
-    '/Pages/Dashboards/DashboardPLM.html': ['admin', 'diretoria', 'servicos'],
-    '/Pages/Dashboards/DashboardPlanosManutencao.html': ['admin', 'diretoria', 'servicos'],
+    '/Pages/Dashboard/DashboardGeral.html': ['admin', 'diretoria'],
+    '/Pages/Dashboard/DashboardComercial.html': ['admin', 'diretoria', 'comercial'],
+    '/Pages/Dashboard/DashboardSeguro.html': ['admin', 'diretoria', 'comercial'],
+    '/Pages/Dashboard/DashboardConsorcio.html': ['admin', 'diretoria', 'comercial'],
+    '/Pages/Dashboard/DashboardPecas.html': ['admin', 'diretoria', 'pecas'],
+    '/Pages/Dashboard/DashboardServicos.html': ['admin', 'diretoria', 'servicos'],
+    '/Pages/Dashboard/DashboardPLM.html': ['admin', 'diretoria', 'servicos'],
+    '/Pages/Dashboard/DashboardPlanosManutencao.html': ['admin', 'diretoria', 'servicos'],
     '/Pages/Controles/Kits50Horas.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/ContagemDiaria.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/PedidosPecas.html': ['admin', 'diretoria', 'pecas'],
@@ -225,3 +225,4 @@ if (logoutButton) {
         });
     });
 }
+
