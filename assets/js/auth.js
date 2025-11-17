@@ -87,23 +87,25 @@ function checkPageAccess(userGroup, permissoesIndividuais) {
         const menuId = Object.keys(menuPermissions).find(key => {
             // Mapeia páginas para IDs de menu (você pode precisar ajustar isso)
             const pageMap = {
-                '/Pages/Dashboards/DashboardGeral.html': 'dash-geral',
-                '/Pages/Dashboards/DashboardComercial.html': 'dash-comercial',
-                '/Pages/Dashboards/DashboardSeguro.html': 'dash-Seguro',
-                '/Pages/Dashboards/DashboardConsorcio.html': 'dash-Consorcio',
-                '/Pages/Dashboards/DashboardPecas.html': 'dash-pecas',
-                '/Pages/Dashboards/DashboardServicos.html': 'dash-servicos',
-                '/Pages/Dashboards/DashboardPLM.html': 'dash-PLM',
-                '/Pages/Dashboards/DashboardPlanosManutencao.html': 'dash-planos-manutencao',
-                '/Pages/Controles/CtrlKit50.html': 'ctrl-Kit50',
-                '/Pages/Controles/CtrlContagemDiaria.html': 'ctrl-ContagemDiaria',
-                '/Pages/Controles/PedidosPecas.html': 'ctrl-PedidosPecas',
-                '/Pages/Controles/PedidosPrim.html': 'ctrl-PedidosPecas',
-                '/Pages/Controles/CtrlControleFerramentas.html': 'ctrl-ControleFerramentas',
-                '/Pages/Controles/CtrlPlanosVigentes.html': 'ctrl-PlanosVigentes',
-                '/Pages/Controles/CtrlMaquinaParada.html': 'ctrl-MaquinaParada',
-                '/Pages/Admin/CadastroGestores.html': 'admin-CadastroGestores',
-                '/Pages/Admin/CadastroTecnicos.html': 'admin-CadastroTecnicos'
+                
+        '/Pages/Dashboard/DashboardGeral.html': 'dash-geral',
+        '/Pages/Dashboard/DashboardComercial.html': 'dash-comercial',
+        '/Pages/Dashboard/DashboardSeguro.html': 'dash-Seguro',
+        '/Pages/Dashboard/DashboardConsorcio.html': 'dash-Consorcio',
+        '/Pages/Dashboard/DashboardPecas.html': 'dash-pecas',
+        '/Pages/Dashboard/DashboardServicos.html': 'dash-servicos',
+        '/Pages/Dashboard/DashboardPLM.html': 'dash-PLM',
+        '/Pages/Dashboard/DashboardPlanosManutencao.html': 'dash-planos-manutencao',
+        '/Pages/Controles/Kits50Horas.html': 'ctrl-Kit50',
+        '/Pages/Controles/ContagemDiaria.html': 'ctrl-ContagemDiaria',
+        '/Pages/Controles/PedidosPecas.html': 'ctrl-PedidosPecas',
+        '/Pages/Controles/PedidosPrim.html': 'ctrl-PedidosPrim',
+        '/Pages/Controles/ControleFerramentas.html': 'ctrl-ControleFerramentas',
+        '/Pages/Controles/PlanosVigentes.html': 'ctrl-PlanosVigentes',
+        '/Pages/Controles/MaquinasParadas.html': 'ctrl-MaquinaParada',
+        '/Pages/Cadastros/CadastroGestores.html': 'admin-CadastroGestores',
+        '/Pages/Cadastros/CadastroTecnicos.html': 'admin-CadastroTecnicos'
+
             };
             return pageMap[currentPage] === key;
         });
@@ -228,5 +230,6 @@ if (logoutButton) {
         });
     });
 }
+
 
 
