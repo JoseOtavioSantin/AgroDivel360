@@ -73,7 +73,7 @@ async function importarPedidos(event, db, pedidosCollectionName, importacoesColl
                     // Usando raw: false para obter valores formatados, como no código antigo
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false });
                     
-                    // 1. ENCONTRAR E FORMATAR A DATA DO RELATÓRIO
+                    // 1. ENCONTRAR E FORMATAR A DATA DO RELATÓRIO (CORRIGIDO)
                     let dataRelatorio = null;
                     for (let i = 0; i < 20; i++) {
                         if (!jsonData[i]) continue;
@@ -84,17 +84,32 @@ async function importarPedidos(event, db, pedidosCollectionName, importacoesColl
                         if (cellIndex !== -1) {
                             const valorData = row[cellIndex + 1];
                             if (valorData instanceof Date) {
-                                // Formato YYYY-MM-DD
+                                // CORREÇÃO: Formato YYYY-MM-DD (ano-mes-dia)
                                 const ano = valorData.getFullYear();
                                 const mes = String(valorData.getMonth() + 1).padStart(2, '0');
                                 const dia = String(valorData.getDate()).padStart(2, '0');
-                                dataRelatorio = `${ano}-${mes}-${dia}`;
+                                dataRelatorio = `${ano}-${mes}-${dia}`; // CORRETO: YYYY-MM-DD
                             } else if (typeof valorData === 'string') {
                                 // Tenta parsear string DD/MM/YYYY
                                 const partes = valorData.split('/');
                                 if (partes.length === 3) {
-                                    dataRelatorio = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                                    // CORREÇÃO: Formato YYYY-MM-DD (ano-mes-dia)
+                                    dataRelatorio = `${partes[2]}-${partes[1]}-${partes[0]}`; // CORRETO: YYYY-MM-DD
+                                } else {
+                                    // Se não conseguir parsear, usa a data atual
+                                    const hoje = new Date();
+                                    const ano = hoje.getFullYear();
+                                    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+                                    const dia = String(hoje.getDate()).padStart(2, '0');
+                                    dataRelatorio = `${ano}-${mes}-${dia}`;
                                 }
+                            } else {
+                                // Fallback: data atual
+                                const hoje = new Date();
+                                const ano = hoje.getFullYear();
+                                const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+                                const dia = String(hoje.getDate()).padStart(2, '0');
+                                dataRelatorio = `${ano}-${mes}-${dia}`;
                             }
                             break; 
                         }
@@ -217,13 +232,81 @@ async function importarPedidos(event, db, pedidosCollectionName, importacoesColl
 // ==================================================================
 
 /**
+ * Função para corrigir datas existentes no Firebase (executar apenas uma vez)
+ */
+async function corrigirDatasExistentes(db, pedidosCollectionName) {
+    const querySnapshot = await getDocs(collection(db, pedidosCollectionName));
+    const batch = writeBatch(db);
+    let correcoes = 0;
+    
+    querySnapshot.docs.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data.data && data.data.match(/^\d{2}-\d{2}-\d{2}$/)) {
+            // Data no formato errado "25-17-11" (ano-dia-mes)
+            const [anoCurto, dia, mes] = data.data.split('-');
+            const novaData = `20${anoCurto}-${mes}-${dia}`; // Converte para "2025-11-17"
+            
+            batch.update(docSnap.ref, { data: novaData });
+            console.log(`Corrigindo ${data.data} para ${novaData}`);
+            correcoes++;
+        }
+    });
+    
+    if (correcoes > 0) {
+        await batch.commit();
+        showFeedback(`${correcoes} datas corrigidas com sucesso!`, 'sucesso');
+        console.log(`${correcoes} datas corrigidas com sucesso!`);
+    } else {
+        showFeedback('Nenhuma data precisa ser corrigida.', 'info');
+    }
+}
+
+/**
+ * Função para formatar data (VERSÃO CORRIGIDA)
+ */
+function formatarData(dataString) {
+    if (!dataString) return 'Inválida';
+
+    // Caso 1: Data já está no formato YYYY-MM-DD (correto)
+    if (dataString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [ano, mes, dia] = dataString.split('-');
+        return `${dia}/${mes}/${ano}`;
+    }
+    
+    // Caso 2: Data no formato errado "25-17-11" (ano-dia-mes)
+    if (dataString.match(/^\d{2}-\d{2}-\d{2}$/)) {
+        const [anoCurto, dia, mes] = dataString.split('-');
+        const ano = `20${anoCurto}`; // Converte 25 para 2025
+        return `${dia}/${mes}/${ano}`;
+    }
+    
+    // Caso 3: Data no formato DD/MM/YYYY
+    if (dataString.includes('/')) {
+        return dataString; // Já está no formato correto
+    }
+
+    // Caso 4: Tentar como objeto Date
+    try {
+        const date = new Date(dataString);
+        if (!isNaN(date.getTime())) {
+            const dia = String(date.getDate()).padStart(2, '0');
+            const mes = String(date.getMonth() + 1).padStart(2, '0');
+            const ano = String(date.getFullYear());
+            return `${dia}/${mes}/${ano}`;
+        }
+    } catch (e) {
+        console.error('Erro ao formatar data:', e);
+    }
+
+    return 'Inválida';
+}
+
+/**
  * Função principal que encapsula toda a lógica da página.
  */
-async function iniciarPagina( ) {
+async function iniciarPagina() {
     try {
         // 1. GARANTIR AUTENTICAÇÃO
-        // O código antigo não tinha auth-guard, mas o seu código mais recente sim. 
-        // Mantemos o auth-guard para segurança.
         const userData = await garantirAutenticacao();
 
         const app = getApp();
@@ -236,8 +319,6 @@ async function iniciarPagina( ) {
         const tabelaBody = document.getElementById('tabela-pedidos');
         const loaderOverlay = document.getElementById('loader-overlay');
         const filtroCodigo = document.getElementById('filtro-codigo');
-        // O HTML usa 'filtro-cidade', mas o JS original usava 'filtro-pedido-para'. 
-        // Vamos usar o ID do HTML que você forneceu: 'filtro-cidade'
         const filtroPedidoPara = document.getElementById('filtro-cidade'); 
         const dynamicTitle = document.getElementById('dynamic-title');
         const btnImportarExcel = document.getElementById('btn-importar-excel');
@@ -367,43 +448,6 @@ async function iniciarPagina( ) {
             concluidosEl.textContent = concluidos;
         }
 
-       function formatarData(dataString) {
-    if (!dataString) return 'Inválida';
-
-    let date;
-    
-    // Se já estiver no formato YYYY-MM-DD (do Firebase)
-    if (dataString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        date = new Date(dataString);
-    } 
-    // Se estiver no formato DD/MM/YYYY ou DD/MM/YY
-    else if (dataString.includes('/')) {
-        const partes = dataString.split('/');
-        if (partes.length === 3) {
-            const dia = partes[0];
-            const mes = partes[1];
-            const ano = partes[2].length === 2 ? `20${partes[2]}` : partes[2]; // Converte 25 para 2025
-            date = new Date(`${ano}-${mes}-${dia}`);
-        }
-    }
-    // Tenta como Date ISO padrão
-    else {
-        date = new Date(dataString);
-    }
-
-    if (isNaN(date.getTime())) {
-        return 'Inválida';
-    }
-
-    const dia = String(date.getDate()).padStart(2, '0');
-    const mes = String(date.getMonth() + 1).padStart(2, '0');
-    const ano = String(date.getFullYear());
-
-    return `${dia}/${mes}/${ano}`;
-}
-
-
-
         async function apagarPedido(id) {
             const pedido = dadosCompletos.find(p => p.id === id);
             if (!pedido) return;
@@ -470,6 +514,10 @@ async function iniciarPagina( ) {
         // --- INICIALIZAÇÃO ---
         await carregarDadosDoFirebase();
 
+        // TEMPORARIAMENTE: Corrigir datas existentes (execute uma vez depois remover)
+        // Descomente a linha abaixo para corrigir as datas existentes, depois que corrigir, comente novamente
+        // await corrigirDatasExistentes(db, pedidosCollectionName);
+
     } catch (error) {
         console.error("Falha na autenticação ou inicialização:", error);
         document.body.innerHTML = `<div style="color: white; text-align: center; padding: 50px; font-family: sans-serif;">
@@ -482,4 +530,3 @@ async function iniciarPagina( ) {
 
 // Inicia todo o processo da página.
 iniciarPagina();
-
