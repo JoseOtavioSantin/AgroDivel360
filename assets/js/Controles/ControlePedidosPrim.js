@@ -369,53 +369,30 @@ async function iniciarPagina( ) {
 
         function formatarData(dataString) {
             if (!dataString) return 'Inválida';
-
-            // Tenta criar um objeto Date. O construtor do Date é flexível.
+        
             let date = new Date(dataString);
-
-            // Se a data for inválida, tenta reverter o formato MM/function formatarData(dataString) {
-            if (!dataString) return 'Inválida';
-
-            // Tenta o formato não-padrão YY-DD-MM (ex: 25-17-11)
-            if (dataString.includes('-') && dataString.split('-').length === 3) {
-                const partes = dataString.split('-');
-                const ano = partes[0];
-                const dia = partes[1];
-                const mes = partes[2];
-                
-                // Se o ano tiver 2 dígitos, adiciona 20 (ex: 25 -> 2025)
-                const anoCompleto = ano.length === 2 ? '20' + ano : ano;
-
-                // Tenta criar um objeto Date no formato YYYY-MM-DD para garantir a validade
-                const date = new Date(`${anoCompleto}-${mes}-${dia}`);
-
-                if (!isNaN(date.getTime())) {
-                    // Se for válido, retorna no formato DD/MM/YY
-                    return `${dia}/${mes}/${ano}`;
-                }
-            }
-
-            // Tenta criar um objeto Date com o formato padrão (YYYY-MM-DD ou MM/DD/YYYY)
-            let date = new Date(dataString);
-
-            // Se a data for inválida, tenta reverter o formato MM/DD para DD/MM
+        
+            // Tenta reverter a ordem se o formato for MM/DD/YY e o construtor falhar
             if (isNaN(date.getTime()) && dataString.includes('/') && dataString.split('/').length === 3) {
                 const partes = dataString.split('/');
                 // Tenta MM/DD/YY -> DD/MM/YY
                 date = new Date(`${partes[1]}/${partes[0]}/${partes[2]}`);
             }
-
+        
             if (isNaN(date.getTime())) {
                 return 'Inválida';
             }
-
+        
             // Formata para DD/MM/YY
             const dia = String(date.getDate()).padStart(2, '0');
             const mes = String(date.getMonth() + 1).padStart(2, '0');
             const ano = String(date.getFullYear()).substring(2);
-
+        
             return `${dia}/${mes}/${ano}`;
         }
+
+
+
         async function apagarPedido(id) {
             const pedido = dadosCompletos.find(p => p.id === id);
             if (!pedido) return;
