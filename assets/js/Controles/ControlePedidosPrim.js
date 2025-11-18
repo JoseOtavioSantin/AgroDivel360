@@ -368,11 +368,36 @@ async function iniciarPagina( ) {
         }
 
         function formatarData(dataString) {
-            if (!dataString || !dataString.includes('-')) return 'Inválida';
-            const [ano, mes, dia] = dataString.split('-');
+            if (!dataString) return 'Inválida';
+        
+            let dia, mes, ano;
+        
+            // 1. Tenta o formato YYYY-MM-DD (padrão ISO/Firebase)
+            if (dataString.includes('-')) {
+                [ano, mes, dia] = dataString.split('-');
+            } 
+            // 2. Tenta o formato MM/DD/YY (ou MM/DD/YYYY)
+            else if (dataString.includes('/')) {
+                const partes = dataString.split('/');
+                if (partes.length === 3) {
+                    mes = partes[0];
+                    dia = partes[1];
+                    ano = partes[2];
+                    // Se o ano tiver 2 dígitos, adiciona 20 (ex: 25 -> 2025)
+                    if (ano.length === 2) {
+                        ano = '20' + ano;
+                    }
+                } else {
+                    return 'Inválida';
+                }
+            } else {
+                return 'Inválida';
+            }
+        
             // Retorna DD/MM/YY (os dois últimos dígitos do ano)
             return `${dia}/${mes}/${ano.substring(2)}`;
         }
+
 
         async function apagarPedido(id) {
             const pedido = dadosCompletos.find(p => p.id === id);
@@ -452,4 +477,5 @@ async function iniciarPagina( ) {
 
 // Inicia todo o processo da página.
 iniciarPagina();
+
 
