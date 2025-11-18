@@ -370,33 +370,27 @@ async function iniciarPagina( ) {
         function formatarData(dataString) {
             if (!dataString) return 'Inválida';
         
-            let dia, mes, ano;
+            let date = new Date(dataString);
         
-            // 1. Tenta o formato YYYY-MM-DD (padrão ISO/Firebase)
-            if (dataString.includes('-')) {
-                [ano, mes, dia] = dataString.split('-');
-            } 
-            // 2. Tenta o formato MM/DD/YY (ou MM/DD/YYYY)
-            else if (dataString.includes('/')) {
+            // Tenta reverter a ordem se o formato for MM/DD/YY e o construtor falhar
+            if (isNaN(date.getTime()) && dataString.includes('/') && dataString.split('/').length === 3) {
                 const partes = dataString.split('/');
-                if (partes.length === 3) {
-                    mes = partes[0];
-                    dia = partes[1];
-                    ano = partes[2];
-                    // Se o ano tiver 2 dígitos, adiciona 20 (ex: 25 -> 2025)
-                    if (ano.length === 2) {
-                        ano = '20' + ano;
-                    }
-                } else {
-                    return 'Inválida';
-                }
-            } else {
+                // Tenta MM/DD/YY -> DD/MM/YY
+                date = new Date(`${partes[1]}/${partes[0]}/${partes[2]}`);
+            }
+        
+            if (isNaN(date.getTime())) {
                 return 'Inválida';
             }
         
-            // Retorna DD/MM/YY (os dois últimos dígitos do ano)
-            return `${dia}/${mes}/${ano.substring(2)}`;
+            // Formata para DD/MM/YY
+            const dia = String(date.getDate()).padStart(2, '0');
+            const mes = String(date.getMonth() + 1).padStart(2, '0');
+            const ano = String(date.getFullYear()).substring(2);
+        
+            return `${dia}/${mes}/${ano}`;
         }
+
 
 
         async function apagarPedido(id) {
@@ -477,5 +471,6 @@ async function iniciarPagina( ) {
 
 // Inicia todo o processo da página.
 iniciarPagina();
+
 
 
