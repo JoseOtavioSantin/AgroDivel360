@@ -367,29 +367,40 @@ async function iniciarPagina( ) {
             concluidosEl.textContent = concluidos;
         }
 
-        function formatarData(dataString) {
-            if (!dataString) return 'Inválida';
-        
-            let date = new Date(dataString);
-        
-            // Tenta reverter a ordem se o formato for MM/DD/YY e o construtor falhar
-            if (isNaN(date.getTime()) && dataString.includes('/') && dataString.split('/').length === 3) {
-                const partes = dataString.split('/');
-                // Tenta MM/DD/YY -> DD/MM/YY
-                date = new Date(`${partes[1]}/${partes[0]}/${partes[2]}`);
-            }
-        
-            if (isNaN(date.getTime())) {
-                return 'Inválida';
-            }
-        
-            // Formata para DD/MM/YY
-            const dia = String(date.getDate()).padStart(2, '0');
-            const mes = String(date.getMonth() + 1).padStart(2, '0');
-            const ano = String(date.getFullYear()).substring(2);
-        
-            return `${dia}/${mes}/${ano}`;
+       function formatarData(dataString) {
+    if (!dataString) return 'Inválida';
+
+    let date;
+    
+    // Se já estiver no formato YYYY-MM-DD (do Firebase)
+    if (dataString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        date = new Date(dataString);
+    } 
+    // Se estiver no formato DD/MM/YYYY ou DD/MM/YY
+    else if (dataString.includes('/')) {
+        const partes = dataString.split('/');
+        if (partes.length === 3) {
+            const dia = partes[0];
+            const mes = partes[1];
+            const ano = partes[2].length === 2 ? `20${partes[2]}` : partes[2]; // Converte 25 para 2025
+            date = new Date(`${ano}-${mes}-${dia}`);
         }
+    }
+    // Tenta como Date ISO padrão
+    else {
+        date = new Date(dataString);
+    }
+
+    if (isNaN(date.getTime())) {
+        return 'Inválida';
+    }
+
+    const dia = String(date.getDate()).padStart(2, '0');
+    const mes = String(date.getMonth() + 1).padStart(2, '0');
+    const ano = String(date.getFullYear());
+
+    return `${dia}/${mes}/${ano}`;
+}
 
 
 
@@ -471,3 +482,4 @@ async function iniciarPagina( ) {
 
 // Inicia todo o processo da página.
 iniciarPagina();
+
