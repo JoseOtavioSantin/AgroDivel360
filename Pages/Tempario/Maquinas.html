@@ -276,9 +276,15 @@
             const card = document.createElement('a');
             card.href = `partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
             card.className = 'maquina-card';
+            
+            // Tenta ambas as formas: primeira maiúscula e minúscula
+            const tipoMaiuscula = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+            const tipoMinuscula = tipo.toLowerCase();
+            
             card.innerHTML = `
                 <div class="maquina-icon">
-                    <img src="/assets/images/${tipo}.png" alt="${nome}">
+                    <img src="/assets/images/${tipoMaiuscula}.png" alt="${nome}" 
+                         onerror="this.src='/assets/images/${tipoMinuscula}.png'; this.onerror=null;">
                 </div>
                 <h3 class="maquina-name">${nome.toUpperCase()}</h3>
                 <p class="maquina-modelo">${tipoFormatado}</p>
@@ -315,3 +321,4 @@
 </body>
 
 </html>
+
