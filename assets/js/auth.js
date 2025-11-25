@@ -29,6 +29,7 @@ const menuPermissions = {
     'dash-planos-manutencao': ['admin', 'diretoria', 'servicos'],
     'ctrl-PlanosVigentes': ['admin', 'diretoria', 'servicos'],
     'ctrl-MaquinaParada': ['admin', 'diretoria', 'servicos'],
+    'ctrl-Tempario': ['admin', 'diretoria', 'servicos'],
 };
 
 // --- MAPA DE PÁGINAS PARA VERIFICAÇÃO ---
@@ -48,6 +49,7 @@ const pagePermissions = {
     '/Pages/Controles/ControleFerramentas.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/PlanosVigentes.html': ['admin', 'diretoria', 'servicos'],
     '/Pages/Controles/MaquinasParadas.html': ['admin', 'diretoria', 'servicos'],
+    '/Pages/Tempario/Tempario.html': ['admin', 'diretoria', 'servicos'],
     '/Pages/Cadastros/CadastroGestores.html': ['admin'],
     '/Pages/Cadastros/CadastroTecnicos.html': ['admin']
 };
@@ -103,6 +105,7 @@ function checkPageAccess(userGroup, permissoesIndividuais) {
         '/Pages/Controles/ControleFerramentas.html': 'ctrl-ControleFerramentas',
         '/Pages/Controles/PlanosVigentes.html': 'ctrl-PlanosVigentes',
         '/Pages/Controles/MaquinasParadas.html': 'ctrl-MaquinaParada',
+        '/Pages/Tempario/Tempario.html': ['admin', 'diretoria', 'servicos'],
         '/Pages/Cadastros/CadastroGestores.html': 'admin-CadastroGestores',
         '/Pages/Cadastros/CadastroTecnicos.html': 'admin-CadastroTecnicos'
 
@@ -230,6 +233,7 @@ if (logoutButton) {
         });
     });
 }
+
 
 
 
