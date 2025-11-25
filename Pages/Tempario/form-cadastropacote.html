@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#2c2f3f" />
+  <title>Formulário de Peças do Equipamento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- LIBS EXTERNAS -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- CSS -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/Pages/Formularios/style-forms.css">
+  
+  <style>
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: inherit;
+      background-color: #fff;
+      box-sizing: border-box;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #193b7c;
+      box-shadow: 0 0 0 2px rgba(25, 59, 124, 0.25);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    
+    .btn-primary,
+    .btn-secondary,
+    .btn-success {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 1rem;
+    }
+    
+    .btn-primary {
+      background-color: #193b7c;
+      color: #fff;
+    }
+    
+    .btn-primary:hover {
+      background-color: #132a5a;
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      color: #fff;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    .btn-success {
+      background-color: #28a745;
+      color: #fff;
+    }
+    
+    .btn-success:hover {
+      background-color: #218838;
+    }
+    
+    /* Estilos para a tabela de peças */
+    .pecas-section {
+      margin: 30px 0;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .pecas-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .pecas-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .tabela-pecas {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+    
+    .tabela-pecas th,
+    .tabela-pecas td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .tabela-pecas th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #333;
+      border-top: 1px solid #ddd;
+    }
+    
+    .tabela-pecas input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    
+    .tabela-pecas input:focus {
+      border-color: #193b7c;
+      outline: none;
+    }
+    
+    .btn-remover {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    
+    .btn-remover:hover {
+      background-color: #c82333;
+    }
+    
+    .valores-section {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 6px;
+      margin-top: 20px;
+    }
+    
+    .valor-group {
+      margin-bottom: 15px;
+    }
+    
+    .valor-group label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .valor-total-container {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      border: 2px solid #193b7c;
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .valor-total-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+    
+    .valor-total {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #193b7c;
+    }
+    
+    .subtotal-pecas {
+      text-align: right;
+      padding: 10px;
+      background: #e9ecef;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .modelo-section {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      border-left: 4px solid #193b7c;
+    }
+    
+    .modelo-section h4 {
+      margin: 0 0 10px 0;
+      color: #193b7c;
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="sidebar-placeholder"></nav>
+
+  <section class="home">
+    <div class="text">
+      <h1 id="form-title">Novo Equipamento</h1>
+      <p id="form-subtitle">Preencha os dados do equipamento e suas peças.</p>
+    </div>
+
+    <div class="content-card">
+      <div class="content-card-body">
+        <form id="formEquipamento">
+          <!-- Seção de seleção de modelo -->
+          <div class="modelo-section">
+            <h4>Carregar Modelo Existente</h4>
+            <div class="form-group">
+              <label for="selecionar-modelo">Selecionar Modelo</label>
+              <select id="selecionar-modelo">
+                <option value="">Selecione um modelo para carregar...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dados básicos do equipamento -->
+          <div class="form-group">
+            <label for="tipo-equipamento">Tipo do Equipamento *</label>
+            <input type="text" id="tipo-equipamento" placeholder="Ex: Trator, Colheitadeira" required>
+          </div>
+
+          <div class="form-group">
+            <label for="nome-equipamento">Nome do Equipamento *</label>
+            <input type="text" id="nome-equipamento" placeholder="Ex: CR7.90, TX 1000, MX 250" required>
+          </div>
+
+          <div class="form-group">
+            <label for="parte-equipamento">Parte do Equipamento *</label>
+            <input type="text" id="parte-equipamento" placeholder="Ex: Motor, Transmissão, Hidráulica" required>
+          </div>
+
+          <!-- Seção de peças -->
+          <div class="pecas-section">
+            <div class="pecas-header">
+              <h3 class="pecas-title">Peças da Parte do Equipamento</h3>
+              <button type="button" class="btn-success" id="btn-adicionar-peca">
+                <i class='bx bx-plus'></i> Adicionar Peça
+              </button>
+            </div>
+
+            <table class="tabela-pecas">
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Descrição</th>
+                  <th>Qtd</th>
+                  <th>Valor Unitário (R$)</th>
+                  <th>Valor Total (R$)</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-pecas">
+                <!-- Linhas de peças serão adicionadas dinamicamente aqui -->
+              </tbody>
+            </table>
+
+            <div class="subtotal-pecas" id="subtotal-pecas">
+              Subtotal das Peças: R$ 0,00
+            </div>
+
+            <!-- Valores e Horas -->
+            <div class="valores-section">
+              <div class="valor-group">
+                <label for="horas-trabalho">Horas para Realizar o Trabalho</label>
+                <input type="number" id="horas-trabalho" step="0.5" min="0" placeholder="0,0" required>
+              </div>
+              
+              <div class="valor-group">
+                <label for="valor-hora">Valor da Hora (R$)</label>
+                <input type="number" id="valor-hora" step="0.01" min="0" placeholder="0,00" required>
+              </div>
+              
+              <div class="valor-group">
+                <label for="valor-mao-obra">Valor da Mão de Obra (R$)</label>
+                <input type="number" id="valor-mao-obra" step="0.01" min="0" placeholder="0,00" readonly>
+              </div>
+
+              <div class="valor-group">
+                <label for="valor-outros">Outros Custos (R$)</label>
+                <input type="number" id="valor-outros" step="0.01" min="0" placeholder="0,00" value="0">
+              </div>
+              
+              <div class="valor-total-container">
+                <div class="valor-total-label">Valor Total da Parte</div>
+                <div class="valor-total" id="valor-total-display">R$ 0,00</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <a href="/Pages/Tempario/Tempario.html" class="btn-secondary" id="btn-cancelar">
+              <i class='bx bx-x'></i> Cancelar
+            </a> 
+            <button type="submit" class="btn-primary" id="btn-salvar">
+              <i class='bx bx-save'></i> Salvar Equipamento
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, doc, addDoc, getDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const equipamentosCollectionName = "equipamentosPartes";
+    const modelosCollectionName = "modelosEquipamentos";
+    let db;
+    let userData;
+    let editMode = false;
+    let docId = null;
+
+    // Função para carregar modelos do Firestore
+    async function carregarModelos() {
+      try {
+        const querySnapshot = await getDocs(collection(db, modelosCollectionName));
+        const selectModelo = document.getElementById('selecionar-modelo');
+        
+        // Limpar opções exceto a primeira
+        while (selectModelo.children.length > 1) {
+          selectModelo.removeChild(selectModelo.lastChild);
+        }
+        
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.textContent = `${data.tipoEquipamento} - ${data.nomeEquipamento}`;
+          option.setAttribute('data-partes', JSON.stringify(data.partes || []));
+          selectModelo.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar modelos:', error);
+      }
+    }
+
+    // Função para preencher dados do modelo selecionado
+    function preencherDadosModelo() {
+      const selectModelo = document.getElementById('selecionar-modelo');
+      const selectedOption = selectModelo.options[selectModelo.selectedIndex];
+      
+      if (selectedOption.value) {
+        const partes = JSON.parse(selectedOption.getAttribute('data-partes'));
+        const [tipo, nome] = selectedOption.textContent.split(' - ');
+        
+        document.getElementById('tipo-equipamento').value = tipo || '';
+        document.getElementById('nome-equipamento').value = nome || '';
+        
+        // Preencher select de partes (se houver partes definidas no modelo)
+        if (partes && partes.length > 0) {
+          const selectParte = document.getElementById('parte-equipamento');
+          selectParte.innerHTML = '<option value="">Selecione uma parte</option>';
+          
+          partes.forEach(parte => {
+            const option = document.createElement('option');
+            option.value = parte;
+            option.textContent = parte;
+            selectParte.appendChild(option);
+          });
+        }
+      }
+    }
+
+    // Função para calcular valor total de uma peça
+    function calcularValorPeca(linha) {
+      const quantidade = parseFloat(linha.querySelector('.peca-quantidade').value) || 0;
+      const valorUnitario = parseFloat(linha.querySelector('.peca-valor-unitario').value) || 0;
+      const valorTotal = quantidade * valorUnitario;
+      
+      linha.querySelector('.peca-valor-total').value = valorTotal.toFixed(2);
+      return valorTotal;
+    }
+
+    // Função para calcular subtotal das peças
+    function calcularSubtotalPecas() {
+      let subtotal = 0;
+      const linhas = document.querySelectorAll('#lista-pecas tr');
+      
+      linhas.forEach(linha => {
+        subtotal += calcularValorPeca(linha);
+      });
+      
+      document.getElementById('subtotal-pecas').textContent = 
+        `Subtotal das Peças: R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+      
+      return subtotal;
+    }
+
+    // Função para calcular valores totais
+    function calcularValores() {
+      const subtotalPecas = calcularSubtotalPecas();
+      const horasTrabalho = parseFloat(document.getElementById('horas-trabalho').value) || 0;
+      const valorHora = parseFloat(document.getElementById('valor-hora').value) || 0;
+      const outrosCustos = parseFloat(document.getElementById('valor-outros').value) || 0;
+      
+      // Calcular valor da mão de obra
+      const valorMaoObra = horasTrabalho * valorHora;
+      document.getElementById('valor-mao-obra').value = valorMaoObra.toFixed(2);
+      
+      // Calcular valor total
+      const valorTotal = subtotalPecas + valorMaoObra + outrosCustos;
+      document.getElementById('valor-total-display').textContent = 
+        `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+      
+      return {
+        subtotalPecas,
+        horasTrabalho,
+        valorHora,
+        valorMaoObra,
+        outrosCustos,
+        valorTotal
+      };
+    }
+
+    // Função para adicionar nova linha de peça
+    function adicionarPeca(dadosPeca = {}) {
+      const tbody = document.getElementById('lista-pecas');
+      const novaLinha = document.createElement('tr');
+      novaLinha.innerHTML = `
+        <td>
+          <input type="text" class="peca-codigo" placeholder="Código" value="${dadosPeca.codigo || ''}" required>
+        </td>
+        <td>
+          <input type="text" class="peca-descricao" placeholder="Descrição da peça" value="${dadosPeca.descricao || ''}" required>
+        </td>
+        <td>
+          <input type="number" class="peca-quantidade" min="1" value="${dadosPeca.quantidade || 1}" required>
+        </td>
+        <td>
+          <input type="number" class="peca-valor-unitario" step="0.01" min="0" placeholder="0,00" value="${dadosPeca.valorUnitario || ''}" required>
+        </td>
+        <td>
+          <input type="number" class="peca-valor-total" step="0.01" readonly value="${dadosPeca.valorTotal || '0.00'}">
+        </td>
+        <td>
+          <button type="button" class="btn-remover">
+            <i class='bx bx-trash'></i>
+          </button>
+        </td>
+      `;
+      
+      tbody.appendChild(novaLinha);
+      
+      // Adicionar eventos para cálculo automático
+      novaLinha.querySelector('.peca-quantidade').addEventListener('input', function() {
+        calcularValorPeca(novaLinha);
+        calcularValores();
+      });
+      
+      novaLinha.querySelector('.peca-valor-unitario').addEventListener('input', function() {
+        calcularValorPeca(novaLinha);
+        calcularValores();
+      });
+      
+      // Adicionar evento de remoção
+      novaLinha.querySelector('.btn-remover').addEventListener('click', function() {
+        novaLinha.remove();
+        calcularValores();
+      });
+    }
+
+    // Função para coletar dados das peças
+    function coletarPecas() {
+      const pecas = [];
+      const linhas = document.querySelectorAll('#lista-pecas tr');
+      
+      linhas.forEach(linha => {
+        const codigo = linha.querySelector('.peca-codigo').value.trim();
+        const descricao = linha.querySelector('.peca-descricao').value.trim();
+        const quantidade = parseInt(linha.querySelector('.peca-quantidade').value);
+        const valorUnitario = parseFloat(linha.querySelector('.peca-valor-unitario').value);
+        const valorTotal = parseFloat(linha.querySelector('.peca-valor-total').value);
+        
+        if (codigo && descricao && quantidade > 0 && valorUnitario > 0) {
+          pecas.push({
+            codigo: codigo,
+            descricao: descricao,
+            quantidade: quantidade,
+            valorUnitario: valorUnitario,
+            valorTotal: valorTotal
+          });
+        }
+      });
+      
+      return pecas;
+    }
+
+    async function salvarEquipamento(event) {
+      event.preventDefault();
+
+      const valores = calcularValores();
+      const pecas = coletarPecas();
+      
+      const dadosEquipamento = {
+        tipoEquipamento: document.getElementById('tipo-equipamento').value.toLowerCase().trim(),
+        nomeEquipamento: document.getElementById('nome-equipamento').value.trim(),
+        parteEquipamento: document.getElementById('parte-equipamento').value.trim().toUpperCase(),
+        pecas: pecas,
+        valorPecas: valores.subtotalPecas,
+        horasTrabalho: valores.horasTrabalho,
+        valorHora: valores.valorHora,
+        valorMaoObra: valores.valorMaoObra,
+        valorOutros: valores.outrosCustos,
+        valorTotal: valores.valorTotal,
+        dataCriacao: new Date().toISOString(),
+        usuario: userData.nome || 'Usuário'
+      };
+
+      // Validações
+      if (!dadosEquipamento.tipoEquipamento || !dadosEquipamento.nomeEquipamento || !dadosEquipamento.parteEquipamento) {
+        return Swal.fire("Atenção", "Os campos 'Tipo do Equipamento', 'Nome do Equipamento' e 'Parte do Equipamento' são obrigatórios.", "warning");
+      }
+
+      if (dadosEquipamento.pecas.length === 0) {
+        return Swal.fire("Atenção", "É necessário adicionar pelo menos uma peça.", "warning");
+      }
+
+      if (dadosEquipamento.horasTrabalho <= 0) {
+        return Swal.fire("Atenção", "As horas de trabalho devem ser maiores que zero.", "warning");
+      }
+
+      if (dadosEquipamento.valorHora <= 0) {
+        return Swal.fire("Atenção", "O valor da hora deve ser maior que zero.", "warning");
+      }
+
+      // Validar se todas as peças têm valores
+      const pecasSemValor = dadosEquipamento.pecas.filter(peca => !peca.valorUnitario || peca.valorUnitario <= 0);
+      if (pecasSemValor.length > 0) {
+        return Swal.fire("Atenção", "Todas as peças devem ter um valor unitário maior que zero.", "warning");
+      }
+
+      Swal.fire({ 
+        title: editMode ? 'Atualizando...' : 'Salvando...', 
+        text: 'Aguarde...', 
+        allowOutsideClick: false, 
+        didOpen: () => Swal.showLoading() 
+      });
+
+      try {
+        if (editMode) {
+          const docRef = doc(db, equipamentosCollectionName, docId);
+          await updateDoc(docRef, dadosEquipamento);
+          await Swal.fire('Sucesso!', 'Equipamento atualizado com sucesso!', 'success');
+        } else {
+          const docRef = await addDoc(collection(db, equipamentosCollectionName), dadosEquipamento);
+          console.log('Documento salvo com ID:', docRef.id);
+          await Swal.fire('Sucesso!', 'Equipamento salvo com sucesso!', 'success');
+        }
+        window.location.href = '/Pages/Tempario/Tempario.html';
+      } catch (error) {
+        console.error('Erro ao salvar:', error);
+        Swal.fire('Erro!', `Falha ao salvar: ${error.message}`, 'error');
+      }
+    }
+
+    async function carregarDadosParaEdicao(id) {
+      const docRef = doc(db, equipamentosCollectionName, id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        console.log('Dados carregados para edição:', data);
+        
+        // CORREÇÃO: Preencher todos os campos, incluindo a parte do equipamento
+        document.getElementById('tipo-equipamento').value = data.tipoEquipamento || '';
+        document.getElementById('nome-equipamento').value = data.nomeEquipamento || '';
+        document.getElementById('parte-equipamento').value = data.parteEquipamento || ''; // CORREÇÃO AQUI
+        document.getElementById('horas-trabalho').value = data.horasTrabalho || 0;
+        document.getElementById('valor-hora').value = data.valorHora || 0;
+        document.getElementById('valor-outros').value = data.valorOutros || 0;
+
+        // Carregar peças
+        if (data.pecas && Array.isArray(data.pecas)) {
+          data.pecas.forEach(peca => {
+            adicionarPeca({
+              codigo: peca.codigo,
+              descricao: peca.descricao,
+              quantidade: peca.quantidade,
+              valorUnitario: peca.valorUnitario,
+              valorTotal: peca.valorTotal
+            });
+          });
+        }
+
+        // Calcular valores para exibir
+        calcularValores();
+      } else {
+        Swal.fire('Erro', 'Equipamento não encontrado. Redirecionando para a lista.', 'error');
+        window.location.href = '/Pages/Tempario/Tempario.html';
+      }
+    }
+
+    // CORREÇÃO: Função para carregar dados da URL quando em modo edição
+    function carregarParametrosURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      docId = urlParams.get('id');
+      const parteEquipamento = urlParams.get('parte');
+      const maquina = urlParams.get('maquina');
+      const tipo = urlParams.get('tipo');
+
+      // Se vier da página de partes, preencher automaticamente
+      if (parteEquipamento && !docId) {
+        document.getElementById('parte-equipamento').value = decodeURIComponent(parteEquipamento);
+      }
+      if (maquina && !docId) {
+        document.getElementById('nome-equipamento').value = decodeURIComponent(maquina);
+      }
+      if (tipo && !docId) {
+        document.getElementById('tipo-equipamento').value = decodeURIComponent(tipo);
+      }
+    }
+
+    async function iniciarPagina() {
+      try {
+        userData = await garantirAutenticacao();
+        const app = getApp();
+        db = getFirestore(app);
+
+        // CORREÇÃO: Carregar parâmetros da URL primeiro
+        carregarParametrosURL();
+
+        // Carregar modelos existentes
+        await carregarModelos();
+
+        // Adicionar evento para carregar dados do modelo selecionado
+        document.getElementById('selecionar-modelo').addEventListener('change', preencherDadosModelo);
+
+        // Adicionar primeira peça por padrão
+        adicionarPeca();
+
+        // Adicionar eventos para cálculo automático
+        document.getElementById('horas-trabalho').addEventListener('input', calcularValores);
+        document.getElementById('valor-hora').addEventListener('input', calcularValores);
+        document.getElementById('valor-outros').addEventListener('input', calcularValores);
+
+        if (docId) {
+          editMode = true;
+          document.getElementById('form-title').textContent = 'Editar Equipamento';
+          document.getElementById('form-subtitle').textContent = 'Altere os dados do equipamento abaixo.';
+          document.getElementById('btn-salvar').innerHTML = '<i class="bx bx-save"></i> Salvar Alterações';
+          await carregarDadosParaEdicao(docId);
+        } else {
+          // Calcular valores iniciais
+          calcularValores();
+        }
+
+        document.getElementById('btn-adicionar-peca').addEventListener('click', () => adicionarPeca());
+        document.getElementById('formEquipamento').addEventListener('submit', salvarEquipamento);
+
+      } catch (error) {
+        console.error("Falha na inicialização da página:", error);
+        document.body.innerHTML = `<div class="error-container">Ocorreu um erro ao carregar. Verifique se está logado e tente novamente.</div>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', iniciarPagina);
+  </script>
+
+  <!-- Scripts Globais -->
+  <script type="module" src="/assets/js/firebase-config.js"></script>
+  <script type="module" src="/assets/js/auth.js"></script>
+  <script src="/assets/js/main.js"></script> 
+  <script src="/assets/js/components/Sidebar.js"></script>
+
+</body>
+</html>

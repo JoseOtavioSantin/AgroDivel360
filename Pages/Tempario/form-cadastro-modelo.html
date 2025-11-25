@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="theme-color" content="#2c2f3f" />
+  <title>Cadastro de Modelos de Equipamento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- LIBS EXTERNAS -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- CSS -->
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/Pages/Formularios/style-forms.css">
+
+  <style>
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    
+    .form-section {
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .lista-section {
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      flex: 1;
+    }
+    
+    .form-container {
+      max-width: 100%;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    
+    .btn-primary, 
+    .btn-secondary,
+    .btn-danger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .btn-primary { 
+      background-color: #193b7c; 
+      color: #fff; 
+    }
+    .btn-primary:hover { 
+      background-color: #132a5a; 
+    }
+    
+    .btn-secondary { 
+      background-color: #6c757d; 
+      color: #fff; 
+    }
+    .btn-secondary:hover { 
+      background-color: #5a6268; 
+    }
+    
+    .btn-danger { 
+      background-color: #dc3545; 
+      color: #fff; 
+    }
+    .btn-danger:hover { 
+      background-color: #c82333; 
+    }
+    
+    .partes-section {
+      margin: 20px 0;
+    }
+    
+    .parte-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    
+    .parte-item input {
+      flex: 1;
+    }
+    
+    .btn-remove-parte {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    /* Header da lista */
+    .lista-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .search-box {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .search-box input {
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      min-width: 250px;
+    }
+    
+    /* Grid de modelos */
+    .modelos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    
+    .modelo-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 4px solid #193b7c;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .modelo-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .modelo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    
+    .modelo-info h3 {
+      margin: 0 0 5px 0;
+      color: #193b7c;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    .modelo-info p {
+      margin: 0;
+      color: #666;
+      font-size: 0.85rem;
+    }
+    
+    .modelo-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .partes-list {
+      margin-top: 12px;
+    }
+    
+    .parte-tag {
+      display: inline-block;
+      background: #e9ecef;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin: 2px;
+      font-size: 0.8rem;
+      color: #495057;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+      grid-column: 1 / -1;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: #dee2e6;
+    }
+    
+    .results-count {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .lista-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .search-box {
+        width: 100%;
+      }
+      
+      .search-box input {
+        min-width: auto;
+        flex: 1;
+      }
+      
+      .modelos-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .modelo-header {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .modelo-actions {
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav id="sidebar-placeholder"></nav>
+
+  <section class="home">
+    <div class="text">
+      <h1>Cadastro de Modelos</h1>
+      <p>Gerencia tipos de equipamentos e suas partes</p>
+    </div>
+
+    <div class="main-container">
+      <!-- Formulário de Cadastro -->
+      <div class="form-section">
+        <h2 id="form-title">Novo Modelo</h2>
+        <form id="formModelo">
+          <div class="form-container">
+            <div class="form-group">
+              <label for="tipo-equipamento">Tipo do Equipamento *</label>
+              <input type="text" id="tipo-equipamento" placeholder="Ex: Trator, Colheitadeira, Plantadeira" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="nome-equipamento">Nome do Equipamento *</label>
+              <input type="text" id="nome-equipamento" placeholder="Ex: CR7.90, TX 1000, MX 250" required>
+            </div>
+
+            <div class="partes-section">
+              <div class="form-group">
+                <label>Partes do Equipamento *</label>
+                <div id="lista-partes">
+                  <!-- Partes serão adicionadas aqui -->
+                </div>
+                <button type="button" class="btn-primary" id="btn-adicionar-parte" style="margin-top: 10px;">
+                  <i class='bx bx-plus'></i> Adicionar Parte
+                </button>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-secondary" id="btn-cancelar" style="display: none;">
+                <i class='bx bx-x'></i> Cancelar
+              </button>
+              <button type="submit" class="btn-primary" id="btn-salvar">
+                <i class='bx bx-save'></i> Salvar Modelo
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de Modelos Cadastrados -->
+      <div class="lista-section">
+        <div class="lista-header">
+          <h2>Modelos Cadastrados</h2>
+          <div class="search-box">
+            <input type="text" id="campo-pesquisa" placeholder="Pesquisar modelos...">
+            <i class='bx bx-search' style="color: #6c757d;"></i>
+          </div>
+        </div>
+        
+        <div class="modelos-grid" id="lista-modelos">
+          <!-- Modelos serão carregados aqui -->
+        </div>
+        
+        <div class="results-count" id="contador-resultados">
+          <!-- Contador será atualizado aqui -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      doc, 
+      updateDoc, 
+      getDoc, 
+      getDocs, 
+      deleteDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const modelosCollectionName = "modelosEquipamentos";
+    let db;
+    let userData;
+    let editMode = false;
+    let docId = null;
+    let todosModelos = [];
+
+    // Função para capitalizar a primeira letra
+    function capitalizarPrimeiraLetra(texto) {
+      if (!texto) return '';
+      return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+    }
+
+    function adicionarParte(nomeParte = '') {
+      const listaPartes = document.getElementById('lista-partes');
+      const parteDiv = document.createElement('div');
+      parteDiv.className = 'parte-item';
+      parteDiv.innerHTML = `
+        <input type="text" class="parte-nome" placeholder="Ex: Motor, Transmissão, Hidráulica" value="${nomeParte}" required>
+        <button type="button" class="btn-remove-parte">
+          <i class='bx bx-trash'></i>
+        </button>
+      `;
+      
+      listaPartes.appendChild(parteDiv);
+
+      parteDiv.querySelector('.btn-remove-parte').addEventListener('click', function() {
+        parteDiv.remove();
+      });
+    }
+
+    function coletarPartes() {
+      const partes = [];
+      const inputsPartes = document.querySelectorAll('.parte-nome');
+      
+      inputsPartes.forEach(input => {
+        const nome = input.value.trim();
+        if (nome) {
+          partes.push(capitalizarPrimeiraLetra(nome));
+        }
+      });
+      
+      return partes;
+    }
+
+    function limparFormulario() {
+      document.getElementById('tipo-equipamento').value = '';
+      document.getElementById('nome-equipamento').value = '';
+      document.getElementById('lista-partes').innerHTML = '';
+      adicionarParte(); // Adiciona uma parte vazia
+      
+      // Resetar modo de edição
+      editMode = false;
+      docId = null;
+      document.getElementById('form-title').textContent = 'Novo Modelo';
+      document.getElementById('btn-salvar').innerHTML = '<i class=\'bx bx-save\'></i> Salvar Modelo';
+      document.getElementById('btn-cancelar').style.display = 'none';
+    }
+
+    function filtrarModelos(termo) {
+      const modelosFiltrados = todosModelos.filter(modelo => {
+        const textoBusca = `${modelo.tipoEquipamento} ${modelo.nomeEquipamento} ${modelo.partes.join(' ')}`.toLowerCase();
+        return textoBusca.includes(termo.toLowerCase());
+      });
+      
+      exibirModelos(modelosFiltrados);
+      atualizarContador(modelosFiltrados.length);
+    }
+
+    function atualizarContador(total) {
+      const contador = document.getElementById('contador-resultados');
+      if (total === 0) {
+        contador.textContent = 'Nenhum modelo encontrado';
+      } else if (total === 1) {
+        contador.textContent = '1 modelo encontrado';
+      } else {
+        contador.textContent = `${total} modelos encontrados`;
+      }
+    }
+
+    function exibirModelos(modelos) {
+      const container = document.getElementById('lista-modelos');
+      
+      if (modelos.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class='bx bx-package'></i>
+            <p>Nenhum modelo encontrado</p>
+            <small>Tente ajustar os termos da pesquisa</small>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      
+      modelos.forEach((modelo) => {
+        const card = document.createElement('div');
+        card.className = 'modelo-card';
+        card.innerHTML = `
+          <div class="modelo-header">
+            <div class="modelo-info">
+              <h3>${modelo.tipoEquipamento} - ${modelo.nomeEquipamento}</h3>
+              <p>Criado por: ${modelo.usuario} • ${new Date(modelo.dataCriacao).toLocaleDateString('pt-BR')}</p>
+            </div>
+            <div class="modelo-actions">
+              <button class="btn-primary btn-editar" data-id="${modelo.id}">
+                <i class='bx bx-edit'></i>
+              </button>
+              <button class="btn-danger btn-excluir" data-id="${modelo.id}">
+                <i class='bx bx-trash'></i>
+              </button>
+            </div>
+          </div>
+          <div class="partes-list">
+            ${modelo.partes.map(parte => `<span class="parte-tag">${parte}</span>`).join('')}
+          </div>
+        `;
+        container.appendChild(card);
+
+        // Adicionar eventos
+        card.querySelector('.btn-editar').addEventListener('click', () => {
+          editarModelo(modelo.id);
+        });
+
+        card.querySelector('.btn-excluir').addEventListener('click', () => {
+          excluirModelo(modelo.id);
+        });
+      });
+    }
+
+    async function carregarModelos() {
+      try {
+        const querySnapshot = await getDocs(collection(db, modelosCollectionName));
+        todosModelos = [];
+        
+        querySnapshot.forEach((docSnapshot) => {
+          const data = docSnapshot.data();
+          todosModelos.push({
+            id: docSnapshot.id,
+            ...data
+          });
+        });
+        
+        // Ordenar por data de criação (mais recente primeiro)
+        todosModelos.sort((a, b) => new Date(b.dataCriacao) - new Date(a.dataCriacao));
+        
+        exibirModelos(todosModelos);
+        atualizarContador(todosModelos.length);
+        
+      } catch (error) {
+        console.error('Erro ao carregar modelos:', error);
+        // Mostra estado vazio mesmo com erro
+        document.getElementById('lista-modelos').innerHTML = `
+          <div class="empty-state">
+            <i class='bx bx-error'></i>
+            <p>Erro ao carregar modelos</p>
+            <small>Tente recarregar a página</small>
+          </div>
+        `;
+      }
+    }
+
+    async function editarModelo(id) {
+      try {
+        const docRef = doc(db, modelosCollectionName, id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          
+          // Preencher formulário
+          document.getElementById('tipo-equipamento').value = capitalizarPrimeiraLetra(data.tipoEquipamento);
+          document.getElementById('nome-equipamento').value = capitalizarPrimeiraLetra(data.nomeEquipamento);
+          
+          // Limpar e preencher partes
+          document.getElementById('lista-partes').innerHTML = '';
+          if (data.partes && Array.isArray(data.partes)) {
+            data.partes.forEach(parte => {
+              adicionarParte(parte);
+            });
+          } else {
+            adicionarParte();
+          }
+
+          // Ativar modo de edição
+          editMode = true;
+          docId = id;
+          document.getElementById('form-title').textContent = 'Editar Modelo';
+          document.getElementById('btn-salvar').innerHTML = '<i class=\'bx bx-save\'></i> Atualizar Modelo';
+          document.getElementById('btn-cancelar').style.display = 'flex';
+
+          // Scroll para o formulário
+          document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+
+        }
+      } catch (error) {
+        console.error('Erro ao carregar modelo para edição:', error);
+        Swal.fire('Erro', 'Não foi possível carregar o modelo para edição.', 'error');
+      }
+    }
+
+    async function excluirModelo(id) {
+      const result = await Swal.fire({
+        title: 'Tem certeza?',
+        text: "Esta ação não pode ser desfeita!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc(doc(db, modelosCollectionName, id));
+          await Swal.fire('Excluído!', 'Modelo excluído com sucesso.', 'success');
+          await carregarModelos();
+        } catch (error) {
+          console.error('Erro ao excluir modelo:', error);
+          Swal.fire('Erro', 'Não foi possível excluir o modelo.', 'error');
+        }
+      }
+    }
+
+    async function salvarModelo(event) {
+      event.preventDefault();
+
+      const tipoEquipamento = document.getElementById('tipo-equipamento').value.trim();
+      const nomeEquipamento = document.getElementById('nome-equipamento').value.trim();
+      const partes = coletarPartes();
+
+      if (!tipoEquipamento || !nomeEquipamento) {
+        return Swal.fire("Atenção", "Preencha todos os campos obrigatórios.", "warning");
+      }
+
+      if (partes.length === 0) {
+        return Swal.fire("Atenção", "Adicione pelo menos uma parte do equipamento.", "warning");
+      }
+
+      const dadosModelo = {
+        tipoEquipamento: capitalizarPrimeiraLetra(tipoEquipamento),
+        nomeEquipamento: capitalizarPrimeiraLetra(nomeEquipamento),
+        partes: partes,
+        dataCriacao: new Date().toISOString(),
+        usuario: userData.nome || 'Usuário'
+      };
+
+      Swal.fire({ 
+        title: editMode ? 'Atualizando...' : 'Salvando...', 
+        text: 'Aguarde...', 
+        allowOutsideClick: false, 
+        didOpen: () => Swal.showLoading() 
+      });
+
+      try {
+        if (editMode) {
+          await updateDoc(doc(db, modelosCollectionName, docId), dadosModelo);
+          await Swal.fire('Sucesso!', 'Modelo atualizado com sucesso!', 'success');
+        } else {
+          await addDoc(collection(db, modelosCollectionName), dadosModelo);
+          await Swal.fire('Sucesso!', 'Modelo salvo com sucesso!', 'success');
+        }
+        
+        limparFormulario();
+        await carregarModelos();
+        
+      } catch (error) {
+        console.error('Erro ao salvar:', error);
+        Swal.fire('Erro!', `Falha ao salvar: ${error.message}`, 'error');
+      }
+    }
+
+    async function iniciarPagina() {
+      try {
+        userData = await garantirAutenticacao();
+        
+        // Usar o app já inicializado pelo firebase-config.js
+        const app = getApp();
+        db = getFirestore(app);
+
+        // Adicionar primeira parte por padrão
+        adicionarParte();
+
+        // Carregar modelos existentes
+        await carregarModelos();
+
+        // Event listeners
+        document.getElementById('btn-adicionar-parte').addEventListener('click', () => adicionarParte());
+        document.getElementById('formModelo').addEventListener('submit', salvarModelo);
+        document.getElementById('btn-cancelar').addEventListener('click', limparFormulario);
+        
+        // Pesquisa em tempo real
+        document.getElementById('campo-pesquisa').addEventListener('input', (e) => {
+          filtrarModelos(e.target.value);
+        });
+
+      } catch (error) {
+        console.error("Falha na inicialização:", error);
+        Swal.fire('Erro', 'Falha ao inicializar a página. Verifique sua conexão.', 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', iniciarPagina);
+  </script>
+
+  <!-- Scripts Globais -->
+  <script type="module" src="/assets/js/firebase-config.js"></script>
+  <script type="module" src="/assets/js/auth.js"></script>
+  <script src="/assets/js/main.js"></script> 
+  <script src="/assets/js/components/Sidebar.js"></script>
+
+</body>
+</html>

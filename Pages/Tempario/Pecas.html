@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peças - Agro Divel</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    
+    <style>
+        .pecas-section {
+            margin: 30px 0;
+            padding: 20px;
+        }
+
+        .pecas-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .pecas-table th,
+        .pecas-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .pecas-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pecas-table tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .valores-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .valor-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #193b7c;
+        }
+
+        .valor-card.horas {
+            border-left-color: #f39c12;
+        }
+
+        .valor-card.pecas {
+            border-left-color: #e74c3c;
+        }
+
+        .valor-card.total {
+            border-left-color: #27ae60;
+        }
+
+        .valor-card h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .valor-card .valor {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #193b7c;
+            text-decoration: none;
+        }
+
+        .breadcrumb span {
+            color: #666;
+        }
+
+        .no-pecas {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: white;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .form-actions {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #193b7c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #152c5e;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .valor-peca {
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        .subtotal-pecas {
+            text-align: right;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Estilos para o PDF - Modelo New Holland */
+        .pdf-content {
+            display: none;
+        }
+
+        .pdf-template {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 15mm;
+            background: white;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .pdf-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .pdf-company {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .pdf-brand {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .pdf-contact {
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .pdf-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 11px;
+        }
+
+        .pdf-info-item {
+            margin-bottom: 5px;
+        }
+
+        .pdf-info-label {
+            font-weight: bold;
+        }
+
+        .pdf-section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+        }
+
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 10px;
+        }
+
+        .pdf-table th {
+            background-color: #f0f0f0;
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #000;
+            font-weight: bold;
+        }
+
+        .pdf-table td {
+            padding: 8px;
+            border: 1px solid #000;
+        }
+
+        .pdf-signature {
+            margin-top: 40px;
+            text-align: center;
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            font-size: 11px;
+        }
+
+        .pdf-footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Melhorias na tabela para mostrar valores individuais */
+        .pecas-table th:nth-child(1) { width: 15%; } /* Código */
+        .pecas-table th:nth-child(2) { width: 35%; } /* Descrição */
+        .pecas-table th:nth-child(3) { width: 10%; } /* Quantidade */
+        .pecas-table th:nth-child(4) { width: 15%; } /* Valor Unitário */
+        .pecas-table th:nth-child(5) { width: 15%; } /* Valor Total */
+        
+        .pdf-table th:nth-child(1) { width: 15%; } /* Código */
+        .pdf-table th:nth-child(2) { width: 45%; } /* Descrição */
+        .pdf-table th:nth-child(3) { width: 10%; } /* Quantidade */
+        .pdf-table th:nth-child(4) { width: 15%; } /* Valor Unitário */
+        .pdf-table th:nth-child(5) { width: 15%; } /* Valor Total */
+    </style>
+</head>
+<body>
+    <nav id="sidebar-placeholder"></nav>
+
+    <section class="home">
+        <div class="text">
+            <div class="breadcrumb">
+                <a href="Tempario.html">Temporários</a>
+                <span>></span>
+                <a href="#" id="breadcrumb-tipo">Máquinas</a>
+                <span>></span>
+                <a href="#" id="breadcrumb-maquina">Partes</a>
+                <span>></span>
+                <span id="current-parte">Peças</span>
+            </div>
+            <h1 id="page-title">Peças da Parte</h1>
+            <p id="page-subtitle">Lista de peças e valores desta parte do equipamento.</p>
+        </div>
+
+        <div class="pecas-section">
+            <div id="pecas-container">
+                <div style="text-align: center; padding: 40px; color: #666;">Carregando peças...</div>
+            </div>
+
+            <!-- Botões para gerar PDF -->
+            <div class="form-actions">
+                <button id="btn-gerar-pdf-pecas" class="btn-primary" disabled>
+                    <i class='bx bx-download'></i> Gerar PDF das Peças
+                </button>
+                <button id="btn-imprimir-pecas" class="btn-secondary">
+                    <i class='bx bx-printer'></i> Imprimir
+                </button>
+            </div>
+        </div>
+
+        <!-- Template do PDF (oculto) -->
+        <div id="pdf-template" class="pdf-content">
+            <div class="pdf-template">
+                <!-- Cabeçalho -->
+                <div class="pdf-header">
+                    <div class="pdf-company">AgroDivel</div>
+                    <div class="pdf-brand">NEW HOLLAND</div>
+                    <div class="pdf-contact">
+                        <strong>Telefone:</strong> <span id="pdf-telefone">Daniel</span>
+                    </div>
+                </div>
+
+                <!-- Informações -->
+                <div class="pdf-info-grid">
+                    <div class="pdf-info-item">
+                        <span class="pdf-info-label">Responsável:</span>
+                        <span id="pdf-responsavel">-</span>
+                    </div>
+                    <div class="pdf-info-item">
+                        <span class="pdf-info-label">Data:</span>
+                        <span id="pdf-data">-</span>
+                    </div>
+                    <div class="pdf-info-item">
+                        <span class="pdf-info-label">Equipamento:</span>
+                        <span id="pdf-equipamento">-</span>
+                    </div>
+                    <div class="pdf-info-item">
+                        <span class="pdf-info-label">Parte:</span>
+                        <span id="pdf-parte">-</span>
+                    </div>
+                    <div class="pdf-info-item">
+                        <span class="pdf-info-label">Tipo:</span>
+                        <span id="pdf-tipo">-</span>
+                    </div>
+                    <div class="pdf-info-item">
+                        <span class="pdf-info-label">Filial:</span>
+                        <span id="pdf-filial">-</span>
+                    </div>
+                </div>
+
+                <!-- Valores -->
+                <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 11px;">
+                        <div style="text-align: center;">
+                            <div style="font-weight: bold;">Valor Horas</div>
+                            <div id="pdf-valor-horas">R$ 0,00</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-weight: bold;">Valor Mão de Obra</div>
+                            <div id="pdf-valor-mao-obra">R$ 0,00</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-weight: bold;">Valor Peças</div>
+                            <div id="pdf-valor-pecas">R$ 0,00</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-weight: bold;">Valor Total</div>
+                            <div id="pdf-valor-total">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Título da seção -->
+                <div class="pdf-section-title">Peças da Parte</div>
+
+                <!-- Tabela de peças -->
+                <table class="pdf-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th>Qtd</th>
+                            <th>Valor Unit.</th>
+                            <th>Valor Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-table-body">
+                        <!-- Peças serão inseridas aqui -->
+                    </tbody>
+                </table>
+
+                <!-- Assinatura -->
+                <div class="pdf-signature">
+                    Assinatura do Mecânico
+                </div>
+
+                <!-- Rodapé -->
+                <div class="pdf-footer">
+                    Documento gerado em <span id="pdf-geracao">-</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts Globais -->
+    <script type="module" src="/assets/js/firebase-config.js"></script>
+    <script type="module" src="/assets/js/auth.js"></script>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/components/Sidebar.js"></script>
+    
+    <!-- Biblioteca para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        let dadosAtuais = null;
+
+        async function carregarPecas() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const parteId = urlParams.get('id');
+            
+            console.log(`Iniciando carregamento... ID: ${parteId}`);
+
+            if (!parteId) {
+                console.log('❌ ID não encontrado na URL');
+                window.location.href = 'Tempario.html';
+                return;
+            }
+
+            try {
+                console.log('📦 Importando Firebase...');
+                
+                // Importar Firebase
+                const { initializeApp, getApp, getApps } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js");
+                const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
+
+                console.log('🔍 Verificando configuração do Firebase...');
+                
+                // Inicializar Firebase
+                let app;
+                const existingApps = getApps();
+                
+                if (existingApps.length === 0) {
+                    console.log('🚀 Inicializando Firebase...');
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyDcjPa9jXsCCu6lNc1fjVg4Bzz1toKWAGY",
+                        authDomain: "agro-divel.firebaseapp.com",
+                        projectId: "agro-divel",
+                        storageBucket: "agro-divel.firebasestorage.app",
+                        messagingSenderId: "583977436505",
+                        appId: "1:583977436505:web:3754ec029aebb3d9d67848"
+                    };
+                    app = initializeApp(firebaseConfig);
+                    console.log('✅ Firebase inicializado');
+                } else {
+                    app = getApp();
+                    console.log('✅ Usando app Firebase existente');
+                }
+
+                const db = getFirestore(app);
+                console.log('🔗 Conectado ao Firestore');
+
+                // Buscar documento
+                console.log(`📄 Buscando documento: equipamentosPartes/${parteId}`);
+                const docRef = doc(db, "equipamentosPartes", parteId);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    console.log('❌ Documento não encontrado');
+                    document.getElementById('pecas-container').innerHTML = '<div class="no-pecas">Parte não encontrada.</div>';
+                    return;
+                }
+
+                const data = docSnap.data();
+                dadosAtuais = data;
+                console.log('✅ Documento carregado com sucesso');
+                console.log('Dados:', data);
+
+                // Atualizar breadcrumb e títulos
+                const tipoEquipamento = data.tipoEquipamento || 'Máquina';
+                const nomeEquipamento = data.nomeEquipamento || 'Não informado';
+                const parteEquipamento = data.parteEquipamento || 'Parte';
+
+                document.getElementById('breadcrumb-tipo').href = `maquinas.html?tipo=${tipoEquipamento}`;
+                document.getElementById('breadcrumb-tipo').textContent = tipoEquipamento + 's';
+                document.getElementById('breadcrumb-maquina').href = `partes.html?tipo=${tipoEquipamento}&maquina=${encodeURIComponent(nomeEquipamento)}`;
+                document.getElementById('breadcrumb-maquina').textContent = nomeEquipamento;
+                document.getElementById('current-parte').textContent = 'Peças';
+                document.getElementById('page-title').textContent = `Peças - ${parteEquipamento}`;
+                document.getElementById('page-subtitle').textContent = `Peças da parte ${parteEquipamento} do ${nomeEquipamento}`;
+
+                let containerHTML = '';
+
+                // Adicionar cards de valores
+                const valorHoras = data.valorHoras ? parseFloat(data.valorHoras) : 0;
+                const valorMaoObra = data.valorHaoObra ? parseFloat(data.valorHaoObra) : 0;
+                const valorPecas = data.valorPecas ? parseFloat(data.valorPecas) : 0;
+                const valorTotal = data.valorTotal ? parseFloat(data.valorTotal) : 0;
+
+                containerHTML += `
+                    <div class="valores-container">
+                        <div class="valor-card horas">
+                            <h4>Valor Horas</h4>
+                            <div class="valor" style="color: #f39c12;">R$ ${valorHoras.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="valor-card">
+                            <h4>Valor Mão de Obra</h4>
+                            <div class="valor" style="color: #193b7c;">R$ ${valorMaoObra.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="valor-card pecas">
+                            <h4>Valor Peças</h4>
+                            <div class="valor" style="color: #e74c3c;">R$ ${valorPecas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="valor-card total">
+                            <h4>Valor Total</h4>
+                            <div class="valor" style="color: #27ae60;">R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        </div>
+                    </div>
+                `;
+
+                // Adicionar informações adicionais
+                if (data.horasTrabalho || data.filial) {
+                    containerHTML += `
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            ${data.horasTrabalho ? `<p><strong>Horas de Trabalho:</strong> ${data.horasTrabalho}h</p>` : ''}
+                            ${data.filial ? `<p><strong>Filial:</strong> ${data.filial}</p>` : ''}
+                            ${data.dataCriacao ? `<p><strong>Data de Criação:</strong> ${new Date(data.dataCriacao).toLocaleDateString('pt-BR')}</p>` : ''}
+                        </div>
+                    `;
+                }
+
+                // Criar tabela de peças
+                if (!data.pecas || data.pecas.length === 0) {
+                    containerHTML += '<div class="no-pecas">Nenhuma peça cadastrada para esta parte.</div>';
+                } else {
+                    // Calcular subtotal das peças
+                    let subtotalPecas = 0;
+                    data.pecas.forEach(peca => {
+                        const valorUnitario = peca.valorUnitario || 0;
+                        const quantidade = peca.quantidade || 0;
+                        const valorTotalPeca = valorUnitario * quantidade;
+                        subtotalPecas += valorTotalPeca;
+                    });
+
+                    containerHTML += `
+                        <h3 style="color: #193b7c; margin-bottom: 15px;">Lista de Peças</h3>
+                        <table class="pecas-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Descrição</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Unitário</th>
+                                    <th>Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                    data.pecas.forEach(peca => {
+                        const valorUnitario = peca.valorUnitario || 0;
+                        const quantidade = peca.quantidade || 0;
+                        const valorTotalPeca = valorUnitario * quantidade;
+
+                        containerHTML += `
+                            <tr>
+                                <td>${peca.codigo || '-'}</td>
+                                <td>${peca.descricao || peca.descriacao || '-'}</td>
+                                <td>${quantidade}</td>
+                                <td class="valor-peca">R$ ${valorUnitario.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                <td class="valor-peca">R$ ${valorTotalPeca.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            </tr>
+                        `;
+                    });
+
+                    containerHTML += `
+                            </tbody>
+                        </table>
+                        <div class="subtotal-pecas">
+                            Subtotal das Peças: R$ ${subtotalPecas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                        </div>
+                    `;
+                }
+
+                document.getElementById('pecas-container').innerHTML = containerHTML;
+                
+                // Habilitar botão de PDF
+                document.getElementById('btn-gerar-pdf-pecas').disabled = false;
+                
+                console.log('🎉 Página carregada com sucesso!');
+
+            } catch (error) {
+                console.error('Erro ao carregar peças:', error);
+                document.getElementById('pecas-container').innerHTML = 
+                    '<div class="no-pecas" style="color: red;">Erro ao carregar as peças: ' + error.message + '</div>';
+            }
+        }
+
+        // Função para gerar PDF no modelo New Holland
+        async function gerarPDF() {
+            if (!dadosAtuais) {
+                alert('Dados não carregados. Aguarde o carregamento da página.');
+                return;
+            }
+
+            try {
+                console.log('🔄 Gerando PDF no modelo New Holland...');
+                
+                // Atualizar template do PDF com os dados
+                const dataAtual = new Date().toLocaleDateString('pt-BR');
+                const pecas = dadosAtuais.pecas || [];
+                
+                // Preencher informações do PDF
+                document.getElementById('pdf-responsavel').textContent = 'JOSÉ OTÁVIO';
+                document.getElementById('pdf-data').textContent = dataAtual;
+                document.getElementById('pdf-equipamento').textContent = dadosAtuais.nomeEquipamento || 'Não informado';
+                document.getElementById('pdf-parte').textContent = dadosAtuais.parteEquipamento || 'Não informado';
+                document.getElementById('pdf-tipo').textContent = dadosAtuais.tipoEquipamento || 'Não informado';
+                document.getElementById('pdf-filial').textContent = dadosAtuais.filial || 'Não informada';
+                document.getElementById('pdf-geracao').textContent = `${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`;
+                
+                // Preencher valores
+                const valorHoras = dadosAtuais.valorHoras ? parseFloat(dadosAtuais.valorHoras) : 0;
+                const valorMaoObra = dadosAtuais.valorHaoObra ? parseFloat(dadosAtuais.valorHaoObra) : 0;
+                const valorPecas = dadosAtuais.valorPecas ? parseFloat(dadosAtuais.valorPecas) : 0;
+                const valorTotal = dadosAtuais.valorTotal ? parseFloat(dadosAtuais.valorTotal) : 0;
+                
+                document.getElementById('pdf-valor-horas').textContent = `R$ ${valorHoras.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                document.getElementById('pdf-valor-mao-obra').textContent = `R$ ${valorMaoObra.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                document.getElementById('pdf-valor-pecas').textContent = `R$ ${valorPecas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                document.getElementById('pdf-valor-total').textContent = `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                
+                // Preencher tabela de peças
+                const tableBody = document.getElementById('pdf-table-body');
+                tableBody.innerHTML = '';
+                
+                if (pecas.length > 0) {
+                    pecas.forEach(peca => {
+                        const valorUnitario = peca.valorUnitario || 0;
+                        const quantidade = peca.quantidade || 0;
+                        const valorTotalPeca = valorUnitario * quantidade;
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${peca.codigo || '-'}</td>
+                            <td>${peca.descricao || peca.descriacao || '-'}</td>
+                            <td>${quantidade}</td>
+                            <td>R$ ${valorUnitario.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                            <td>R$ ${valorTotalPeca.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center;">
+                                Nenhuma peça cadastrada
+                            </td>
+                        </tr>
+                    `;
+                }
+                
+                // Gerar PDF
+                const element = document.getElementById('pdf-template');
+                const options = {
+                    margin: [10, 10, 10, 10],
+                    filename: `pecas_${dadosAtuais.nomeEquipamento}_${dadosAtuais.parteEquipamento}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true,
+                        logging: true
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait' 
+                    }
+                };
+                
+                console.log('📄 Criando PDF...');
+                
+                // Usar then/catch para melhor debug
+                html2pdf().set(options).from(element).save().then(() => {
+                    console.log('✅ PDF gerado com sucesso!');
+                }).catch(error => {
+                    console.error('❌ Erro ao gerar PDF:', error);
+                    alert('Erro ao gerar PDF: ' + error.message);
+                });
+                
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                alert('Erro ao gerar PDF: ' + error.message);
+            }
+        }
+
+        // Função para imprimir
+        function imprimirPagina() {
+            window.print();
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarPecas();
+            document.getElementById('btn-gerar-pdf-pecas').addEventListener('click', gerarPDF);
+            document.getElementById('btn-imprimir-pecas').addEventListener('click', imprimirPagina);
+        });
+    </script>
+</body>
+</html>
