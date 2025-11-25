@@ -269,22 +269,22 @@
                 return;
             }
 
-            // Converter Set para Array e ordenar
-            const nomesOrdenados = Array.from(nomesUnicos).sort();
+        // Converter Set para Array e ordenar
+        const nomesOrdenados = Array.from(nomesUnicos).sort();
 
-            nomesOrdenados.forEach(nome => {
-                const card = document.createElement('a');
-                card.href = `partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
-                card.className = 'maquina-card';
-                card.innerHTML = `
-                    <div class="maquina-icon">
-                        <img src="/assets/images/${tipo}.png" alt="${nome}" onerror="this.src='/assets/images/folha.png'">
-                    </div>
-                    <h3 class="maquina-name">${nome.toUpperCase()}</h3>
-                    <p class="maquina-modelo">${tipoFormatado}</p>
-                `;
-                grid.appendChild(card);
-            });
+        nomesOrdenados.forEach(nome => {
+            const card = document.createElement('a');
+            card.href = `partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
+            card.className = 'maquina-card';
+            card.innerHTML = `
+                <div class="maquina-icon">
+                    <img src="/assets/images/${tipo}.png" alt="${nome}">
+                </div>
+                <h3 class="maquina-name">${nome.toUpperCase()}</h3>
+                <p class="maquina-modelo">${tipoFormatado}</p>
+            `;
+            grid.appendChild(card);
+        });
 
         } catch (error) {
             console.error('Erro ao carregar máquinas:', error);
@@ -313,4 +313,5 @@
   <script src="/assets/js/components/Sidebar.js"></script>
     
 </body>
+
 </html>
