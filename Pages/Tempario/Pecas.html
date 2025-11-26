@@ -476,9 +476,9 @@
                 const nomeEquipamento = data.nomeEquipamento || 'Não informado';
                 const parteEquipamento = data.parteEquipamento || 'Parte';
 
-                document.getElementById('breadcrumb-tipo').href = `maquinas.html?tipo=${tipoEquipamento}`;
+                document.getElementById('breadcrumb-tipo').href = `Maquinas.html?tipo=${tipoEquipamento}`;
                 document.getElementById('breadcrumb-tipo').textContent = tipoEquipamento + 's';
-                document.getElementById('breadcrumb-maquina').href = `partes.html?tipo=${tipoEquipamento}&maquina=${encodeURIComponent(nomeEquipamento)}`;
+                document.getElementById('breadcrumb-maquina').href = `Partes.html?tipo=${tipoEquipamento}&maquina=${encodeURIComponent(nomeEquipamento)}`;
                 document.getElementById('breadcrumb-maquina').textContent = nomeEquipamento;
                 document.getElementById('current-parte').textContent = 'Peças';
                 document.getElementById('page-title').textContent = `Peças - ${parteEquipamento}`;
@@ -702,4 +702,5 @@
         });
     </script>
 </body>
+
 </html>
