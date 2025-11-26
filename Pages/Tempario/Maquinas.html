@@ -269,22 +269,20 @@
                 return;
             }
 
-        // Converter Set para Array e ordenar
         const nomesOrdenados = Array.from(nomesUnicos).sort();
-
+        
         nomesOrdenados.forEach(nome => {
             const card = document.createElement('a');
-            card.href = `Partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
+            card.href = `partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
             card.className = 'maquina-card';
             
-            // Tenta ambas as formas: primeira maiúscula e minúscula
-            const tipoMaiuscula = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-            const tipoMinuscula = tipo.toLowerCase();
+            // Remove espaços e formata o nome para usar na URL da imagem
+            const nomeFormatado = nome.replace(/\s+/g, '').toUpperCase();
             
             card.innerHTML = `
                 <div class="maquina-icon">
-                    <img src="/assets/images/${tipoMaiuscula}.png" alt="${nome}" 
-                         onerror="this.src='/assets/images/${tipoMinuscula}.png'; this.onerror=null;">
+                    <img src="/assets/images/${nomeFormatado}.png" alt="${nome}" 
+                        onerror="this.onerror=null; this.src='/assets/images/${tipo.charAt(0).toUpperCase() + tipo.slice(1)}.png';">
                 </div>
                 <h3 class="maquina-name">${nome.toUpperCase()}</h3>
                 <p class="maquina-modelo">${tipoFormatado}</p>
@@ -321,5 +319,6 @@
 </body>
 
 </html>
+
 
 
