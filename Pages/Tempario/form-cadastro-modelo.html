@@ -62,6 +62,17 @@
       box-sizing: border-box;
     }
     
+    .form-group select {
+      background-color: white;
+      cursor: pointer;
+    }
+    
+    .form-group select:focus {
+      outline: none;
+      border-color: #193b7c;
+      box-shadow: 0 0 0 2px rgba(25, 59, 124, 0.25);
+    }
+    
     .form-actions {
       display: flex;
       justify-content: flex-end;
@@ -73,7 +84,8 @@
     
     .btn-primary, 
     .btn-secondary,
-    .btn-danger {
+    .btn-danger,
+    .btn-success {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -111,6 +123,14 @@
       background-color: #c82333; 
     }
     
+    .btn-success { 
+      background-color: #28a745; 
+      color: #fff; 
+    }
+    .btn-success:hover { 
+      background-color: #218838; 
+    }
+    
     .partes-section {
       margin: 20px 0;
     }
@@ -133,6 +153,72 @@
       padding: 8px 12px;
       border-radius: 4px;
       cursor: pointer;
+    }
+    
+    /* Seção de partes comuns */
+    .partes-comuns-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #28a745;
+    }
+    
+    .partes-comuns-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .partes-comuns-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #28a745;
+      margin: 0;
+    }
+    
+    .partes-comuns-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    .parte-comum-checkbox {
+      display: none;
+    }
+    
+    .parte-comum-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      user-select: none;
+    }
+    
+    .parte-comum-label:hover {
+      border-color: #193b7c;
+    }
+    
+    .parte-comum-checkbox:checked + .parte-comum-label {
+      background: #193b7c;
+      color: white;
+      border-color: #193b7c;
+    }
+    
+    .parte-comum-checkbox:checked + .parte-comum-label .check-icon {
+      opacity: 1;
+    }
+    
+    .check-icon {
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
     
     /* Header da lista */
@@ -267,6 +353,10 @@
       .modelo-actions {
         align-self: flex-end;
       }
+      
+      .partes-comuns-grid {
+        justify-content: center;
+      }
     }
   </style>
 </head>
@@ -288,12 +378,30 @@
           <div class="form-container">
             <div class="form-group">
               <label for="tipo-equipamento">Tipo do Equipamento *</label>
-              <input type="text" id="tipo-equipamento" placeholder="Ex: Trator, Colheitadeira, Plantadeira" required>
+              <select id="tipo-equipamento" required>
+                <option value="">Selecione o tipo...</option>
+                <option value="Trator">Trator</option>
+                <option value="Colheitadeira">Colheitadeira</option>
+                <option value="Pulverizador">Pulverizador</option>
+              </select>
             </div>
             
             <div class="form-group">
               <label for="nome-equipamento">Nome do Equipamento *</label>
               <input type="text" id="nome-equipamento" placeholder="Ex: CR7.90, TX 1000, MX 250" required>
+            </div>
+
+            <!-- Seção: Partes Comuns -->
+            <div class="partes-comuns-section">
+              <div class="partes-comuns-header">
+                <h3 class="partes-comuns-title">Partes Comuns</h3>
+                <button type="button" class="btn-success" id="btn-adicionar-comuns">
+                  <i class='bx bx-plus'></i> Adicionar Selecionadas
+                </button>
+              </div>
+              <div class="partes-comuns-grid" id="partes-comuns-lista">
+                <!-- Partes comuns serão geradas aqui -->
+              </div>
             </div>
 
             <div class="partes-section">
@@ -303,7 +411,7 @@
                   <!-- Partes serão adicionadas aqui -->
                 </div>
                 <button type="button" class="btn-primary" id="btn-adicionar-parte" style="margin-top: 10px;">
-                  <i class='bx bx-plus'></i> Adicionar Parte
+                  <i class='bx bx-plus'></i> Adicionar Parte Manualmente
                 </button>
               </div>
             </div>
@@ -362,6 +470,91 @@
     let docId = null;
     let todosModelos = [];
 
+    // Lista de partes comuns para equipamentos agrícolas
+    const partesComuns = [
+      "Motor",
+      "Transmissão",
+      "Embreagem",
+      "Filtros",
+      "Sistema Hidráulico",
+      "Sistema Elétrico",
+      "Rodas e Pneus",
+      "Freios",
+      "Sistema de Arrefecimento",
+      "Cabine",
+      "Sistema de Combustível",
+      "Sistema de Lubrificação",
+      "Sistema de Direção",
+      "Suspensão",
+      "Diferencial",
+      "Tomada de Força",
+      "Barra de Tração",
+      "Engate",
+      "Radiador",
+      "Bateria",
+      "Alternador",
+      "Parte Elétrica",
+      "Parte Mecânica",
+      "Parte Hidráulica"
+    ];
+
+    // Função para inicializar as partes comuns
+    function inicializarPartesComuns() {
+      const container = document.getElementById('partes-comuns-lista');
+      container.innerHTML = '';
+
+      partesComuns.forEach(parte => {
+        const checkboxId = `parte-${parte.toLowerCase().replace(/\s+/g, '-')}`;
+        const checkboxDiv = document.createElement('div');
+        checkboxDiv.innerHTML = `
+          <input type="checkbox" id="${checkboxId}" class="parte-comum-checkbox" value="${parte}">
+          <label for="${checkboxId}" class="parte-comum-label">
+            <i class='bx bx-check check-icon'></i>
+            ${parte}
+          </label>
+        `;
+        container.appendChild(checkboxDiv);
+      });
+    }
+
+    // Função para adicionar partes comuns selecionadas
+    function adicionarPartesComunsSelecionadas() {
+      const checkboxes = document.querySelectorAll('.parte-comum-checkbox:checked');
+      
+      checkboxes.forEach(checkbox => {
+        const parteNome = checkbox.value;
+        // Verificar se a parte já não foi adicionada
+        const partesExistentes = coletarPartes();
+        if (!partesExistentes.includes(parteNome)) {
+          adicionarParte(parteNome);
+        }
+      });
+
+      // Desmarcar os checkboxes após adicionar
+      checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+
+      // Feedback visual
+      if (checkboxes.length > 0) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Partes adicionadas!',
+          text: `${checkboxes.length} parte(s) comum(ns) adicionada(s) com sucesso.`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Nenhuma parte selecionada',
+          text: 'Selecione pelo menos uma parte comum para adicionar.',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    }
+
     // Função para capitalizar a primeira letra
     function capitalizarPrimeiraLetra(texto) {
       if (!texto) return '';
@@ -404,6 +597,12 @@
       document.getElementById('tipo-equipamento').value = '';
       document.getElementById('nome-equipamento').value = '';
       document.getElementById('lista-partes').innerHTML = '';
+      
+      // Limpar seleção das partes comuns
+      document.querySelectorAll('.parte-comum-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      
       adicionarParte(); // Adiciona uma parte vazia
       
       // Resetar modo de edição
@@ -527,8 +726,8 @@
           const data = docSnap.data();
           
           // Preencher formulário
-          document.getElementById('tipo-equipamento').value = capitalizarPrimeiraLetra(data.tipoEquipamento);
-          document.getElementById('nome-equipamento').value = capitalizarPrimeiraLetra(data.nomeEquipamento);
+          document.getElementById('tipo-equipamento').value = data.tipoEquipamento;
+          document.getElementById('nome-equipamento').value = data.nomeEquipamento;
           
           // Limpar e preencher partes
           document.getElementById('lista-partes').innerHTML = '';
@@ -584,7 +783,7 @@
     async function salvarModelo(event) {
       event.preventDefault();
 
-      const tipoEquipamento = document.getElementById('tipo-equipamento').value.trim();
+      const tipoEquipamento = document.getElementById('tipo-equipamento').value;
       const nomeEquipamento = document.getElementById('nome-equipamento').value.trim();
       const partes = coletarPartes();
 
@@ -597,7 +796,7 @@
       }
 
       const dadosModelo = {
-        tipoEquipamento: capitalizarPrimeiraLetra(tipoEquipamento),
+        tipoEquipamento: tipoEquipamento, // Já vem formatado do select
         nomeEquipamento: capitalizarPrimeiraLetra(nomeEquipamento),
         partes: partes,
         dataCriacao: new Date().toISOString(),
@@ -637,6 +836,9 @@
         const app = getApp();
         db = getFirestore(app);
 
+        // Inicializar partes comuns
+        inicializarPartesComuns();
+
         // Adicionar primeira parte por padrão
         adicionarParte();
 
@@ -645,6 +847,7 @@
 
         // Event listeners
         document.getElementById('btn-adicionar-parte').addEventListener('click', () => adicionarParte());
+        document.getElementById('btn-adicionar-comuns').addEventListener('click', adicionarPartesComunsSelecionadas);
         document.getElementById('formModelo').addEventListener('submit', salvarModelo);
         document.getElementById('btn-cancelar').addEventListener('click', limparFormulario);
         
