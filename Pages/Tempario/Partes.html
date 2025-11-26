@@ -163,7 +163,7 @@
 
         // Atualizar breadcrumb e títulos
         const tipoFormatado = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-        document.getElementById('breadcrumb-tipo').href = `maquinas.html?tipo=${tipo}`;
+        document.getElementById('breadcrumb-tipo').href = `Maquinas.html?tipo=${tipo}`;
         document.getElementById('breadcrumb-tipo').textContent = tipoFormatado + 's';
         document.getElementById('current-maquina').textContent = maquina;
         document.getElementById('page-title').textContent = `Partes - ${maquina}`;
@@ -292,7 +292,7 @@
                     <h3>Erro ao carregar partes</h3>
                     <p><strong>Mensagem:</strong> ${error.message}</p>
                     <p style="margin-top: 15px;">
-                        <a href="maquinas.html?tipo=${tipo}" style="color: #193b7c; text-decoration: underline; font-weight: bold;">
+                        <a href="Maquinas.html?tipo=${tipo}" style="color: #193b7c; text-decoration: underline; font-weight: bold;">
                             ↩️ Voltar para a seleção de máquinas
                         </a>
                     </p>
@@ -358,4 +358,5 @@ async function editarParte(parteId) {
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/components/Sidebar.js"></script>
 </body>
+
 </html>
