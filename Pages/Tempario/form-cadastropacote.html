@@ -392,7 +392,12 @@
           <!-- Dados básicos do equipamento -->
           <div class="form-group">
             <label for="tipo-equipamento">Tipo do Equipamento *</label>
-            <input type="text" id="tipo-equipamento" placeholder="Ex: Trator, Colheitadeira" required>
+            <select id="tipo-equipamento" required>
+              <option value="">Selecione o tipo...</option>
+              <option value="Trator">Trator</option>
+              <option value="Colheitadeira">Colheitadeira</option>
+              <option value="Pulverizador">Pulverizador</option>
+            </select>
           </div>
 
           <div class="form-group">
@@ -496,7 +501,7 @@
       </div>
     </div>
   </section>
-  
+
   <script type="module">
     import { garantirAutenticacao } from '/assets/js/auth-guard.js';
     import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -640,9 +645,12 @@
       try {
         const partesSelect = document.getElementById('parte-equipamento');
         
-        // Limpar opções exceto a primeira
-        while (partesSelect.children.length > 1) {
-          partesSelect.removeChild(partesSelect.lastChild);
+        // Guardar as partes atuais que já estão no select
+        const partesAtuais = new Set();
+        for (let i = 0; i < partesSelect.options.length; i++) {
+          if (partesSelect.options[i].value) {
+            partesAtuais.add(partesSelect.options[i].value);
+          }
         }
 
         if (!tipoEquipamento || !nomeEquipamento) {
@@ -657,7 +665,7 @@
         );
 
         const querySnapshot = await getDocs(q);
-        const partesExistentes = new Set();
+        const partesExistentes = new Set(partesAtuais); // Começar com as partes atuais
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
@@ -666,15 +674,20 @@
           }
         });
 
-        // Adicionar partes encontradas ao select
-        partesExistentes.forEach(parte => {
+        // Limpar e recriar o select com todas as partes (modelo + existentes)
+        partesSelect.innerHTML = '<option value="">Selecione uma parte</option>';
+        
+        // Ordenar as partes alfabeticamente
+        const partesOrdenadas = Array.from(partesExistentes).sort();
+        
+        partesOrdenadas.forEach(parte => {
           const option = document.createElement('option');
           option.value = parte;
           option.textContent = parte;
           partesSelect.appendChild(option);
         });
 
-        console.log('Partes carregadas:', Array.from(partesExistentes));
+        console.log('Partes carregadas:', partesOrdenadas);
 
       } catch (error) {
         console.error('Erro ao carregar partes:', error);
@@ -697,6 +710,7 @@
           const option = document.createElement('option');
           option.value = doc.id;
           option.textContent = `${data.tipoEquipamento} - ${data.nomeEquipamento}`;
+          // Garantir que as partes estão sendo passadas corretamente
           option.setAttribute('data-partes', JSON.stringify(data.partes || []));
           selectModelo.appendChild(option);
         });
@@ -714,10 +728,28 @@
         const partes = JSON.parse(selectedOption.getAttribute('data-partes'));
         const [tipo, nome] = selectedOption.textContent.split(' - ');
         
+        console.log('Carregando modelo:', { tipo, nome, partes }); // DEBUG
+        
         document.getElementById('tipo-equipamento').value = tipo || '';
         document.getElementById('nome-equipamento').value = nome || '';
         
-        // Carregar partes existentes para este equipamento
+        // Preencher o select de partes com as partes do modelo
+        const parteSelect = document.getElementById('parte-equipamento');
+        parteSelect.innerHTML = '<option value="">Selecione uma parte</option>';
+        
+        if (partes && partes.length > 0) {
+          partes.forEach(parte => {
+            const option = document.createElement('option');
+            option.value = parte;
+            option.textContent = parte;
+            parteSelect.appendChild(option);
+          });
+          console.log('Partes adicionadas ao select:', partes); // DEBUG
+        } else {
+          console.log('Nenhuma parte encontrada no modelo'); // DEBUG
+        }
+        
+        // Também carregar partes existentes
         carregarPartesExistentes(tipo, nome);
       }
     }
