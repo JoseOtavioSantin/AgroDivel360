@@ -276,13 +276,14 @@
             card.href = `partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
             card.className = 'maquina-card';
             
-            // Remove espaços e formata o nome para usar na URL da imagem
-            const nomeFormatado = nome.replace(/\s+/g, '').toUpperCase();
+            // Pega apenas as duas primeiras letras em maiúsculo
+            const duasPrimeirasLetras = nome.toUpperCase().substring(0, 2);
+            const tipoMaiuscula = tipo.charAt(0).toUpperCase() + tipo.slice(1);
             
             card.innerHTML = `
                 <div class="maquina-icon">
-                    <img src="/assets/images/${nomeFormatado}.png" alt="${nome}" 
-                        onerror="this.onerror=null; this.src='/assets/images/${tipo.charAt(0).toUpperCase() + tipo.slice(1)}.png';">
+                    <img src="/assets/images/${duasPrimeirasLetras}.png" alt="${nome}" 
+                        onerror="this.onerror=null; this.src='/assets/images/${tipoMaiuscula}.png';">
                 </div>
                 <h3 class="maquina-name">${nome.toUpperCase()}</h3>
                 <p class="maquina-modelo">${tipoFormatado}</p>
@@ -319,6 +320,7 @@
 </body>
 
 </html>
+
 
 
 
