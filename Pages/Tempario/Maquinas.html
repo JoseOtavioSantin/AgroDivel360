@@ -269,27 +269,39 @@
                 return;
             }
 
-        const nomesOrdenados = Array.from(nomesUnicos).sort();
-        
-        nomesOrdenados.forEach(nome => {
-            const card = document.createElement('a');
-            card.href = `partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
-            card.className = 'maquina-card';
-            
-            // Pega apenas as duas primeiras letras em maiúsculo
-            const duasPrimeirasLetras = nome.toUpperCase().substring(0, 2);
-            const tipoMaiuscula = tipo.charAt(0).toUpperCase() + tipo.slice(1);
-            
-            card.innerHTML = `
-                <div class="maquina-icon">
-                    <img src="/assets/images/${duasPrimeirasLetras}.png" alt="${nome}" 
-                        onerror="this.onerror=null; this.src='/assets/images/${tipoMaiuscula}.png';">
-                </div>
-                <h3 class="maquina-name">${nome.toUpperCase()}</h3>
-                <p class="maquina-modelo">${tipoFormatado}</p>
-            `;
-            grid.appendChild(card);
-        });
+const nomesOrdenados = Array.from(nomesUnicos).sort();
+
+nomesOrdenados.forEach(nome => {
+    const card = document.createElement('a');
+    card.href = `partes.html?tipo=${tipo}&maquina=${encodeURIComponent(nome)}`;
+    card.className = 'maquina-card';
+    
+    // Para tratores, usa lógica específica
+    let prefixoImagem;
+    if (tipo.toLowerCase() === 'trator') {
+        // Para tratores, pega a primeira letra (T) ou o modelo completo se começar com T
+        if (nome.toUpperCase().startsWith('T')) {
+            prefixoImagem = nome.toUpperCase().substring(0, 2); // T8, T7, TL, TT
+        } else {
+            prefixoImagem = 'T'; // Para modelos como 7630 usa T genérico
+        }
+    } else {
+        // Para outros tipos, usa as duas primeiras letras
+        prefixoImagem = nome.toUpperCase().substring(0, 2);
+    }
+    
+    const tipoMaiuscula = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+    
+    card.innerHTML = `
+        <div class="maquina-icon">
+            <img src="/assets/images/${prefixoImagem}.png" alt="${nome}" 
+                onerror="this.onerror=null; this.src='/assets/images/${tipoMaiuscula}.png';">
+        </div>
+        <h3 class="maquina-name">${nome.toUpperCase()}</h3>
+        <p class="maquina-modelo">${tipoFormatado}</p>
+    `;
+    grid.appendChild(card);
+});
 
         } catch (error) {
             console.error('Erro ao carregar máquinas:', error);
@@ -320,6 +332,7 @@
 </body>
 
 </html>
+
 
 
 
