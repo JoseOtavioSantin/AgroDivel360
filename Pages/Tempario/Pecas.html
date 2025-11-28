@@ -40,43 +40,7 @@
             background-color: #f8f9fa;
         }
 
-        .valores-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .valor-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-left: 4px solid #193b7c;
-        }
-
-        .valor-card.horas {
-            border-left-color: #f39c12;
-        }
-
-        .valor-card.pecas {
-            border-left-color: #e74c3c;
-        }
-
-        .valor-card.total {
-            border-left-color: #27ae60;
-        }
-
-        .valor-card h4 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-            font-size: 14px;
-        }
-
-        .valor-card .valor {
-            font-size: 18px;
-            font-weight: 700;
-        }
+        /* Removidos estilos de valores (cards e container) */
 
         .breadcrumb {
             display: flex;
@@ -170,27 +134,31 @@
             background: #218838;
         }
 
-        .valor-peca {
-            font-weight: 600;
-            color: #27ae60;
-        }
+        /* Removidos estilos de valor-peca e subtotal-pecas */
 
-        .subtotal-pecas {
-            text-align: right;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-            margin: 10px 0;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        /* Melhorias na tabela para mostrar valores individuais */
+        /* Larguras com coluna de catálogo */
         .pecas-table th:nth-child(1) { width: 15%; } /* Código */
-        .pecas-table th:nth-child(2) { width: 35%; } /* Descrição */
-        .pecas-table th:nth-child(3) { width: 10%; } /* Quantidade */
-        .pecas-table th:nth-child(4) { width: 15%; } /* Valor Unitário */
-        .pecas-table th:nth-child(5) { width: 15%; } /* Valor Total */
+        .pecas-table th:nth-child(2) { width: 50%; } /* Descrição */
+        .pecas-table th:nth-child(3) { width: 15%; } /* Quantidade */
+        .pecas-table th:nth-child(4) { width: 20%; } /* Catálogo */
+
+        .btn-catalogo {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: #193b7c;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn-catalogo:hover {
+            background: #152c5e;
+        }
     </style>
 </head>
 <body>
@@ -208,7 +176,7 @@
                 <span id="current-parte">Peças</span>
             </div>
             <h1 id="page-title">Peças da Parte</h1>
-            <p id="page-subtitle">Lista de peças e valores desta parte do equipamento.</p>
+            <p id="page-subtitle">Lista de peças desta parte do equipamento.</p>
         </div>
 
         <div class="pecas-section">
@@ -319,38 +287,12 @@
 
                 let containerHTML = '';
 
-                // Adicionar cards de valores
-                const valorHoras = data.valorHoras ? parseFloat(data.valorHoras) : 0;
-                const valorMaoObra = data.valorHaoObra ? parseFloat(data.valorHaoObra) : 0;
-                const valorPecas = data.valorPecas ? parseFloat(data.valorPecas) : 0;
-                const valorTotal = data.valorTotal ? parseFloat(data.valorTotal) : 0;
+                // Removidos cards de valores (simplificação)
 
-                containerHTML += `
-                    <div class="valores-container">
-                        <div class="valor-card horas">
-                            <h4>Valor Horas</h4>
-                            <div class="valor" style="color: #f39c12;">R$ ${valorHoras.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                        </div>
-                        <div class="valor-card">
-                            <h4>Valor Mão de Obra</h4>
-                            <div class="valor" style="color: #193b7c;">R$ ${valorMaoObra.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                        </div>
-                        <div class="valor-card pecas">
-                            <h4>Valor Peças</h4>
-                            <div class="valor" style="color: #e74c3c;">R$ ${valorPecas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                        </div>
-                        <div class="valor-card total">
-                            <h4>Valor Total</h4>
-                            <div class="valor" style="color: #27ae60;">R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                        </div>
-                    </div>
-                `;
-
-                // Adicionar informações adicionais
-                if (data.horasTrabalho || data.filial) {
+                // Informações adicionais (mantidas apenas filial e data)
+                if (data.filial || data.dataCriacao) {
                     containerHTML += `
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                            ${data.horasTrabalho ? `<p><strong>Horas de Trabalho:</strong> ${data.horasTrabalho}h</p>` : ''}
                             ${data.filial ? `<p><strong>Filial:</strong> ${data.filial}</p>` : ''}
                             ${data.dataCriacao ? `<p><strong>Data de Criação:</strong> ${new Date(data.dataCriacao).toLocaleDateString('pt-BR')}</p>` : ''}
                         </div>
@@ -361,15 +303,7 @@
                 if (!data.pecas || data.pecas.length === 0) {
                     containerHTML += '<div class="no-pecas">Nenhuma peça cadastrada para esta parte.</div>';
                 } else {
-                    // Calcular subtotal das peças
-                    let subtotalPecas = 0;
-                    data.pecas.forEach(peca => {
-                        const valorUnitario = peca.valorUnitario || 0;
-                        const quantidade = peca.quantidade || 0;
-                        const valorTotalPeca = valorUnitario * quantidade;
-                        subtotalPecas += valorTotalPeca;
-                    });
-
+                    // Lista simplificada de peças (sem valores)
                     containerHTML += `
                         <h3 style="color: #193b7c; margin-bottom: 15px;">Lista de Peças</h3>
                         <table class="pecas-table">
@@ -378,25 +312,32 @@
                                     <th>Código</th>
                                     <th>Descrição</th>
                                     <th>Quantidade</th>
-                                    <th>Valor Unitário</th>
-                                    <th>Valor Total</th>
+                                    <th>Catálogo</th>
                                 </tr>
                             </thead>
                             <tbody>
                     `;
 
                     data.pecas.forEach(peca => {
-                        const valorUnitario = peca.valorUnitario || 0;
                         const quantidade = peca.quantidade || 0;
-                        const valorTotalPeca = valorUnitario * quantidade;
-
+                        const codigo = peca.codigo || '-';
+                        const linkCatalogo = codigo !== '-' ? 
+                            `https://www.cnh-eparts.com/DC-NA/SA/BR/pt/newholland-ag/cn/filtro-de-combustvel/dc/p/${codigo}` : 
+                            '#';
+                        
                         containerHTML += `
                             <tr>
-                                <td>${peca.codigo || '-'}</td>
+                                <td>${codigo}</td>
                                 <td>${peca.descricao || peca.descriacao || '-'}</td>
                                 <td>${quantidade}</td>
-                                <td class="valor-peca">R$ ${valorUnitario.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                                <td class="valor-peca">R$ ${valorTotalPeca.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                <td>
+                                    ${codigo !== '-' ? 
+                                        `<a href="${linkCatalogo}" target="_blank" class="btn-catalogo" rel="noopener noreferrer">
+                                            <i class='bx bx-link-external'></i> Ver Peça
+                                        </a>` : 
+                                        '<span style="color: #999;">-</span>'
+                                    }
+                                </td>
                             </tr>
                         `;
                     });
@@ -404,9 +345,6 @@
                     containerHTML += `
                             </tbody>
                         </table>
-                        <div class="subtotal-pecas">
-                            Subtotal das Peças: R$ ${subtotalPecas.toLocaleString('pt-BR', {minimumFractionDigits: 2})}
-                        </div>
                     `;
                 }
 

@@ -47,11 +47,7 @@
             margin-bottom: 10px;
         }
 
-        .parte-valor {
-            font-size: 16px;
-            color: #27ae60;
-            font-weight: 600;
-        }
+        /* Removido bloco .parte-valor (não exibimos valores monetários) */
 
         .parte-info {
             font-size: 14px;
@@ -132,7 +128,7 @@
                 <span id="current-maquina">Partes</span>
             </div>
             <h1 id="page-title">Partes da Máquina</h1>
-            <p id="page-subtitle">Selecione uma parte para ver suas peças e valores.</p>
+            <p id="page-subtitle">Selecione uma parte para ver suas peças cadastradas.</p>
         </div>
 
         <div class="partes-section">
@@ -252,34 +248,15 @@
                 }
                 
                 const quantidadePecas = parte.pecas ? parte.pecas.length : 0;
-                
-                // CORREÇÃO: Usar os campos corretos do seu documento
-                const valorHora = parte.valorHora ? 
-                    `R$ ${parseFloat(parte.valorHora).toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : 'R$ 0,00';
-                
-                const valorMaoObra = parte.valorHaoObra ?  // Campo com erro de digitação no Firestore
-                    `R$ ${parseFloat(parte.valorHaoObra).toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : null;
-                
-                const valorPecas = parte.valorPecas ? 
-                    `R$ ${parseFloat(parte.valorPecas).toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : null;
-                
-                const valorTotal = parte.valorTotal ? 
-                    `R$ ${parseFloat(parte.valorTotal).toLocaleString('pt-BR', {minimumFractionDigits: 2})}` : null;
-                
+                // Valores monetários removidos (form simplificado)
                 card.innerHTML = `
                     ${isAutorizado ? `
                         <button class="btn-editar-parte" onclick="event.preventDefault(); event.stopPropagation(); window.editarParte('${parte.id}')" title="Editar Parte">
                             <i class='bx bx-edit'></i> Editar
                         </button>
                     ` : ''}
-                    
                     <h3 class="parte-name">${parte.parteEquipamento}</h3>
-                    <div class="parte-valor">Valor Horas: ${valorHora}</div>
-                    ${valorMaoObra ? `<div class="parte-info" style="color: #f39c12;">Valor Mão de Obra: ${valorMaoObra}</div>` : ''}
-                    ${valorPecas ? `<div class="parte-info" style="color: #e74c3c;">Valor Peças: ${valorPecas}</div>` : ''}
-                    ${valorTotal ? `<div class="parte-info" style="color: #27ae60; font-weight: bold;">Valor Total: ${valorTotal}</div>` : ''}
                     <div class="parte-info">${quantidadePecas} peça(s) cadastrada(s)</div>
-                    ${parte.horasTrabalho ? `<div class="parte-info">Horas de trabalho: ${parte.horasTrabalho}h</div>` : ''}
                 `;
                 grid.appendChild(card);
             });

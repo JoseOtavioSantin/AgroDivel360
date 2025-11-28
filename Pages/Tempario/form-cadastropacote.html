@@ -439,8 +439,6 @@
                   <th>Código</th>
                   <th>Descrição</th>
                   <th>Qtd</th>
-                  <th>Valor Unitário (R$)</th>
-                  <th>Valor Total (R$)</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -449,44 +447,7 @@
               </tbody>
             </table>
 
-            <div class="subtotal-pecas" id="subtotal-pecas">
-              Subtotal das Peças: R$ 0,00
-            </div>
-
-            <!-- NOVA SEÇÃO DE VALORES MELHORADA -->
-            <div class="valores-section">
-              <div class="valores-grid">
-                <div class="valor-card">
-                  <label for="horas-trabalho">Horas para Realizar o Trabalho</label>
-                  <input type="number" id="horas-trabalho" step="0.5" min="0" placeholder="0,0" required value="0">
-                </div>
-                
-                <div class="valor-card">
-                  <label for="valor-hora">Valor da Hora (R$)</label>
-                  <input type="number" id="valor-hora" step="0.01" min="0" placeholder="0,00" required value="0">
-                </div>
-                
-                <div class="valor-card">
-                  <label for="valor-mao-obra">Valor da Mão de Obra (R$)</label>
-                  <input type="number" id="valor-mao-obra" step="0.01" min="0" placeholder="0,00" readonly value="0">
-                </div>
-
-                <div class="valor-card">
-                  <label for="valor-outros">Outros Custos (R$)</label>
-                  <input type="number" id="valor-outros" step="0.01" min="0" placeholder="0,00" value="0">
-                </div>
-              </div>
-              
-              <div class="resumo-section">
-                <div class="resumo-header">
-                  <div class="resumo-title">Valor Total da Parte</div>
-                  <div class="resumo-subtitle">Inclui peças, mão de obra e outros custos</div>
-                </div>
-                <div class="valor-total-grande">
-                  <div class="valor-total" id="valor-total-display">R$ 0,00</div>
-                </div>
-              </div>
-            </div>
+            <!-- Seção simplificada sem valores -->
           </div>
 
           <div class="form-actions">
@@ -558,9 +519,7 @@
                 pecas.push({
                   codigo: row[codigoIndex].toString().trim(),
                   descricao: row[descricaoIndex].toString().trim(),
-                  quantidade: parseInt(row[quantidadeIndex]) || 1,
-                  valorUnitario: 0, // Será preenchido depois pelo usuário
-                  valorTotal: 0
+                  quantidade: parseInt(row[quantidadeIndex]) || 1
                 });
               }
             }
@@ -778,56 +737,7 @@
       });
     }
 
-    // Função para calcular valor total de uma peça
-    function calcularValorPeca(linha) {
-      const quantidade = parseFloat(linha.querySelector('.peca-quantidade').value) || 0;
-      const valorUnitario = parseFloat(linha.querySelector('.peca-valor-unitario').value) || 0;
-      const valorTotal = quantidade * valorUnitario;
-      
-      linha.querySelector('.peca-valor-total').value = valorTotal.toFixed(2);
-      return valorTotal;
-    }
-
-    // Função para calcular subtotal das peças
-    function calcularSubtotalPecas() {
-      let subtotal = 0;
-      const linhas = document.querySelectorAll('#lista-pecas tr');
-      
-      linhas.forEach(linha => {
-        subtotal += calcularValorPeca(linha);
-      });
-      
-      document.getElementById('subtotal-pecas').textContent = 
-        `Subtotal das Peças: R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-      
-      return subtotal;
-    }
-
-    // Função para calcular valores totais
-    function calcularValores() {
-      const subtotalPecas = calcularSubtotalPecas();
-      const horasTrabalho = parseFloat(document.getElementById('horas-trabalho').value) || 0;
-      const valorHora = parseFloat(document.getElementById('valor-hora').value) || 0;
-      const outrosCustos = parseFloat(document.getElementById('valor-outros').value) || 0;
-      
-      // Calcular valor da mão de obra
-      const valorMaoObra = horasTrabalho * valorHora;
-      document.getElementById('valor-mao-obra').value = valorMaoObra.toFixed(2);
-      
-      // Calcular valor total
-      const valorTotal = subtotalPecas + valorMaoObra + outrosCustos;
-      document.getElementById('valor-total-display').textContent = 
-        `R$ ${valorTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-      
-      return {
-        subtotalPecas,
-        horasTrabalho,
-        valorHora,
-        valorMaoObra,
-        outrosCustos,
-        valorTotal
-      };
-    }
+    // Removido: cálculos de valores (form simplificado)
 
     // Função para adicionar nova linha de peça
     function adicionarPeca(dadosPeca = {}) {
@@ -844,12 +754,6 @@
           <input type="number" class="peca-quantidade" min="1" value="${dadosPeca.quantidade || 1}" required>
         </td>
         <td>
-          <input type="number" class="peca-valor-unitario" step="0.01" min="0" placeholder="0,00" value="${dadosPeca.valorUnitario || ''}" required>
-        </td>
-        <td>
-          <input type="number" class="peca-valor-total" step="0.01" readonly value="${dadosPeca.valorTotal || '0.00'}">
-        </td>
-        <td>
           <button type="button" class="btn-remover">
             <i class='bx bx-trash'></i>
           </button>
@@ -858,25 +762,10 @@
       
       tbody.appendChild(novaLinha);
       
-      // Adicionar eventos para cálculo automático
-      novaLinha.querySelector('.peca-quantidade').addEventListener('input', function() {
-        calcularValorPeca(novaLinha);
-        calcularValores();
-      });
-      
-      novaLinha.querySelector('.peca-valor-unitario').addEventListener('input', function() {
-        calcularValorPeca(novaLinha);
-        calcularValores();
-      });
-      
       // Adicionar evento de remoção
       novaLinha.querySelector('.btn-remover').addEventListener('click', function() {
         novaLinha.remove();
-        calcularValores();
       });
-
-      // Calcular valor total inicial
-      calcularValorPeca(novaLinha);
     }
 
     // Função para coletar dados das peças
@@ -888,16 +777,12 @@
         const codigo = linha.querySelector('.peca-codigo').value.trim();
         const descricao = linha.querySelector('.peca-descricao').value.trim();
         const quantidade = parseInt(linha.querySelector('.peca-quantidade').value);
-        const valorUnitario = parseFloat(linha.querySelector('.peca-valor-unitario').value);
-        const valorTotal = parseFloat(linha.querySelector('.peca-valor-total').value);
         
-        if (codigo && descricao && quantidade > 0 && valorUnitario > 0) {
+        if (codigo && descricao && quantidade > 0) {
           pecas.push({
-            codigo: codigo,
-            descricao: descricao,
-            quantidade: quantidade,
-            valorUnitario: valorUnitario,
-            valorTotal: valorTotal
+            codigo,
+            descricao,
+            quantidade
           });
         }
       });
@@ -908,7 +793,6 @@
     async function salvarEquipamento(event) {
       event.preventDefault();
 
-      const valores = calcularValores();
       const pecas = coletarPecas();
       
       const dadosEquipamento = {
@@ -916,12 +800,6 @@
         nomeEquipamento: document.getElementById('nome-equipamento').value.trim(),
         parteEquipamento: document.getElementById('parte-equipamento').value.trim().toUpperCase(),
         pecas: pecas,
-        valorPecas: valores.subtotalPecas,
-        horasTrabalho: valores.horasTrabalho,
-        valorHora: valores.valorHora,
-        valorMaoObra: valores.valorMaoObra,
-        valorOutros: valores.outrosCustos,
-        valorTotal: valores.valorTotal,
         dataCriacao: new Date().toISOString(),
         usuario: userData.nome || 'Usuário'
       };
@@ -935,19 +813,7 @@
         return Swal.fire("Atenção", "É necessário adicionar pelo menos uma peça.", "warning");
       }
 
-      if (dadosEquipamento.horasTrabalho <= 0) {
-        return Swal.fire("Atenção", "As horas de trabalho devem ser maiores que zero.", "warning");
-      }
-
-      if (dadosEquipamento.valorHora <= 0) {
-        return Swal.fire("Atenção", "O valor da hora deve ser maior que zero.", "warning");
-      }
-
-      // Validar se todas as peças têm valores
-      const pecasSemValor = dadosEquipamento.pecas.filter(peca => !peca.valorUnitario || peca.valorUnitario <= 0);
-      if (pecasSemValor.length > 0) {
-        return Swal.fire("Atenção", "Todas as peças devem ter um valor unitário maior que zero.", "warning");
-      }
+      // Removidas validações relacionadas a valores monetários
 
       Swal.fire({ 
         title: editMode ? 'Atualizando...' : 'Salvando...', 
@@ -984,9 +850,6 @@
         // Preencher todos os campos
         document.getElementById('tipo-equipamento').value = data.tipoEquipamento || '';
         document.getElementById('nome-equipamento').value = data.nomeEquipamento || '';
-        document.getElementById('horas-trabalho').value = data.horasTrabalho || 0;
-        document.getElementById('valor-hora').value = data.valorHora || 0;
-        document.getElementById('valor-outros').value = data.valorOutros || 0;
 
         // Carregar partes existentes para preencher o select
         await carregarPartesExistentes(data.tipoEquipamento, data.nomeEquipamento);
@@ -1001,15 +864,12 @@
             adicionarPeca({
               codigo: peca.codigo,
               descricao: peca.descricao,
-              quantidade: peca.quantidade,
-              valorUnitario: peca.valorUnitario,
-              valorTotal: peca.valorTotal
+              quantidade: peca.quantidade
             });
           });
         }
 
-        // Calcular valores para exibir
-        calcularValores();
+        // Form simplificado: sem cálculo de valores
       } else {
         Swal.fire('Erro', 'Equipamento não encontrado. Redirecionando para a lista.', 'error');
         window.location.href = '/Pages/Tempario/Tempario.html';
@@ -1061,10 +921,6 @@
         // Adicionar primeira peça por padrão
         adicionarPeca();
 
-        // Adicionar eventos para cálculo automático
-        document.getElementById('horas-trabalho').addEventListener('input', calcularValores);
-        document.getElementById('valor-hora').addEventListener('input', calcularValores);
-        document.getElementById('valor-outros').addEventListener('input', calcularValores);
 
         if (docId) {
           editMode = true;
@@ -1073,8 +929,7 @@
           document.getElementById('btn-salvar').innerHTML = '<i class="bx bx-save"></i> Salvar Alterações';
           await carregarDadosParaEdicao(docId);
         } else {
-          // Calcular valores iniciais
-          calcularValores();
+          // Form simplificado: sem cálculo de valores
         }
 
         document.getElementById('btn-adicionar-peca').addEventListener('click', () => adicionarPeca());
