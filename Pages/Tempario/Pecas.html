@@ -159,6 +159,66 @@
         .btn-catalogo:hover {
             background: #152c5e;
         }
+
+        /* Estilos para checkbox do checklist */
+        .checkbox-tecnico {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #193b7c;
+        }
+
+        .checkbox-cell {
+            text-align: center;
+            width: 80px;
+        }
+
+        /* Estilos para impressão */
+        @media print {
+            nav, .breadcrumb, .form-actions, .sidebar, #sidebar-placeholder {
+                display: none !important;
+            }
+            
+            .home {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            
+            .text {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .text h1 {
+                margin: 0 0 10px 0 !important;
+                padding: 0 !important;
+            }
+            
+            .text p {
+                margin: 0 0 15px 0 !important;
+            }
+            
+            .pecas-section {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .pecas-table {
+                page-break-inside: auto;
+                width: 100% !important;
+            }
+            
+            .pecas-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            body {
+                margin: 0 !important;
+                padding: 10px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -192,7 +252,7 @@
                 <button id="btn-gerar-txt-pecas" class="btn-success" disabled>
                     <i class='bx bx-file'></i> Exportar TXT
                 </button>
-                <button id="btn-imprimir-pecas" class="btn-secondary">
+                <button id="btn-imprimir-pecas" class="btn-secondary" onclick="window.print()">
                     <i class='bx bx-printer'></i> Imprimir
                 </button>
             </div>
@@ -276,6 +336,9 @@
                 const tipoEquipamento = data.tipoEquipamento || 'Máquina';
                 const nomeEquipamento = data.nomeEquipamento || 'Não informado';
                 const parteEquipamento = data.parteEquipamento || 'Parte';
+                
+                // Verificar se é CHECKLIST
+                const isChecklist = parteEquipamento.toUpperCase().includes('CHECKLIST') || parteEquipamento.toUpperCase().includes('CHECK');
 
                 document.getElementById('breadcrumb-tipo').href = `Maquinas.html?tipo=${tipoEquipamento}`;
                 document.getElementById('breadcrumb-tipo').textContent = tipoEquipamento + 's';
@@ -289,8 +352,8 @@
 
                 // Removidos cards de valores (simplificação)
 
-                // Informações adicionais (mantidas apenas filial e data)
-                if (data.filial || data.dataCriacao) {
+                // Informações adicionais (apenas para partes normais, não CHECKLIST)
+                if (!isChecklist && (data.filial || data.dataCriacao)) {
                     containerHTML += `
                         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                             ${data.filial ? `<p><strong>Filial:</strong> ${data.filial}</p>` : ''}
@@ -303,43 +366,69 @@
                 if (!data.pecas || data.pecas.length === 0) {
                     containerHTML += '<div class="no-pecas">Nenhuma peça cadastrada para esta parte.</div>';
                 } else {
-                    // Lista simplificada de peças (sem valores)
+                    // Lista simplificada de peças
                     containerHTML += `
                         <h3 style="color: #193b7c; margin-bottom: 15px;">Lista de Peças</h3>
                         <table class="pecas-table">
                             <thead>
-                                <tr>
+                                <tr>`;
+                    
+                    // Cabeçalho diferente para CHECKLIST
+                    if (isChecklist) {
+                        containerHTML += `
+                                    <th>Descrição</th>
+                                    <th>Trabalho a Ser Feito</th>
+                                    <th class="checkbox-cell">Feito</th>`;
+                    } else {
+                        containerHTML += `
                                     <th>Código</th>
                                     <th>Descrição</th>
                                     <th>Quantidade</th>
-                                    <th>Catálogo</th>
+                                    <th>Catálogo</th>`;
+                    }
+                    
+                    containerHTML += `
                                 </tr>
                             </thead>
                             <tbody>
                     `;
 
                     data.pecas.forEach(peca => {
-                        const quantidade = peca.quantidade || 0;
-                        const codigo = peca.codigo || '-';
-                        const linkCatalogo = codigo !== '-' ? 
-                            `https://www.cnh-eparts.com/DC-NA/SA/BR/pt/newholland-ag/cn/filtro-de-combustvel/dc/p/${codigo}` : 
-                            '#';
-                        
-                        containerHTML += `
-                            <tr>
-                                <td>${codigo}</td>
-                                <td>${peca.descricao || peca.descriacao || '-'}</td>
-                                <td>${quantidade}</td>
-                                <td>
-                                    ${codigo !== '-' ? 
-                                        `<a href="${linkCatalogo}" target="_blank" class="btn-catalogo" rel="noopener noreferrer">
-                                            <i class='bx bx-link-external'></i> Ver Peça
-                                        </a>` : 
-                                        '<span style="color: #999;">-</span>'
-                                    }
-                                </td>
-                            </tr>
-                        `;
+                        if (isChecklist) {
+                            // Linha para CHECKLIST: Descrição, Trabalho e checkbox
+                            containerHTML += `
+                                <tr>
+                                    <td>${peca.descricao || peca.descriacao || '-'}</td>
+                                    <td>${peca.trabalho || '-'}</td>
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" class="checkbox-tecnico" title="Marcar como feito">
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            // Linha normal: Código, Descrição, Quantidade, Catálogo
+                            const quantidade = peca.quantidade || 0;
+                            const codigo = peca.codigo || '-';
+                            const linkCatalogo = codigo !== '-' ? 
+                                `https://www.cnh-eparts.com/DC-NA/SA/BR/pt/newholland-ag/cn/filtro-de-combustvel/dc/p/${codigo}` : 
+                                '#';
+                            
+                            containerHTML += `
+                                <tr>
+                                    <td>${codigo}</td>
+                                    <td>${peca.descricao || peca.descriacao || '-'}</td>
+                                    <td>${quantidade}</td>
+                                    <td>
+                                        ${codigo !== '-' ? 
+                                            `<a href="${linkCatalogo}" target="_blank" class="btn-catalogo" rel="noopener noreferrer">
+                                                <i class='bx bx-link-external'></i> Ver Peça
+                                            </a>` : 
+                                            '<span style="color: #999;">-</span>'
+                                        }
+                                    </td>
+                                </tr>
+                            `;
+                        }
                     });
 
                     containerHTML += `

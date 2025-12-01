@@ -735,6 +735,40 @@
           carregarPartesExistentes(tipoInput.value, nomeInput.value);
         }
       });
+
+      // Listener para mudar a tabela quando for CHECKLIST
+      const parteSelect = document.getElementById('parte-equipamento');
+      parteSelect.addEventListener('change', function() {
+        const parteValue = this.value.toUpperCase();
+        const isChecklist = parteValue.includes('CHECKLIST') || parteValue.includes('CHECK');
+        atualizarTabelaPecas(isChecklist);
+      });
+    }
+
+    // Função para atualizar a tabela de peças baseado no tipo (checklist ou normal)
+    function atualizarTabelaPecas(isChecklist) {
+      const thead = document.querySelector('.tabela-pecas thead tr');
+      const tbody = document.getElementById('lista-pecas');
+      
+      // Limpar linhas existentes
+      tbody.innerHTML = '';
+      
+      if (isChecklist) {
+        // Tabela para CHECKLIST: apenas Descrição e Trabalho a Ser Feito
+        thead.innerHTML = `
+          <th>Descrição</th>
+          <th>Trabalho a Ser Feito</th>
+          <th>Ações</th>
+        `;
+      } else {
+        // Tabela normal: Código, Descrição, Qtd
+        thead.innerHTML = `
+          <th>Código</th>
+          <th>Descrição</th>
+          <th>Qtd</th>
+          <th>Ações</th>
+        `;
+      }
     }
 
     // Removido: cálculos de valores (form simplificado)
@@ -743,22 +777,54 @@
     function adicionarPeca(dadosPeca = {}) {
       const tbody = document.getElementById('lista-pecas');
       const novaLinha = document.createElement('tr');
-      novaLinha.innerHTML = `
-        <td>
-          <input type="text" class="peca-codigo" placeholder="Código" value="${dadosPeca.codigo || ''}" required>
-        </td>
-        <td>
-          <input type="text" class="peca-descricao" placeholder="Descrição da peça" value="${dadosPeca.descricao || ''}" required>
-        </td>
-        <td>
-          <input type="number" class="peca-quantidade" min="1" value="${dadosPeca.quantidade || 1}" required>
-        </td>
-        <td>
-          <button type="button" class="btn-remover">
-            <i class='bx bx-trash'></i>
-          </button>
-        </td>
-      `;
+      
+      // Verificar se é checklist
+      const parteValue = document.getElementById('parte-equipamento').value.toUpperCase();
+      const isChecklist = parteValue.includes('CHECKLIST') || parteValue.includes('CHECK');
+      
+      if (isChecklist) {
+        // Linha para CHECKLIST: Descrição e Trabalho a Ser Feito
+        novaLinha.innerHTML = `
+          <td>
+            <input type="text" class="peca-descricao" placeholder="Descrição" value="${dadosPeca.descricao || ''}" required>
+          </td>
+          <td>
+            <select class="peca-trabalho" required>
+              <option value="">Selecione...</option>
+              <option value="SUBSTITUIR" ${dadosPeca.trabalho === 'SUBSTITUIR' ? 'selected' : ''}>SUBSTITUIR</option>
+              <option value="APERTO" ${dadosPeca.trabalho === 'APERTO' ? 'selected' : ''}>APERTO</option>
+              <option value="HIGIENIZAR" ${dadosPeca.trabalho === 'HIGIENIZAR' ? 'selected' : ''}>HIGIENIZAR</option>
+              <option value="AJUSTE" ${dadosPeca.trabalho === 'AJUSTE' ? 'selected' : ''}>AJUSTE</option>
+              <option value="LIMPAR" ${dadosPeca.trabalho === 'LIMPAR' ? 'selected' : ''}>LIMPAR</option>
+              <option value="VERIFICAR" ${dadosPeca.trabalho === 'VERIFICAR' ? 'selected' : ''}>VERIFICAR</option>
+              <option value="MARINAR" ${dadosPeca.trabalho === 'MARINAR' ? 'selected' : ''}>MARINAR</option>
+            </select>
+          </td>
+          <td>
+            <button type="button" class="btn-remover">
+              <i class='bx bx-trash'></i>
+            </button>
+          </td>
+        `;
+      } else {
+        // Linha normal: Código, Descrição, Quantidade
+        novaLinha.innerHTML = `
+          <td>
+            <input type="text" class="peca-codigo" placeholder="Código" value="${dadosPeca.codigo || ''}" required>
+          </td>
+          <td>
+            <input type="text" class="peca-descricao" placeholder="Descrição da peça" value="${dadosPeca.descricao || ''}" required>
+          </td>
+          <td>
+            <input type="number" class="peca-quantidade" min="1" value="${dadosPeca.quantidade || 1}" required>
+          </td>
+          <td>
+            <button type="button" class="btn-remover">
+              <i class='bx bx-trash'></i>
+            </button>
+          </td>
+        `;
+      }
       
       tbody.appendChild(novaLinha);
       
@@ -772,18 +838,36 @@
     function coletarPecas() {
       const pecas = [];
       const linhas = document.querySelectorAll('#lista-pecas tr');
+      const parteValue = document.getElementById('parte-equipamento').value.toUpperCase();
+      const isChecklist = parteValue.includes('CHECKLIST') || parteValue.includes('CHECK');
       
       linhas.forEach(linha => {
-        const codigo = linha.querySelector('.peca-codigo').value.trim();
-        const descricao = linha.querySelector('.peca-descricao').value.trim();
-        const quantidade = parseInt(linha.querySelector('.peca-quantidade').value);
+        if (isChecklist) {
+          // Coletar dados de checklist
+          const descricao = linha.querySelector('.peca-descricao').value.trim();
+          const trabalho = linha.querySelector('.peca-trabalho').value.trim();
+          
+          if (descricao && trabalho) {
+            pecas.push({
+              descricao: descricao,
+              trabalho: trabalho,
+              codigo: '', // Não aplicável para checklist
+              quantidade: 1 // Não aplicável para checklist
+            });
+          }
+        } else {
+          // Coletar dados normais
+          const codigo = linha.querySelector('.peca-codigo').value.trim();
+          const descricao = linha.querySelector('.peca-descricao').value.trim();
+          const quantidade = parseInt(linha.querySelector('.peca-quantidade').value);
         
-        if (codigo && descricao && quantidade > 0) {
-          pecas.push({
-            codigo,
-            descricao,
-            quantidade
-          });
+          if (codigo && descricao && quantidade > 0) {
+            pecas.push({
+              codigo,
+              descricao,
+              quantidade
+            });
+          }
         }
       });
       
