@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Análise de Vendas - Lubrificantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/Pages/Dashboard/Principal.css">
+  <style>
+    body { background: #f5f7fa; }
+    .content-card { box-shadow: 0 6px 24px #08234f11;border-radius:18px; }
+    .content-card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #193b7c;
+      color: #fff; padding: 18px 22px 16px 24px; border-radius: 17px 17px 0 0;
+    }
+    .header-actions { display: flex; gap: 10px; }
+    .btn-acao {
+      display: inline-flex; align-items: center; justify-content: center;
+      background-color: #28a745; color: white; border: none;
+      border-radius: 6px; padding: 7px 12px; cursor: pointer;
+      margin: 0 2px;
+      font-size: 1.05em;
+      transition: background-color .18s;
+    }
+    .btn-acao:hover { background-color: #218838; }
+    .btn-acao i { width: 20px; height: 20px; pointer-events:none;}
+    .dashboard-cards {
+      display: flex; gap: 16px; margin-bottom: 18px; flex-wrap:wrap; justify-content:center;
+    }
+    .dashboard-card {
+      flex: 1 1 210px; background: #fff; border-radius:13px;
+      box-shadow: 0 1px 8px #193b7c07;
+      margin: 5px 0; padding: 22px 14px 14px 20px; min-width:160px;
+      border-left: 7px solid #193b7c;
+      text-align:center; transition:box-shadow .16s;
+      display: flex; flex-direction:column; justify-content:center; align-items:center;
+    }
+    .dashboard-card.pink-card { border-color: #ff497a; }
+    .dashboard-card.orange-card { border-color: #f9a825; }
+    .dashboard-card.green-card { border-color: #28a745; }
+    .dashboard-card.blue-card { border-color: #193b7c; }
+    .dashboard-card h2 {font-size: 2.2em; margin-bottom: 2px; color:#193b7c;font-weight:800; word-wrap: break-word; overflow-wrap: break-word;}
+    .dashboard-card.green-card h2 {font-size: 1.3em; line-height: 1.3; max-width: 100%; white-space: normal; text-align: center;}
+    .dashboard-card p {color: #888aaf;font-size: 1.01em; margin-top:7px;}
+    .dashboard-card i {margin-right: 4px; opacity: .81;}
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 19px; margin:25px 0 18px;
+      background: transparent;
+      padding:0;
+    }
+    .filters label {
+      font-size: 1em; color:#193b7c; font-weight: 700;
+      margin-bottom: 5px; display:block;
+    }
+    .filters input[type="date"], .filters select, .filters input[type="text"] {
+      width: 100%; color:#222;
+      padding: 11px 11px 11px 12px;
+      background: #fff;
+      border: 1.2px solid #b3c6dd;
+      border-radius: 6px; font-size: 1.07em;
+      margin-bottom:3px; transition: border .17s;
+      box-shadow: 0 1px 6px #12265206;
+    }
+    .filters input:focus, .filters select:focus { border-color: #193b7c; outline: none; }
+    .graficos-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 23px; margin: 21px 0 1px 0;
+    }
+    .grafico-card {
+      background: #fff;
+      padding: 13px 14px 0 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #193b7c1a;
+      min-height: 340px; margin-bottom: 4px;
+      display:flex;flex-direction:column;align-items:center;position:relative;
+    }
+    .grafico-card canvas {
+      flex: 1;
+      width: 100% !important;
+      max-height: 300px;
+      min-height: 250px;
+    }
+    .grafico-card h4 { color: #193b7c; text-align:center; margin-bottom:13px; font-size:1em; font-weight:700; }
+    .expand-btn {
+      position:absolute; top:13px; right:15px; border:none;
+      background:transparent; color:#193b7c; cursor:pointer; font-size:20px; z-index:3;
+      transition: color .19s;
+    }
+    .expand-btn:hover { color:#5271ff; }
+    .modal-overlay {
+      display:none; position:fixed; top:0;left:0;right:0;bottom:0;
+      background:rgba(25,59,124,0.35);
+      z-index:99999; /* elevar prioridade */
+      align-items:center; justify-content:center;
+      animation:fadeIn .25s;
+      visibility:hidden; opacity:0;
+    }
+    .modal-overlay.active { display:flex; visibility:visible; opacity:1; }
+    .modal-content {
+      background:#fff; border-radius:18px; box-shadow:0 3px 32px #193b7c70;
+      padding:26px 32px; max-width: 950px; width:90vw; min-width: 330px;
+      display:flex; flex-direction:column; align-items:center; position:relative;
+      animation:scalein .23s;
+      opacity:1; visibility:visible;
+    }
+    .modal-close {
+      position:absolute;top:14px;right:17px;font-size:22px;
+      color:#193b7c; background:none;border:none;cursor:pointer;
+    }
+    .modal-content h4 {margin:0 0 19px 0;font-size:1.15em;}
+    .modal-graph-canvas { width:90vw;height:490px;max-height:68vh;background: #fff;}
+    @keyframes fadeIn { 0%{opacity:0;} 100%{opacity:1;} }
+    @keyframes scalein { 0%{transform:scale(.89);} 100%{transform:scale(1);} }
+    /* Importação CSV estilos */
+    .upload-container {
+      display: none;
+      border: 2px dashed #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      margin: 15px 0;
+      background: #f9f9f9;
+      transition: all 0.3s ease;
+    }
+    .upload-container.dragover {
+      border-color: #193b7c;
+      background: #e0e8ff;
+    }
+    .file-info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e8f4fd;
+      border-radius: 5px;
+      display: none;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 10px;
+    }
+    .spin {animation: spin 1s linear infinite;}
+    @keyframes spin {from {transform: rotate(0deg);} to {transform: rotate(360deg);}}
+    @media (max-width: 800px) {
+      .dashboard-cards {flex-direction:column;}
+      .graficos-grid {grid-template-columns:1fr;}
+      .ranking-table-wrapper {padding:9px 2px;}
+      .modal-content {padding:11px 3vw;}
+    }
+  </style>
+</head>
+<body>
+  <nav id="sidebar-placeholder"></nav>  
+  <section class="home">
+    <div class="text">
+      <h1>Análise de Vendas - Lubrificantes</h1>
+      <p style="color:#363739;font-weight:500;"></p>
+    </div>
+    <div class="content-card">
+      <div class="content-card-header">
+        <h3>Análise Avançada</h3>
+        <div class="header-actions">
+          <!-- Botão Metas -->
+          <button id="btn-metas" class="btn-acao" style="background-color:#193B7C;" title="Definir Metas por Filial">
+            <i data-lucide="target"></i>
+          </button>
+          <!-- Botão Gerar PDF -->
+          <button id="btn-gerar-pdf" class="btn-acao" style="background-color:#ff497a;" title="Gerar PDF">
+            <i data-lucide="file-text"></i>
+          </button>
+          <!-- Botão Estoque -->
+          <button id="btn-estoque" class="btn-acao" style="background-color:#f9a825;" title="Lançar Estoque (CSV)">
+            <i data-lucide="package"></i>
+          </button>
+          <!-- Botão Importar CSV -->
+          <button id="btn-importar" class="btn-acao" title="Importar CSV">
+            <i data-lucide="upload"></i>
+          </button>
+        </div>
+      </div>
+      <div class="content-card-body">
+        <!-- ÁREA DE UPLOAD (importação CSV) -->
+        <div class="upload-container" id="upload-container">
+          <i data-lucide="file-up" style="width: 48px; height: 48px; color: #193b7c; margin-bottom: 10px;"></i>
+          <h4>Selecione o arquivo CSV</h4>
+          <p>Arraste e solte o arquivo aqui ou clique para selecionar</p>
+          <p style="font-size: 12px; color: #666; margin-top: 10px;">Formato esperado: CSV exportado do sistema</p>
+          <input type="file" id="csv-file" accept=".csv" style="display: none;">
+          <button class="btn-acao" style="margin-top: 15px;" id="btn-select-file">
+            <i data-lucide="folder-open"></i>
+            Selecionar Arquivo
+          </button>
+        </div>
+        <div class="file-info" id="file-info">
+          <i data-lucide="file-text"></i>
+          <span id="file-name"></span>
+          <span id="file-size"></span>
+        </div>
+        <div class="loading" id="loading">
+          <i data-lucide="loader-2" class="spin"></i>
+          <span>Processando arquivo...</span>
+        </div>
+        <!-- Input oculto para importação de estoque -->
+        <input type="file" id="csv-estoque-file" accept=".csv" style="display:none;">
+        <!-- FILTROS -->
+        <div class="filters">
+          <div>
+            <label for="data-inicio">Data Início</label>
+            <input type="date" id="data-inicio">
+          </div>
+          <div>
+            <label for="data-fim">Data Fim</label>
+            <input type="date" id="data-fim">
+          </div>
+          <div>
+            <label for="filtro-filial">Filial</label>
+            <select id="filtro-filial">
+              <option value="">Todas as Filiais</option>
+              <option value="2">Campos Novos</option>
+              <option value="6">Rio do Sul</option>
+              <option value="7">Lages</option>
+            </select>
+          </div>
+          <div>
+            <label for="filtro-produto">Código do Produto</label>
+            <input type="text" id="filtro-produto" placeholder="Ex.: NH410H, 76176R61BR...">
+          </div>
+        </div>
+        <!-- DASHBOARD CARDS -->
+        <div class="dashboard-cards">
+          <div class="dashboard-card pink-card">
+            <h2 id="kpi-total-litros">0L</h2>
+            <p><i data-lucide="droplet"></i> Total vendido em litros</p>
+          </div>
+          <div class="dashboard-card orange-card">
+            <h2 id="kpi-total-vendas">0</h2>
+            <p><i data-lucide="shopping-cart"></i> Quantidade total de unidades vendidas</p>
+          </div>
+          <div class="dashboard-card green-card">
+            <h2 id="kpi-produto-top">-</h2>
+            <p><i data-lucide="star"></i> Produto com maior volume vendido</p>
+          </div>
+          <div class="dashboard-card blue-card">
+            <h2 id="kpi-top-filial">-</h2>
+            <p><i data-lucide="award"></i> Filial com maior participação nas vendas</p>
+          </div>
+        </div>
+        <!-- GRÁFICOS -->
+        <div class="graficos-grid">
+          <div class="grafico-card" id="bloco-grafico-filiais">
+            <button type="button" class="expand-btn" data-grafico="graficoFiliais"><i data-lucide="maximize"></i></button>
+            <h4>Filiais (Litros e Unidades)</h4>
+            <canvas id="graficoFiliais"></canvas>
+          </div>
+          <div class="grafico-card" id="bloco-grafico-mensal">
+            <button type="button" class="expand-btn" data-grafico="graficoMensal"><i data-lucide="maximize"></i></button>
+            <h4>Evolução Mensal - Vendas</h4>
+            <canvas id="graficoMensal"></canvas>
+          </div>
+          <div class="grafico-card" id="bloco-grafico-participacao">
+            <button type="button" class="expand-btn" data-grafico="graficoParticipacaoFiliais"><i data-lucide="maximize"></i></button>
+            <h4>Participação de Vendas por Filial (%)</h4>
+            <canvas id="graficoParticipacaoFiliais"></canvas>
+          </div>
+           <div class="grafico-card" id="bloco-grafico-comparativo">
+             <button type="button" class="expand-btn" data-grafico="graficoComparativoMes"><i data-lucide="maximize"></i></button>
+             <h4>Comparativo Estoque x Vendas (Mês)</h4>
+             <canvas id="graficoComparativoMes"></canvas>
+           </div>
+          <div class="grafico-card" id="bloco-grafico-distribuicao">
+            <button type="button" class="expand-btn" data-grafico="graficoDistribuicao"><i data-lucide="maximize"></i></button>
+            <h4>Distribuição por Tipo Produto</h4>
+            <canvas id="graficoDistribuicao"></canvas>
+          </div>
+        </div>
+        <!-- MODAL EXPAND -->
+        <div class="modal-overlay" id="modalOverlay">
+          <div class="modal-content">
+            <button type="button" class="modal-close" id="modalClose" title="Fechar">&times;</button>
+            <h4 id="modalTitle"></h4>
+            <canvas id="modalGraph" class="modal-graph-canvas"></canvas>
+          </div>
+        </div>
+        <!-- MODAL PDF -->
+        <div id="modalPDF" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(25,59,124,0.35); z-index:99999; align-items:center; justify-content:center;">
+          <div style="background:#fff; border-radius:18px; box-shadow:0 3px 32px #193b7c70; padding:26px 32px; max-width:500px; width:90vw; position:relative;">
+            <button type="button" id="modalPDFClose" title="Fechar" style="position:absolute; top:14px; right:17px; font-size:22px; color:#193b7c; background:none; border:none; cursor:pointer;">&times;</button>
+            <h4 style="margin-bottom:20px; color:#193b7c; font-size:1.3em;">Gerar Relatório PDF</h4>
+            <div style="text-align:left; padding:0 20px;">
+              <p style="margin-bottom:15px; color:#666;">Selecione as seções que deseja incluir:</p>
+              <label style="display:block; margin:10px 0; cursor:pointer; user-select:none;">
+                <input type="checkbox" id="pdf-kpis" checked style="margin-right:8px; cursor:pointer;">
+                KPIs e Indicadores
+              </label>
+              <label style="display:block; margin:10px 0; cursor:pointer; user-select:none;">
+                <input type="checkbox" id="pdf-graficos" checked style="margin-right:8px; cursor:pointer;">
+                Gráficos
+              </label>
+              <label style="display:block; margin:10px 0; cursor:pointer; user-select:none;">
+                <input type="checkbox" id="pdf-estoque" checked style="margin-right:8px; cursor:pointer;">
+                Dados de Estoque
+              </label>
+              <label style="display:block; margin:10px 0; cursor:pointer; user-select:none;">
+                <input type="checkbox" id="pdf-vendas" checked style="margin-right:8px; cursor:pointer;">
+                Dados de Vendas
+              </label>
+            </div>
+            <div style="margin-top:25px; display:flex; gap:10px; justify-content:center;">
+              <button id="btnConfirmarPDF" class="btn-acao" style="background:#193b7c; padding:10px 30px;">Gerar PDF</button>
+              <button id="btnCancelarPDF" class="btn-acao" style="background:#888; padding:10px 30px;">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script type="module">
+    import { garantirAutenticacao } from '/assets/js/auth-guard.js';
+    import { getApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, query, where, Timestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    const FILIAIS = ['2', '6', '7'];
+    const NOMES_FILIAIS = { '2': 'Campos Novos', '6': 'Rio do Sul', '7': 'Lages' };
+    let dadosCompletos=[], charts={}, chartsOpts={};
+    let estoqueMensal = {}; // { 'YYYY-MM': { litrosTotal, litrosFleetpro, updatedAt } }
+    let userData;
+
+    // Conversão de volume por código (também pode vir de um arquivo separado, se desejar)
+    const conversaoLubrificantes = {
+      '81153R61BR': 20, '74514R61BR': 20, '76176R61BR': 20, '76486R61BR': 20, '81053R61BR': 20, 'NH330G*': 20,
+      'NH410B*': 20, 'MS1216': 20, '76175R61BR': 20, '81048R61BR': 20, '81157R61BR': 20, '81232R41BR': 20, 'MAT3505': 20,
+      'MAT3521': 20, 'NH410H': 20, 'NH646A': 20, 'NH668': 20, 'NH668SP': 20, '74514K13BR': 4, '76176K13BR': 4,
+      'NH410B4L': 4, '81053K13BR': 4, '76486K13BR': 4, '77412K13BR': 4, '81048E19BR': 1, 'NH610A': 1, '77409E19BR': 1,
+      '71104731': 1, '81050E19BR': 1, 'NH632': 1, 'NH710AL': 1, 'NH800SE': 1, 'NH800A': 0.5, 'MAT355510K': 10, 'default': 1
+    };
+
+    // Heurística de conversão para itens não mapeados: tenta extrair volume do texto
+    function obterLitrosPorUnidade(codProduto, descricao='', grupo='') {
+      // 1) Mapa conhecido
+      if (conversaoLubrificantes[codProduto] !== undefined) return conversaoLubrificantes[codProduto];
+
+      const txt = `${descricao} ${grupo}`.toLowerCase();
+      // 2) ML -> L
+      const mlMatch = txt.match(/(\d{2,4})(?:\s)?ml\b/);
+      if (mlMatch) {
+        const ml = parseFloat(mlMatch[1].replace(',', '.'));
+        if (!isNaN(ml)) return +(ml/1000).toFixed(3);
+      }
+      // 3) Litros explícitos
+      const lMatch = txt.match(/(\d{1,3}(?:[\.,]\d{1,2})?)\s?(?:l|litro|litros)\b/);
+      if (lMatch) {
+        const val = parseFloat(lMatch[1].replace(',', '.'));
+        if (!isNaN(val)) return val;
+      }
+      // 4) Sufixos comuns tipo "20L" sem espaço
+      const lxMatch = txt.match(/(\d{1,3})(?:l)\b/);
+      if (lxMatch) {
+        const val = parseFloat(lxMatch[1]);
+        if (!isNaN(val)) return val;
+      }
+      // 5) Itens em KG (graxa) não convertem para litros
+      if (/\bkg\b/.test(txt)) return 0;
+      // 6) Padrão
+      return conversaoLubrificantes['default'];
+    }
+
+    // ==== CONTROLE DE ESTOQUE ====
+    let dadosEstoque = [];
+
+    async function processarCSVEstoque(file) {
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const csvData = e.target.result;
+          const linhas = csvData.split('\n').filter(linha => linha.trim() !== '');
+            // Perguntar a data de referência (AAAA-MM-DD)
+          const { value: mesRef } = await Swal.fire({
+            title: 'Mês de referência',
+            input: 'text',
+            inputLabel: 'Informe o mês (AAAA-MM) do estoque',
+            inputPlaceholder: '2025-11',
+            inputAttributes: { 'aria-label': 'AAAA-MM' },
+            showCancelButton: true,
+            confirmButtonText: 'Confirmar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: (val)=>{
+              if (!/^\d{4}-\d{2}$/.test(val||'')) {
+                Swal.showValidationMessage('Formato inválido. Use AAAA-MM');
+              }
+            }
+          });
+            if (!mesRef) return;
+            const { value: dataRef } = await Swal.fire({
+              title: 'Data de referência',
+              input: 'date',
+              inputLabel: 'Informe a data (AAAA-MM-DD) do estoque',
+              inputPlaceholder: '2025-11-01',
+              inputAttributes: { 'aria-label': 'AAAA-MM-DD' },
+              showCancelButton: true,
+              confirmButtonText: 'Confirmar',
+              cancelButtonText: 'Cancelar',
+              preConfirm: (val)=>{
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(val||'')) {
+                  Swal.showValidationMessage('Formato inválido. Use AAAA-MM-DD');
+                }
+              }
+            });
+            if (!dataRef) return;
+
+          // Acumuladores por mês e por filial (apenas litros)
+          let litrosTotal = 0; // total consolidado
+          let litrosFleetpro = 0; // total consolidado Fleetpro
+          const porFilial = { '2': { litrosTotal: 0, litrosFleetpro: 0 }, '6': { litrosTotal: 0, litrosFleetpro: 0 }, '7': { litrosTotal: 0, litrosFleetpro: 0 } };
+          
+          // Pular primeira linha (cabeçalho)
+          for (let i = 1; i < linhas.length; i++) {
+            const linha = linhas[i].trim();
+            if (!linha || linha.startsWith('TOTAL')) continue;
+            
+            const colunas = linha.split(';');
+            if (colunas.length < 13) continue;
+            
+            const filial = colunas[0]?.trim();
+            const codProduto = colunas[2]?.trim();
+            const descricao = colunas[3]?.trim();
+            const grupo = colunas[4]?.trim();
+            const descGrupo = colunas[5]?.trim();
+            const prateleira1 = colunas[6]?.trim();
+            const fiscal = parseInt(colunas[11]?.trim()) || 0;
+            const estoqueValor = parseFloat(colunas[12]?.trim().replace(',', '.')) || 0;
+            
+            if (!codProduto || fiscal === 0) continue;
+            if (!FILIAIS.includes(filial)) continue;
+            
+            // Calcular litros usando o mapa + heurística (igual ao relatório de análise)
+            const litrosPorUnidade = obterLitrosPorUnidade(codProduto, descricao, descGrupo);
+            const totalLitros = fiscal * litrosPorUnidade;
+            // Considera "óleo" se o grupo/descrição mencionar lubrificante/óleo
+            const ehOleo = /(oleo|óleo|lubrificante|oil)/i.test(`${descricao} ${descGrupo}`) && !/(graxa|grease)/i.test(`${descricao} ${descGrupo}`);
+            if (ehOleo) {
+              litrosTotal += totalLitros;
+              porFilial[filial].litrosTotal += totalLitros;
+            }
+            if (/fleetpro/i.test(descricao) || /fleetpro/i.test(descGrupo)) {
+              litrosFleetpro += totalLitros;
+              porFilial[filial].litrosFleetpro += totalLitros;
+            }
+          }
+          
+          if (litrosTotal === 0 && litrosFleetpro === 0) {
+            Swal.fire('Aviso!', 'Nenhum dado válido encontrado no CSV de estoque.', 'warning');
+            return;
+          }
+
+          // Salvar agregado mensal (um documento por mês)
+          await setDoc(doc(getFirestore(getApp()), 'estoqueMensalLubrificantes', mesRef), {
+            mes: mesRef,
+            litrosTotal,
+            litrosFleetpro,
+            porFilial,
+            atualizadoEm: Timestamp.now()
+          }, { merge: true });
+
+          // Recarregar mapa local
+          await carregarEstoqueMensal();
+          // Atualiza gráficos para refletir comparativo
+          analisarDashboard();
+          
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `Estoque mensal salvo! (${mesRef})`,
+            showConfirmButton: false,
+            timer: 3000
+          });
+        } catch (error) {
+          console.error('Erro ao processar CSV estoque:', error);
+          Swal.fire('Erro!', 'Falha ao processar o arquivo CSV de estoque.', 'error');
+        }
+      };
+      reader.readAsText(file, 'ISO-8859-1');
+    }
+    async function carregarEstoqueMensal() {
+      try {
+        const app = getApp();
+        const db = getFirestore(app);
+        const snap = await getDocs(collection(db, 'estoqueMensalLubrificantes'));
+        estoqueMensal = {};
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          estoqueMensal[d.mes] = {
+            litrosTotal: Number(d.litrosTotal)||0,
+            litrosFleetpro: Number(d.litrosFleetpro)||0,
+            porFilial: d.porFilial || {},
+            updatedAt: d.atualizadoEm
+          };
+        });
+      } catch (e) {
+        console.error('Erro ao carregar estoque mensal:', e);
+      }
+    }
+
+    // ==== IMPORTAÇÃO DE ARQUIVO CSV VENDAS, SALVAR FIREBASE E RECARREGAR BOARD ====
+    function exibirInfoArquivo(file) {
+      const fileInfo = document.getElementById('file-info');
+      const loading = document.getElementById('loading');
+      fileInfo.style.display = 'block';
+      loading.style.display = 'block';
+      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('file-size').textContent = ` (${(file.size / 1024).toFixed(2)} KB)`;
+      const uploadIcon = document.querySelector('#btn-importar i');
+      if (uploadIcon) {
+        uploadIcon.setAttribute('data-lucide', 'loader-2');
+        uploadIcon.classList.add('spin');
+        lucide.createIcons();
+      }
+    }
+
+    async function salvarDadosFirebase(dadosProcessados) {
+      try {
+        let salvosCount = 0;
+        const app = getApp();
+        const db = getFirestore(app);
+        for (const item of dadosProcessados) {
+          // Verificar se a filial está nas 3 permitidas
+          if (FILIAIS.includes(item.filial)) {
+            const dadosParaSalvar = {
+              filial: item.filial,
+              data: item.data,
+              grupo: item.grupo || '',
+              numeroNF: item.numeroNF,
+              codProduto: item.codProduto,
+              descricao: item.descricao,
+              quantNF: item.quantNF,
+              unidadeNF: item.unidadeNF,
+              quantConvertida: item.quantConvertida,
+              unidade: item.unidade,
+              litros: item.litros,
+              totalLitros: item.totalLitros,
+              usuarioImportacao: userData?.nome || userData?.email || '',
+              dataImportacao: Timestamp.now(),
+              timestamp: Timestamp.now()
+            };
+            await addDoc(collection(db, "relatorioLubrificantes"), dadosParaSalvar);
+            salvosCount++;
+          }
+        }
+        return true;
+      } catch (error) {
+        console.error('❌ Erro ao salvar:', error);
+        throw error;
+      }
+    }
+
+    async function processarCSV(file) {
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const csvData = e.target.result;
+          const linhas = csvData.split('\n').filter(linha => linha.trim() !== '');
+          const dadosProcessados = [];
+          // Encontrar cabeçalho
+          let cabecalhoIndex = -1;
+          for (let i = 0; i < linhas.length; i++) {
+            if (linhas[i].includes('Filial') && linhas[i].includes('Data') && linhas[i].includes('Descri')) {
+              cabecalhoIndex = i; break;
+            }
+          }
+          if (cabecalhoIndex === -1) {
+            Swal.fire('Erro!', 'Cabeçalho do CSV não encontrado.', 'error');
+            document.getElementById('loading').style.display = 'none';
+            return;
+          }
+          // Processar linhas
+          for (let i = cabecalhoIndex + 1; i < linhas.length; i++) {
+            const linha = linhas[i].trim();
+            if (!linha || linha.includes('Total Convertido') || linha.startsWith(';;;;')) continue;
+            const colunas = linha.split(';').map(col => col.trim());
+            if (colunas.length >= 6 && colunas[0] && !isNaN(colunas[0]) && colunas[4]) {
+              const item = {
+                filial: colunas[0] || '',
+                data: colunas[1] || '',
+                grupo: colunas[2] || '',
+                numeroNF: colunas[3] || '',
+                codProduto: colunas[4] || '',
+                descricao: colunas[5] || '',
+                quantNF: parseFloat(colunas[6]?.replace(',', '.')) || parseFloat(colunas[6]) || 0,
+                unidadeNF: colunas[7] || '',
+                quantConvertida: parseFloat(colunas[8]?.replace(',', '.')) || parseFloat(colunas[8]) || 0,
+                unidade: colunas[9] || ''
+              };
+              // Calcular litros
+              const litrosPorUnidade = conversaoLubrificantes[item.codProduto] || conversaoLubrificantes['default'];
+              item.litros = litrosPorUnidade;
+              item.totalLitros = item.quantConvertida * litrosPorUnidade;
+              if (FILIAIS.includes(item.filial)) {
+                dadosProcessados.push(item);
+              }
+            }
+          }
+          if (dadosProcessados.length === 0) {
+            Swal.fire('Aviso!', 'Nenhum dado válido encontrado para as filiais 2, 6 ou 7.', 'warning');
+            document.getElementById('loading').style.display = 'none';
+            return;
+          }
+          await salvarDadosFirebase(dadosProcessados);
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('upload-container').style.display = 'none';
+          const uploadIcon = document.querySelector('#btn-importar i');
+          if (uploadIcon) {
+            uploadIcon.setAttribute('data-lucide', 'check-circle');
+            uploadIcon.classList.remove('spin');
+            lucide.createIcons();
+          }
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `Relatório carregado! ${dadosProcessados.length} itens processados.`,
+            showConfirmButton: false,
+            timer: 3000
+          });
+          await carregarDados();
+          analisarDashboard();
+        } catch (error) {
+          document.getElementById('loading').style.display = 'none';
+          Swal.fire('Erro!', 'Falha ao processar o arquivo CSV.', 'error');
+        }
+      };
+      reader.onerror = function() {
+        document.getElementById('loading').style.display = 'none';
+        Swal.fire('Erro!', 'Falha ao ler o arquivo.', 'error');
+      };
+      reader.readAsText(file, 'ISO-8859-1');
+    }
+    // ---
+
+    function ddmmaaaaToYyyymmdd(dataStr) {
+      if (!dataStr || dataStr.length !== 10) return "";
+      const [dd, mm, yyyy] = dataStr.split('/');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function setDatasPadrao() {
+      const hoje = new Date();
+      const primeiro = new Date(); primeiro.setMonth(hoje.getMonth() - 1);
+      document.getElementById('data-inicio').value = primeiro.toISOString().split('T')[0];
+      document.getElementById('data-fim').value = hoje.toISOString().split('T')[0];
+    }
+
+    async function carregarDados() {
+      const app = getApp();
+      const db = getFirestore(app);
+      const q = query(collection(db, "relatorioLubrificantes"), where("filial", "in", FILIAIS));
+      const snap = await getDocs(q);
+      dadosCompletos = [];
+      snap.forEach(doc=>{
+        const d = doc.data();
+        dadosCompletos.push({
+          ...d,
+          quantNF: Number(d.quantNF)||0,
+          litros: Number(d.litros)||0,
+          totalLitros: Number(d.totalLitros)||0,
+          data: d.data || '',
+          filial: d.filial || '',
+          descricao: d.descricao || '',
+          codProduto: d.codProduto || ''
+        });
+      });
+    }
+
+    function filtrar() {
+      let ini = document.getElementById('data-inicio').value;
+      let fim = document.getElementById('data-fim').value;
+      let filial = document.getElementById('filtro-filial').value;
+      let codFilterRaw = (document.getElementById('filtro-produto')?.value || '').trim();
+      let codigos = codFilterRaw
+        ? codFilterRaw.split(/[\s,;]+/).map(s => s.toUpperCase()).filter(Boolean)
+        : [];
+      return dadosCompletos.filter(d => {
+        const yyyymmdd = ddmmaaaaToYyyymmdd(d.data);
+        if (ini && (!yyyymmdd || yyyymmdd < ini)) return false;
+        if (fim && (!yyyymmdd || yyyymmdd > fim)) return false;
+        if (filial && d.filial !== filial) return false;
+        if (codigos.length) {
+          const cod = (d.codProduto || '').toUpperCase();
+          // match parcial: qualquer código informado deve aparecer em d.codProduto
+          const ok = codigos.some(c => cod.includes(c));
+          if (!ok) return false;
+        }
+        return true;
+      });
+    }
+
+    function atualizarKPIs(filtrados) {
+      let totalLitros = filtrados.reduce((a,b)=>a+b.totalLitros,0);
+      let totalVendas = filtrados.reduce((a,b)=>a+b.quantNF,0);
+      let produtoMap = {};
+      filtrados.forEach(d=>produtoMap[d.descricao]=(produtoMap[d.descricao]||0)+d.totalLitros);
+      let topProd = Object.entries(produtoMap).sort((a,b)=>b[1]-a[1])[0];
+      let filialMap = {};
+      filtrados.forEach(d=>filialMap[d.filial]=(filialMap[d.filial]||0)+d.totalLitros);
+      let topFilial = Object.entries(filialMap).sort((a,b)=>b[1]-a[1])[0];
+      document.getElementById('kpi-total-litros').textContent = totalLitros.toLocaleString()+'L';
+      document.getElementById('kpi-total-vendas').textContent = totalVendas.toLocaleString();
+      var produtoElem = document.getElementById('kpi-produto-top');
+      if (topProd) {
+        var nomeProduto = topProd[0];
+        produtoElem.textContent = nomeProduto.length > 50 ? nomeProduto.substring(0,50)+'...' : nomeProduto;
+        produtoElem.setAttribute('title', nomeProduto);
+      } else {
+        produtoElem.textContent = '-';
+        produtoElem.removeAttribute('title');
+      }
+      document.getElementById('kpi-top-filial').textContent = topFilial ? ((NOMES_FILIAIS[topFilial[0]]||topFilial[0])) : "-";
+      lucide.createIcons();
+    }
+
+    function atualizarGraficos(filtrados) {
+      // Gráfico de Filiais: Barras agrupadas (Litros e Unidades)
+      let filialMap = {};
+      let filialUnMap = {};
+      filtrados.forEach(d => {
+        filialMap[d.filial] = (filialMap[d.filial] || 0) + d.totalLitros;
+        filialUnMap[d.filial] = (filialUnMap[d.filial] || 0) + d.quantNF;
+      });
+      let filiaisOrdenadas = Object.entries(filialMap).sort((a, b) => b[1] - a[1]);
+      let labels = filiaisOrdenadas.map(([f]) => NOMES_FILIAIS[f] || f);
+      let litros = filiaisOrdenadas.map(([f]) => filialMap[f]);
+      let unidades = filiaisOrdenadas.map(([f]) => filialUnMap[f] || 0);
+
+      // Montar dados de Meta (L) baseado no localStorage (persiste até alterar)
+      const metasPersistidas = (typeof getMetasStorage === 'function') ? getMetasStorage() : {};
+      function labelToId(lbl){
+        if (/campos/i.test(lbl)) return '2';
+        if (/rio.*sul/i.test(lbl)) return '6';
+        return '1';
+      }
+      const metasData = labels.map(l => Number((metasPersistidas || {})[labelToId(l)] || 0));
+
+      // Acrescentar coluna "Geral" ao final: totais de Meta e Vendas(L)
+      const totalMetaFiliais = metasData.reduce((a,b)=>a+(b||0),0);
+      const totalVendasFiliais = litros.reduce((a,b)=>a+(b||0),0);
+      labels = [...labels, 'Geral'];
+      metasData.push(totalMetaFiliais);
+      litros.push(totalVendasFiliais);
+      unidades.push(unidades.reduce((a,b)=>a+(b||0),0));
+
+      chartsOpts['graficoFiliais'] = {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Meta (L)',
+              data: metasData,
+              backgroundColor: 'rgba(249,168,37,0.6)',
+              borderColor: 'rgba(249,168,37,1)',
+              borderRadius: 7,
+              barPercentage: 0.7,
+              categoryPercentage: 0.6
+            },
+            {
+              label: 'Litros',
+              data: litros,
+              backgroundColor: '#193b7c',
+              borderRadius: 7,
+              barPercentage: 0.7,
+              categoryPercentage: 0.6
+            },
+            {
+              label: 'Unidades',
+              data: unidades,
+              backgroundColor: '#ff497a',
+              borderRadius: 7,
+              barPercentage: 0.7,
+              categoryPercentage: 0.6
+            }
+          ]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.toLocaleString()}`
+              }
+            }
+          },
+          responsive: true,
+          scales: {
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString();
+                }
+              }
+            }
+          },
+          layout: {
+            padding: {
+              top: 30
+            }
+          }
+        },
+        plugins: [{
+          id: 'barLabels',
+          afterDatasetsDraw: function(chart) {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach(function(dataset, datasetIndex) {
+              const meta = chart.getDatasetMeta(datasetIndex);
+              if (!meta.hidden) {
+                meta.data.forEach(function(bar, index) {
+                  const value = dataset.data[index];
+                  if (value > 0) {
+                    ctx.save();
+                    // Cor do texto baseada no dataset
+                    ctx.fillStyle = datasetIndex === 0 ? '#193b7c' : '#ff497a';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    const x = bar.x;
+                    const y = bar.y - 5;
+                    ctx.fillText(value.toLocaleString(), x, y);
+                    ctx.restore();
+                  }
+                });
+              }
+            });
+          }
+        },{
+          id: 'sobrouFaltouIndicator',
+          afterDatasetsDraw: function(chart) {
+            const ctx = chart.ctx;
+            const idxMeta = chart.data.datasets.findIndex(d=>d.label==='Meta (L)');
+            const idxVendas = chart.data.datasets.findIndex(d=>d.label==='Litros');
+            if (idxMeta === -1 || idxVendas === -1) return;
+            const metaData = chart.getDatasetMeta(idxMeta).data;
+            const vendasData = chart.getDatasetMeta(idxVendas).data;
+            // Desenhar seta e valor à direita de cada grupo
+            metaData.forEach((barMeta, i) => {
+              const barVenda = vendasData[i];
+              if (!barMeta || !barVenda) return;
+              const metaVal = chart.data.datasets[idxMeta].data[i] || 0;
+              const vendasVal = chart.data.datasets[idxVendas].data[i] || 0;
+              const diferenca = vendasVal - metaVal;
+              const sobrou = diferenca >= 0;
+              const color = sobrou ? '#28a745' : '#dc3545';
+              const seta = sobrou ? '▲' : '▼';
+              const valor = Math.abs(diferenca).toLocaleString();
+              
+              // Posicionar à direita do grupo (após todas as barras)
+              const maxBarX = Math.max(barMeta.x, barVenda.x);
+              const indicatorX = maxBarX + 30;
+              const centerY = (barMeta.y + barVenda.y) / 2;
+              
+              ctx.save();
+              // Seta
+              ctx.font = 'bold 20px Arial';
+              ctx.fillStyle = color;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(seta, indicatorX, centerY - 12);
+              // Valor
+              ctx.font = 'bold 11px Arial';
+              ctx.fillText(valor, indicatorX, centerY + 8);
+              ctx.restore();
+            });
+          }
+        }]
+      };
+
+      // Gráfico de Participação (Pizza) das Filiais - SEM Geral
+      const labelsParticipacao = filiaisOrdenadas.map(([f]) => NOMES_FILIAIS[f] || f);
+      const litrosParticipacao = filiaisOrdenadas.map(([f]) => filialMap[f]);
+      
+      chartsOpts['graficoParticipacaoFiliais'] = {
+        type: 'pie',
+        data: {
+          labels: labelsParticipacao,
+          datasets: [{
+            data: litrosParticipacao,
+            backgroundColor: ['#193b7c', '#ff497a', '#f9a825'],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                  var pct = ((ctx.parsed / total) * 100).toFixed(1);
+                  return ctx.label + ': ' + ctx.parsed.toLocaleString() + 'L (' + pct + '%)';
+                }
+              }
+            },
+            responsive: true
+          },
+          layout: {
+            padding: 10
+          }
+        },
+        plugins: [{
+          id: 'percentageLabelsFiliais',
+          afterDatasetsDraw: function(chart) {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach(function(dataset, i) {
+              const meta = chart.getDatasetMeta(i);
+              if (!meta.hidden) {
+                meta.data.forEach(function(element, index) {
+                  ctx.fillStyle = '#fff';
+                  ctx.font = 'bold 16px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  const total = dataset.data.reduce((a, b) => a + b, 0);
+                  const value = dataset.data[index];
+                  const pct = ((value / total) * 100).toFixed(1);
+                  const position = element.tooltipPosition();
+                  ctx.fillText(pct + '%', position.x, position.y);
+                });
+              }
+            });
+          }
+        }]
+      };
+
+      // Gráfico Mensal e Distribuição continuam
+      let mensalMap = {};
+      filtrados.forEach(d => {
+        let mes = ddmmaaaaToYyyymmdd(d.data).slice(0, 7);
+        if (mes) { mensalMap[mes] = (mensalMap[mes] || 0) + d.totalLitros; }
+      });
+      let mesesOrdenados = Object.keys(mensalMap).sort();
+      
+      // Calcular cores baseadas na variação (verde subiu, vermelho desceu)
+      let coresPontos = [];
+      let valoresMensais = mesesOrdenados.map(m => mensalMap[m]);
+      for (let i = 0; i < valoresMensais.length; i++) {
+        if (i === 0) {
+          coresPontos.push('#888'); // Primeiro mês cinza
+        } else {
+          coresPontos.push(valoresMensais[i] >= valoresMensais[i-1] ? '#28a745' : '#dc3545');
+        }
+      }
+      
+      chartsOpts['graficoMensal'] = {
+        type: 'line',
+        data: {
+          labels: mesesOrdenados.map(m => formatarMes(m)),
+          datasets: [{
+            label: 'Litros/Mês',
+            data: valoresMensais,
+            backgroundColor: 'rgba(25,59,124,0.09)',
+            borderColor: '#193b7c',
+            pointBackgroundColor: coresPontos,
+            pointBorderColor: coresPontos,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            borderWidth: 2,
+            tension: .27,
+            fill: true
+          }]
+        },
+        options: { 
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  return 'Litros: ' + ctx.parsed.toLocaleString();
+                },
+                afterLabel: function(ctx) {
+                  if (ctx.dataIndex > 0) {
+                    const atual = ctx.parsed;
+                    const anterior = ctx.dataset.data[ctx.dataIndex - 1];
+                    const variacao = atual - anterior;
+                    const variacaoPct = ((variacao / anterior) * 100).toFixed(1);
+                    const sinal = variacao >= 0 ? '+' : '';
+                    return 'Variação: ' + sinal + variacao.toLocaleString() + 'L (' + sinal + variacaoPct + '%)';
+                  }
+                  return 'Primeiro período';
+                }
+              }
+            }
+          }, 
+          scales: { 
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return value.toLocaleString() + 'L';
+                }
+              }
+            } 
+          } 
+        },
+        plugins: [{
+          id: 'trendArrows',
+          afterDatasetsDraw: function(chart) {
+            const ctx = chart.ctx;
+            const dataset = chart.data.datasets[0];
+            const meta = chart.getDatasetMeta(0);
+            
+            meta.data.forEach(function(point, index) {
+              if (index > 0) {
+                const prevValue = dataset.data[index - 1];
+                const currValue = dataset.data[index];
+                const variacaoPct = prevValue !== 0 ? (((currValue - prevValue) / prevValue) * 100).toFixed(1) : '0.0';
+                const sinal = currValue - prevValue >= 0 ? '+' : '';
+                ctx.save();
+                ctx.font = 'bold 18px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                // Seta
+                if (currValue > prevValue) {
+                  ctx.fillStyle = '#28a745';
+                  ctx.fillText('▲', point.x, point.y - 25);
+                } else if (currValue < prevValue) {
+                  ctx.fillStyle = '#dc3545';
+                  ctx.fillText('▼', point.x, point.y - 25);
+                }
+                // Valor percentual
+                ctx.font = 'bold 13px Arial';
+                ctx.fillStyle = currValue > prevValue ? '#28a745' : (currValue < prevValue ? '#dc3545' : '#888');
+                ctx.fillText(sinal + variacaoPct + '%', point.x, point.y - 40);
+                ctx.restore();
+              }
+            });
+          }
+        }]
+      };
+
+      var tiposMap = { 'Motor': 0, 'Transmissão': 0, 'Hidráulico': 0, 'Freio': 0, 'Outros': 0 };
+      filtrados.forEach(function(item) {
+        var desc = (item.descricao || '').toLowerCase();
+        if (desc.includes('motor') || desc.includes('multi-g') || desc.includes('15w40')) { tiposMap.Motor += item.totalLitros; }
+        else if (desc.includes('transmiss') || desc.includes('thf')) { tiposMap["Transmissão"] += item.totalLitros; }
+        else if (desc.includes('hidraul') || desc.includes('hydraulic')) { tiposMap["Hidráulico"] += item.totalLitros; }
+        else if (desc.includes('freio') || desc.includes('break')) { tiposMap["Freio"] += item.totalLitros; }
+        else { tiposMap.Outros += item.totalLitros; }
+      });
+      Object.keys(tiposMap).forEach(function(k) { if (tiposMap[k] === 0) delete tiposMap[k]; });
+      chartsOpts['graficoDistribuicao'] = {
+        type: 'doughnut',
+        data: { labels: Object.keys(tiposMap), datasets: [{ data: Object.values(tiposMap), backgroundColor: ['#193b7c', '#f9a825', '#28a745', '#ff497a', '#dc3545'] }] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins:
+          {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const total = ctx.dataset.data.reduce((a, b) => a + b, 0); let pct = ((ctx.parsed / total) * 100).toFixed(1);
+                  return `${ctx.label}: ${ctx.parsed.toLocaleString()}L (${pct}%)`;
+                }
+              }
+            }
+          },
+          layout: {
+            padding: 10
+          }
+        },
+        plugins: [{
+          id: 'percentageLabels',
+          afterDatasetsDraw: function(chart) {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach(function(dataset, i) {
+              const meta = chart.getDatasetMeta(i);
+              if (!meta.hidden) {
+                meta.data.forEach(function(element, index) {
+                  ctx.fillStyle = '#fff';
+                  ctx.font = 'bold 16px Arial';
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  const total = dataset.data.reduce((a, b) => a + b, 0);
+                  const value = dataset.data[index];
+                  const pct = ((value / total) * 100).toFixed(1);
+                  if (pct > 5) {
+                    const position = element.tooltipPosition();
+                    ctx.fillText(pct + '%', position.x, position.y);
+                  }
+                });
+              }
+            });
+          }
+        }]
+      };
+
+      // Gráfico Comparativo Estoque x Vendas (Mês)
+      let mesFiltro = document.getElementById('data-fim').value || '';
+      let mesSelecionado = mesFiltro ? mesFiltro.slice(0,7) : (mesesOrdenados[mesesOrdenados.length-1]||'');
+      
+      // Calcular vendas do período FILTRADO (respeita data-inicio e data-fim)
+      let vendasLitrosMes = filtrados.reduce((a,b)=>a + (b.totalLitros||0), 0);
+      let vendasUnidadesMes = filtrados.reduce((a,b)=>a + (b.quantNF||0), 0);
+      
+      const estoqueMes = estoqueMensal[mesSelecionado] || { litrosTotal: 0, litrosFleetpro: 0, porFilial: {} };
+      const filialFiltro = document.getElementById('filtro-filial').value || '';
+      const labelMes = mesSelecionado ? formatarMes(mesSelecionado) : 'Período';
+      const litrosEstoqueTotal = filialFiltro ? (estoqueMes.porFilial?.[filialFiltro]?.litrosTotal || 0) : (estoqueMes.litrosTotal || 0);
+      const litrosEstoqueFleet = filialFiltro ? (estoqueMes.porFilial?.[filialFiltro]?.litrosFleetpro || 0) : (estoqueMes.litrosFleetpro || 0);
+
+      chartsOpts['graficoComparativoMes'] = {
+        type: 'bar',
+        data: {
+          labels: [labelMes],
+          datasets: [
+            { label: 'Estoque Ambra (L)', data: [litrosEstoqueTotal], backgroundColor: '#f9a825', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.6 },
+            { label: 'Estoque Fleetpro (L)', data: [litrosEstoqueFleet], backgroundColor: '#28a745', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.6 },
+            { label: 'Vendas (L)', data: [vendasLitrosMes], backgroundColor: '#193b7c', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.6 },
+            { label: 'Vendas (Unid)', data: [vendasUnidadesMes], backgroundColor: '#ff497a', borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.6 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: { callbacks: { label: ctx => {
+              const suffix = ctx.datasetIndex === 3 ? ' unid' : 'L';
+              return `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}${suffix}`;
+            }}}
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } }
+          },
+          layout: { padding: { top: 30 } }
+        },
+        plugins: [{
+          id: 'barLabelsComparativo',
+          afterDatasetsDraw: function(chart) {
+            const ctx = chart.ctx;
+            chart.data.datasets.forEach(function(ds, dsi){
+              const meta = chart.getDatasetMeta(dsi);
+              if (!meta.hidden) {
+                meta.data.forEach(function(bar, idx){
+                  const val = ds.data[idx]||0; if (val<=0) return;
+                  ctx.save();
+                  ctx.fillStyle = ['#a67c00','#1f7a3b','#0f2a5c','#cc3a60'][dsi] || '#333';
+                  ctx.font = 'bold 13px Arial';
+                  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+                  ctx.fillText(val.toLocaleString(), bar.x, bar.y - 5);
+                  ctx.restore();
+                });
+              }
+            })
+          }
+        }]
+      };
+      for (const id of Object.keys(chartsOpts)) atualizarGrafico(id, chartsOpts[id]);
+    }
+
+    function atualizarGrafico(id, config) {
+      const canvas = document.getElementById(id);
+      if (!canvas) {
+        console.warn('[atualizarGrafico] Canvas não encontrado:', id);
+        return;
+      }
+      if (charts[id]) charts[id].destroy();
+      console.log('[atualizarGrafico] Renderizando:', id);
+      charts[id] = new Chart(canvas.getContext('2d'), config);
+    }
+
+    function formatarMes(mes) {
+      if (!mes) return '-';
+      let [y,m]=mes.split('-');
+      const nomes=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      if(!y||!m) return mes;
+      return nomes[Number(m)-1]+'/'+y.substr(2,2);
+    }
+
+    async function analisarDashboard() {
+      if (!dadosCompletos.length) await carregarDados();
+      const filtrados = filtrar();
+      atualizarKPIs(filtrados);
+      atualizarGraficos(filtrados);
+    }
+
+    // EXPANDIR GRÁFICOS - À PROVA DE FECHA SOZINHO
+    let modalOverlay = document.getElementById('modalOverlay');
+    let modalCanvas = document.getElementById('modalGraph');
+    let modalTitle = document.getElementById('modalTitle'); 
+    let modalChart = null;
+    let modalOpen = false;
+
+    // Clone profundo preservando funções (evita perder callbacks ao usar JSON.stringify)
+    function deepClonePreservandoFuncoes(obj) {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (Array.isArray(obj)) return obj.map(item => deepClonePreservandoFuncoes(item));
+      const cloned = {};
+      for (const key in obj) {
+        const val = obj[key];
+        // Preserva funções diretamente
+        if (typeof val === 'function') {
+          cloned[key] = val;
+        } else if (val && typeof val === 'object') {
+          cloned[key] = deepClonePreservandoFuncoes(val);
+        } else {
+          cloned[key] = val;
+        }
+      }
+      return cloned;
+    }
+
+    function expandirGrafico(event) {
+      event.preventDefault();
+      // Evita que o clique continue propagando e acione listeners externos
+      event.stopPropagation();
+      if (modalOpen) { console.log('[EXPAND] Ignorado: modal já aberto'); return; }
+      const graficoId = event.currentTarget.getAttribute('data-grafico');
+      console.log('[EXPAND] Início expansão para', graficoId);
+      // Garantir que configs existem
+      if (!chartsOpts[graficoId]) {
+        try { analisarDashboard(); } catch(e) { console.error('Falha ao gerar configs antes de expandir', e); }
+      }
+      if (!chartsOpts[graficoId]) { console.warn('Config do gráfico não encontrada:', graficoId); return; }
+      modalOpen = true;
+      // Desabilita botões de expandir enquanto modal está aberto
+      document.querySelectorAll('.expand-btn').forEach(b=>{ b.disabled = true; b.style.opacity='.35'; });
+      const tituloElemento = document.querySelector(`[data-grafico="${graficoId}"]`);
+      const origTitle = tituloElemento ? tituloElemento.parentElement.querySelector('h4').textContent : 'Gráfico';
+      modalTitle.textContent = origTitle + ' (Expandido)';
+      // Recriar canvas para evitar tamanho preso
+      try {
+        const antigo = modalCanvas;
+        const novoCanvas = document.createElement('canvas');
+        novoCanvas.id = 'modalGraph';
+        novoCanvas.className = 'modal-graph-canvas';
+        antigo.parentElement.replaceChild(novoCanvas, antigo);
+        modalCanvas = novoCanvas;
+        console.log('[EXPAND] Canvas recriado');
+      } catch(e) { console.error('Erro recriando canvas modal', e); }
+      modalOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      // Destruir chart anterior se existir
+      if (modalChart) { try { modalChart.destroy(); } catch(e) { console.error('Erro destruindo chart antigo', e); } modalChart = null; }
+      // Ajustar estilo responsivo por CSS
+      modalCanvas.style.width = '95%';
+      modalCanvas.style.height = '70vh';
+      requestAnimationFrame(()=>{
+        try {
+          // Clonar preservando funções para manter callbacks e plugins
+          const originalConfig = chartsOpts[graficoId];
+          // Simplificação: usar shallow clone e manter referência de plugins
+          const configClonado = {
+            type: originalConfig.type,
+            data: deepClonePreservandoFuncoes(originalConfig.data),
+            options: Object.assign({}, originalConfig.options || {}),
+            plugins: originalConfig.plugins
+          };
+          // Ajustar opções para modal (mantendo callbacks originais)
+          configClonado.options = Object.assign({}, configClonado.options, {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 250 }
+          });
+          console.log('[EXPAND] Criando Chart modal com tipo', configClonado.type);
+          // Try/catch em plugins para impedir colapso
+          if (Array.isArray(configClonado.plugins)) {
+            configClonado.plugins = configClonado.plugins.map(p => {
+              if (p && typeof p.afterDatasetsDraw === 'function') {
+                const originalFn = p.afterDatasetsDraw;
+                p.afterDatasetsDraw = function(chart) {
+                  try { originalFn(chart); } catch(err) { console.error('[EXPAND][Plugin error]', err); }
+                };
+              }
+              return p;
+            });
+          }
+          modalChart = new Chart(modalCanvas.getContext('2d'), configClonado);
+          console.log('[EXPAND] Chart modal criado com sucesso');
+          // Guardar última config para eventual re-render
+          window.__ultimoConfigExpand = configClonado;
+          // Checar tamanho após render
+          setTimeout(()=>{
+            const rect = modalCanvas.getBoundingClientRect();
+            console.log('[EXPAND] Tamanho canvas modal:', rect.width+'x'+rect.height);
+            if (rect.width < 250 || rect.height < 250) {
+              console.warn('[EXPAND] Canvas pequeno detectado. Forçando re-render com timeout.');
+              try {
+                modalChart.destroy();
+                modalChart = new Chart(modalCanvas.getContext('2d'), window.__ultimoConfigExpand);
+                console.log('[EXPAND] Re-render forçado concluído');
+              } catch(err2) { console.error('[EXPAND] Falha re-render forçado', err2); }
+            }
+          }, 120);
+        } catch(e) {
+          console.error('Erro criando gráfico expandido', e);
+          // Mantém modal aberto para permitir inspeção / erro visível
+          Swal.fire('Erro', 'Falha ao desenhar gráfico expandido. Verifique o console.', 'error');
+        }
+      });
+    }
+    // Fallback: expandir dentro do card original (mantido dentro do script)
+    function aplicarFallbackInPlace(graficoId) {
+      // Fecha modal imediatamente sem animação
+      fecharModal(true);
+      const canvasOriginal = document.getElementById(graficoId);
+      if (!canvasOriginal) { console.error('[FALLBACK] Canvas original não encontrado:', graficoId); return; }
+      const card = canvasOriginal.closest('.grafico-card');
+      if (!card) { console.error('[FALLBACK] Card não encontrado'); return; }
+      card.classList.add('expanded-inplace');
+      card.style.position='relative';
+      card.style.zIndex='9998';
+      card.style.boxShadow='0 6px 28px #193b7c55';
+      card.style.minHeight='600px';
+      canvasOriginal.style.height='560px';
+      canvasOriginal.style.maxHeight='560px';
+      if (charts[graficoId]) {
+        try { charts[graficoId].resize(); } catch(e){ console.error('[FALLBACK] Erro resize', e); }
+      }
+      if (!card.querySelector('.close-inplace')) {
+        const btn = document.createElement('button');
+        btn.textContent='Fechar';
+        btn.className='btn-acao close-inplace';
+        btn.style.position='absolute'; btn.style.top='10px'; btn.style.left='10px';
+        btn.onclick=function(){
+          card.classList.remove('expanded-inplace');
+          card.style.minHeight='';
+          canvasOriginal.style.height=''; canvasOriginal.style.maxHeight='';
+          btn.remove();
+          document.querySelectorAll('.expand-btn').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
+        };
+        card.appendChild(btn);
+      }
+      document.querySelectorAll('.expand-btn').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
+    }
+
+    // Função única para fechar modal (com opção de imediato)
+    function fecharModal(imediato=false) {
+      if (imediato) {
+        modalOverlay.classList.remove('active');
+        if (modalChart) { try { modalChart.destroy(); } catch(e){} }
+        modalChart=null; modalOpen=false; document.body.style.overflow='';
+        document.querySelectorAll('.expand-btn').forEach(b=>{ b.disabled=false; b.style.opacity=''; });
+        return;
+      }
+      modalOverlay.classList.remove('active');
+      setTimeout(()=>{
+        if (modalChart) try { modalChart.destroy(); } catch(e){}
+        modalChart = null;
+        modalOpen = false;
+        document.body.style.overflow = '';
+        document.querySelectorAll('.expand-btn').forEach(b=>{ b.disabled = false; b.style.opacity=''; });
+      }, 320);
+    }
+    document.addEventListener('DOMContentLoaded', ()=>{
+      document.querySelectorAll('.expand-btn').forEach(btn=>{
+        btn.addEventListener('click', expandirGrafico);
+      });
+      document.getElementById('modalClose').onclick = fecharModal;
+      modalOverlay.onclick = e => { if (e.target===modalOverlay) fecharModal(); };
+      document.addEventListener('keydown',function(e){ if (modalOverlay.classList.contains('active') && e.key==='Escape') fecharModal(); });
+      lucide.createIcons();
+
+      // Botão Estoque: abrir seletor de arquivo diretamente
+      document.getElementById('btn-estoque').addEventListener('click', () => {
+        document.getElementById('csv-estoque-file').click();
+      });
+
+      // Upload CSV Estoque
+      document.getElementById('csv-estoque-file').addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          const file = e.target.files[0];
+          if (file.name.toLowerCase().endsWith('.csv')) {
+            processarCSVEstoque(file);
+          } else {
+            Swal.fire('Erro!', 'Por favor, selecione um arquivo CSV.', 'error');
+          }
+          e.target.value = ''; // Limpar input
+        }
+      });
+
+      // Botão Importar CSV Vendas
+      document.getElementById('btn-importar').addEventListener('click', () => {
+        const upload = document.getElementById('upload-container');
+        upload.style.display = (upload.style.display === 'block') ? 'none' : 'block';
+      });
+      // Selecionar arquivo via botão
+      document.getElementById('btn-select-file').addEventListener('click', () => {
+        document.getElementById('csv-file').click();
+      });
+      // Drag and drop upload
+      const uploadContainer = document.getElementById('upload-container');
+      uploadContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadContainer.classList.add('dragover');
+      });
+      uploadContainer.addEventListener('dragleave', () => {
+        uploadContainer.classList.remove('dragover');
+      });
+      uploadContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadContainer.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+          const file = e.dataTransfer.files[0];
+          if (file.name.toLowerCase().endsWith('.csv')) {
+            exibirInfoArquivo(file);
+            processarCSV(file);
+          } else {
+            Swal.fire('Erro!', 'Por favor, selecione um arquivo CSV.', 'error');
+          }
+        }
+      });
+      // Upload via file input
+      document.getElementById('csv-file').addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          const file = e.target.files[0];
+          exibirInfoArquivo(file);
+          processarCSV(file);
+        }
+      });
+    });
+
+    document.getElementById('data-inicio').onchange = ()=>{ if(!modalOpen) analisarDashboard(); };
+    document.getElementById('data-fim').onchange = ()=>{ if(!modalOpen) analisarDashboard(); };
+    document.getElementById('filtro-filial').onchange = ()=>{ if(!modalOpen) analisarDashboard(); };
+    const filtroProdutoEl = document.getElementById('filtro-produto');
+    if (filtroProdutoEl) {
+      filtroProdutoEl.addEventListener('input', ()=>{ if(!modalOpen) analisarDashboard(); });
+    }
+
+    userData = await garantirAutenticacao(); setDatasPadrao(); await carregarDados(); await carregarEstoqueMensal(); analisarDashboard();
+    
+    // Modal PDF
+    const modalPDF = document.getElementById('modalPDF');
+    document.getElementById('btn-gerar-pdf').addEventListener('click', () => {
+      modalPDF.style.display = 'flex';
+    });
+    document.getElementById('modalPDFClose').addEventListener('click', () => {
+      modalPDF.style.display = 'none';
+    });
+    document.getElementById('btnCancelarPDF').addEventListener('click', () => {
+      modalPDF.style.display = 'none';
+    });
+    // Impede o modal de fechar ao clicar dentro dele
+    modalPDF.addEventListener('click', (e) => {
+      if (e.target === modalPDF) {
+        modalPDF.style.display = 'none';
+      }
+    });
+    document.getElementById('btnConfirmarPDF').addEventListener('click', async () => {
+      const opcoes = {
+        kpis: document.getElementById('pdf-kpis').checked,
+        graficos: document.getElementById('pdf-graficos').checked,
+        estoque: document.getElementById('pdf-estoque').checked,
+        vendas: document.getElementById('pdf-vendas').checked
+      };
+      modalPDF.style.display = 'none';
+      await gerarPDF(opcoes);
+    });
+    
+    async function gerarPDF(opcoes) {
+      Swal.fire({title:'Gerando PDF...',text:'Aguarde enquanto montamos seu relatório.',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+      
+      try {
+        // Aguardar um pouco para garantir que os gráficos estejam renderizados
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Importar jsPDF
+        const { jsPDF } = window.jspdf;
+        
+        if (!jsPDF) {
+          throw new Error('Biblioteca jsPDF não carregada');
+        }
+        
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        let yPos = 20;
+        
+        // Cabeçalho com linha decorativa
+        pdf.setFillColor(25, 59, 124);
+        pdf.rect(0, 0, 210, 35, 'F');
+        
+        pdf.setFontSize(20);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text('Relatório de Análise - Lubrificantes', 105, 15, { align: 'center' });
+        
+        // Período e Filial
+        pdf.setFontSize(10);
+        const dataInicio = document.getElementById('data-inicio')?.value || 'Não definido';
+        const dataFim = document.getElementById('data-fim')?.value || 'Não definido';
+        const filialSelecionada = document.getElementById('filtro-filial')?.value || '';
+        const filialTexto = filialSelecionada ? (filialSelecionada === '2' ? 'Campos Novos' : filialSelecionada === '6' ? 'Rio do Sul' : 'Lages') : 'Todas as Filiais';
+        pdf.text(`Período: ${dataInicio} a ${dataFim}`, 105, 23, { align: 'center' });
+        pdf.text(`Filial: ${filialTexto}`, 105, 29, { align: 'center' });
+        
+        yPos = 45;
+        
+        // KPIs em cards
+        if (opcoes.kpis) {
+          pdf.setFontSize(14);
+          pdf.setTextColor(25, 59, 124);
+          pdf.text('Indicadores Gerais', 15, yPos);
+          yPos += 8;
+          
+          const kpiData = [
+            { label: 'Total Vendas', valor: document.getElementById('kpi-total-vendas')?.textContent || '0', cor: [255, 73, 122] },
+            { label: 'Total Litros', valor: document.getElementById('kpi-total-litros')?.textContent || '0', cor: [249, 168, 37] },
+            { label: 'Maior Filial', valor: document.getElementById('kpi-maior-filial')?.textContent || 'N/A', cor: [40, 167, 69] }
+          ];
+          
+          let xPos = 15;
+          kpiData.forEach(kpi => {
+            // Card do KPI
+            pdf.setFillColor(kpi.cor[0], kpi.cor[1], kpi.cor[2]);
+            pdf.rect(xPos, yPos, 60, 18, 'F');
+            
+            pdf.setFontSize(16);
+            pdf.setTextColor(255, 255, 255);
+            pdf.text(kpi.valor, xPos + 30, yPos + 8, { align: 'center' });
+            
+            pdf.setFontSize(9);
+            pdf.text(kpi.label, xPos + 30, yPos + 14, { align: 'center' });
+            
+            xPos += 65;
+          });
+          
+          yPos += 25;
+        }
+        
+        // Gráficos - capturar como exibidos no HTML usando html2canvas (2 colunas)
+        if (opcoes.graficos) {
+          const blocos = [
+            { selector: '#bloco-grafico-filiais', titulo: 'Vendas por Filial' },
+            { selector: '#bloco-grafico-mensal', titulo: 'Evolução Mensal' },
+            { selector: '#bloco-grafico-participacao', titulo: 'Participação por Filial' },
+            { selector: '#bloco-grafico-comparativo', titulo: 'Comparativo Estoque x Vendas' },
+            { selector: '#bloco-grafico-distribuicao', titulo: 'Distribuição por Tipo' }
+          ];
+          
+          const columnWidth = 95; // mm
+          const columnGap = 5; // mm
+          const rowHeight = 60; // mm
+          let col = 0;
+          
+          for (const bloco of blocos) {
+            const el = document.querySelector(bloco.selector) || document.getElementById(bloco.selector.replace('#',''));
+            if (!el) continue;
+            try {
+              // Nova página quando não couber mais
+              if (yPos + rowHeight > 285) {
+                pdf.addPage();
+                yPos = 20;
+              }
+              
+              // Capturar bloco com estilos atuais
+              const canvasEl = await html2canvas(el, {
+                backgroundColor: '#FFFFFF',
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                windowWidth: el.scrollWidth,
+                windowHeight: el.scrollHeight
+              });
+              const imgData = canvasEl.toDataURL('image/png');
+              
+              // Posição em colunas
+              const x = 15 + col * (columnWidth + columnGap);
+              const targetH = rowHeight;
+              const targetW = columnWidth;
+              
+              // Título
+              pdf.setFontSize(9);
+              pdf.setTextColor(25, 59, 124);
+              pdf.text(bloco.titulo, x, yPos);
+              
+              // Imagem do bloco
+              pdf.addImage(imgData, 'PNG', x, yPos + 4, targetW, targetH - 8);
+              
+              col += 1;
+              if (col > 1) { // 2 colunas
+                col = 0;
+                yPos += rowHeight;
+              }
+            } catch(e) {
+              console.error('Erro ao capturar bloco', bloco.selector, e);
+            }
+          }
+          // Se última linha ocupou apenas 1 coluna, avançar a posição para próxima linha
+          if (col === 1) {
+            yPos += rowHeight;
+            col = 0;
+          }
+        }
+        
+        // Rodapé
+        const totalPages = pdf.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          pdf.setPage(i);
+          pdf.setFontSize(8);
+          pdf.setTextColor(150);
+          pdf.text(`Página ${i} de ${totalPages}`, 105, 290, { align: 'center' });
+          pdf.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 105, 285, { align: 'center' });
+        }
+        
+        // Salvar PDF
+        const dataAtual = new Date().toISOString().split('T')[0];
+        pdf.save(`relatorio-lubrificantes-${dataAtual}.pdf`);
+        Swal.fire('Sucesso!','PDF gerado com sucesso!','success');
+      } catch (e) {
+        console.error('Erro ao gerar PDF:', e);
+        Swal.fire('Erro','Falha ao gerar PDF: '+e.message,'error');
+      }
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script type="module" src="/assets/js/firebase-config.js"></script>
+  <script type="module" src="/assets/js/auth.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/components/Sidebar.js"></script>
+  <script>
+    // Metas por filial: Modal, persistência e gráfico comparativo
+    const METAS_KEY = 'metas_lubrificantes_filiais';
+    const filiaisMeta = [
+      { id: '2', nome: 'Campos Novos' },
+      { id: '1', nome: 'Lages' },
+      { id: '6', nome: 'Rio do Sul' }
+    ];
+    
+    function getMetasStorage() {
+      try { return JSON.parse(localStorage.getItem(METAS_KEY)) || {}; } catch { return {}; }
+    }
+    function setMetasStorage(metas) {
+      localStorage.setItem(METAS_KEY, JSON.stringify(metas));
+    }
+    
+    // Criar botão de metas e modal
+    function ensureMetasUI() {
+      // Botão já existe no HTML, apenas adicionar o evento
+      let btn = document.getElementById('btn-metas');
+      if (btn) {
+        btn.onclick = () => abrirModalMetas();
+      }
+
+      // Modal
+      let modal = document.getElementById('modalMetas');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modalMetas';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.background = 'rgba(0,0,0,0.35)';
+        modal.style.display = 'none';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        const content = document.createElement('div');
+        content.style.background = '#fff';
+        content.style.borderRadius = '12px';
+        content.style.boxShadow = '0 6px 20px rgba(25,59,124,0.12)';
+        content.style.width = '520px';
+        content.style.maxWidth = '92vw';
+        content.style.padding = '16px';
+        content.style.position = 'relative';
+        const title = document.createElement('h3');
+        title.textContent = 'Definir Metas por Filial (Litros)';
+        title.style.margin = '0 0 10px';
+        title.style.color = '#193B7C';
+        title.style.textAlign = 'center';
+        const form = document.createElement('div');
+        form.style.display = 'grid';
+        form.style.gridTemplateColumns = '1fr 1fr';
+        form.style.gap = '10px';
+        const metas = getMetasStorage();
+        filiaisMeta.forEach(f => {
+          const wrap = document.createElement('div');
+          const label = document.createElement('label');
+          label.textContent = f.nome;
+          label.style.fontSize = '12px';
+          label.style.color = '#193B7C';
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.min = '0';
+          input.step = '1';
+          input.value = metas[f.id] || '';
+          input.id = 'meta-filial-' + f.id;
+          input.style.width = '100%';
+          input.style.padding = '10px';
+          input.style.border = '1px solid #e0e6f0';
+          input.style.borderRadius = '8px';
+          wrap.appendChild(label);
+          wrap.appendChild(input);
+          form.appendChild(wrap);
+        });
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.justifyContent = 'flex-end';
+        actions.style.gap = '8px';
+        actions.style.marginTop = '10px';
+        const btnCancel = document.createElement('button');
+        btnCancel.textContent = 'Cancelar';
+        btnCancel.style.background = '#f0f3f8';
+        btnCancel.style.color = '#193B7C';
+        btnCancel.style.border = 'none';
+        btnCancel.style.padding = '8px 12px';
+        btnCancel.style.borderRadius = '8px';
+        const btnSave = document.createElement('button');
+        btnSave.textContent = 'Salvar';
+        btnSave.style.background = '#193B7C';
+        btnSave.style.color = '#fff';
+        btnSave.style.border = 'none';
+        btnSave.style.padding = '8px 12px';
+        btnSave.style.borderRadius = '8px';
+        actions.appendChild(btnCancel);
+        actions.appendChild(btnSave);
+        content.appendChild(title);
+        content.appendChild(form);
+        content.appendChild(actions);
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+        btnCancel.addEventListener('click', () => { modal.style.display = 'none'; });
+        btnSave.addEventListener('click', () => {
+          const m = getMetasStorage();
+          filiaisMeta.forEach(f => {
+            const val = Number(document.getElementById('meta-filial-' + f.id).value || 0);
+            m[f.id] = val;
+          });
+          setMetasStorage(m);
+          modal.style.display = 'none';
+          atualizarMetasNoGraficoFiliais(m);
+          analisarDashboard();
+        });
+      }
+    }
+
+    function abrirModalMetas() {
+      const modal = document.getElementById('modalMetas');
+      if (!modal) return;
+      // Preencher com valores atuais
+      const metas = getMetasStorage();
+      filiaisMeta.forEach(f => {
+        const el = document.getElementById('meta-filial-' + f.id);
+        if (el) el.value = metas[f.id] || '';
+      });
+      modal.style.display = 'flex';
+    }
+    
+
+    function atualizarMetasNoGraficoFiliais(metasObj) {
+      const chart = window.charts && window.charts.graficoFiliais ? window.charts.graficoFiliais : null;
+      const canvas = document.getElementById('graficoFiliais');
+      if (!chart || !canvas) return;
+      const labels = chart.data.labels || [];
+      const metasData = labels.map(l => {
+        const id = /campos/i.test(l) ? '2' : /rio.*sul/i.test(l) ? '6' : '1';
+        return Number((metasObj || {})[id] || 0);
+      });
+      let metaIdx = chart.data.datasets.findIndex(ds => ds.label === 'Meta (L)');
+      const metaDataset = {
+        type: 'bar',
+        label: 'Meta (L)',
+        data: metasData,
+        backgroundColor: 'rgba(249,168,37,0.6)',
+        borderColor: 'rgba(249,168,37,1)',
+        borderWidth: 1,
+        categoryPercentage: 0.6,
+        barPercentage: 0.7,
+        yAxisID: chart.options.scales && chart.options.scales.y ? 'y' : undefined,
+      };
+      if (metaIdx === -1) {
+        chart.data.datasets.unshift(metaDataset);
+      } else {
+        chart.data.datasets[metaIdx] = metaDataset;
+        // Garantir que "Meta (L)" fique como primeira coluna para comparação clara
+        if (metaIdx !== 0) {
+          const ds = chart.data.datasets.splice(metaIdx, 1)[0];
+          chart.data.datasets.unshift(ds);
+        }
+      }
+      chart.update();
+    }
+
+    // Garantir que a meta apareça assim que o gráfico for criado
+    function ensureMetaOnFiliais() {
+      const metas = getMetasStorage();
+      let tries = 0;
+      const maxTries = 20; // ~4s
+      const timer = setInterval(() => {
+        tries++;
+        const chart = window.charts && window.charts.graficoFiliais ? window.charts.graficoFiliais : null;
+        const canvas = document.getElementById('graficoFiliais');
+        if (chart && canvas) {
+          clearInterval(timer);
+          atualizarMetasNoGraficoFiliais(metas);
+        } else if (tries >= maxTries) {
+          clearInterval(timer);
+        }
+      }, 200);
+    }
+    
+    // Inicializar metas: botão/modal e gráfico após carregar
+    document.addEventListener('DOMContentLoaded', () => {
+      ensureMetasUI();
+      // Após carregar a UI, tentar aplicar metas ao gráfico principal
+      ensureMetaOnFiliais();
+    });
+    // Importação padrão: feedback visual, inputs ocultos, processamento conjunto
+    let arquivosEstoque = { camposnovos: null, lages: null, riodosul: null };
+    const csvCN = document.getElementById('csv-camposnovos');
+    const csvLG = document.getElementById('csv-lages');
+    const csvRS = document.getElementById('csv-riodosul');
+    const importStatus = document.getElementById('import-status');
+    if (csvCN) csvCN.addEventListener('change', e => {
+      arquivosEstoque.camposnovos = e.target.files[0] || null;
+      if (importStatus) importStatus.textContent = arquivosEstoque.camposnovos ? 'Campos Novos selecionado' : '';
+    });
+    if (csvLG) csvLG.addEventListener('change', e => {
+      arquivosEstoque.lages = e.target.files[0] || null;
+      if (importStatus) importStatus.textContent = arquivosEstoque.lages ? 'Lages selecionado' : '';
+    });
+    if (csvRS) csvRS.addEventListener('change', e => {
+      arquivosEstoque.riodosul = e.target.files[0] || null;
+      if (importStatus) importStatus.textContent = arquivosEstoque.riodosul ? 'Rio do Sul selecionado' : '';
+    });
+    const btnImportar = document.getElementById('btn-importar-estoque');
+    if (btnImportar) btnImportar.addEventListener('click', async () => {
+      const data = document.getElementById('data-estoque').value;
+      if (!data || !arquivosEstoque.camposnovos || !arquivosEstoque.lages || !arquivosEstoque.riodosul) {
+        Swal.fire('Atenção', 'Selecione a data e os 3 arquivos CSV!', 'warning');
+        return;
+      }
+      Swal.fire({title:'Importando...',text:'Aguarde o processamento dos arquivos.',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+      try {
+        // Aqui você pode chamar a função de processamento dos 3 arquivos juntos
+        await importarEstoqueDiario(data, arquivosEstoque);
+        Swal.fire('Sucesso','Estoque diário importado!','success');
+        arquivosEstoque = { camposnovos: null, lages: null, riodosul: null };
+        if (importStatus) importStatus.textContent = '';
+        const formUpload = document.getElementById('estoque-upload-form');
+        if (formUpload) formUpload.reset();
+      } catch(e) {
+        Swal.fire('Erro','Falha ao importar: '+e.message,'error');
+      }
+    });
+    // Função de processamento (placeholder, implementar conforme padrão do sistema)
+    async function importarEstoqueDiario(data, arquivos) {
+      // Aqui você pode ler os arquivos CSV e salvar os dados (localStorage, Firebase, etc)
+      // Exemplo: apenas leitura dos arquivos
+      for (const [filial, file] of Object.entries(arquivos)) {
+        if (!file) throw new Error('Arquivo de '+filial+' não selecionado');
+        const texto = await file.text();
+        // Aqui você pode processar o texto CSV e salvar conforme necessário
+        // Exemplo: console.log(filial, texto);
+      }
+      // Salvar dados no localStorage/Firebase/etc conforme padrão do sistema
+    }
+  </script>
+</body>
+</html>

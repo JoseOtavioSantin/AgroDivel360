@@ -337,6 +337,11 @@
       left: -9999px;
     }
     
+    /* Ocultar container de importar checklist por padrão */
+    #container-importar-checklist {
+      display: none;
+    }
+    
     .file-info {
       margin-top: 8px;
       font-size: 0.9rem;
@@ -417,11 +422,17 @@
             <div class="pecas-header">
               <h3 class="pecas-title">Peças da Parte do Equipamento</h3>
               <div class="pecas-buttons">
-                <div class="file-input-container">
+                <div class="file-input-container" id="container-importar-pecas">
                   <button type="button" class="btn-info" id="btn-importar-pecas">
                     <i class='bx bx-upload'></i> Importar Excel
                   </button>
                   <input type="file" id="file-excel" class="file-input" accept=".xlsx, .xls">
+                </div>
+                <div class="file-input-container" id="container-importar-checklist">
+                  <button type="button" class="btn-info" id="btn-importar-checklist">
+                    <i class='bx bx-list-check'></i> Importar Checklist
+                  </button>
+                  <input type="file" id="file-checklist" class="file-input" accept=".xlsx, .xls, .csv">
                 </div>
                 <button type="button" class="btn-success" id="btn-adicionar-peca">
                   <i class='bx bx-plus'></i> Adicionar Peça
@@ -431,6 +442,9 @@
 
             <div class="file-info" id="file-info">
               Formato esperado: Colunas "Codigo", "Descrição", "Quantidade"
+            </div>
+            <div class="file-info" id="file-info-checklist" style="display: none;">
+              Formato checklist: Colunas "Descrição" e "Trabalho" (ou "Trabalho a Ser Feito")
             </div>
 
             <table class="tabela-pecas">
@@ -538,6 +552,75 @@
       });
     }
 
+    // Função para processar arquivo de checklist (Excel ou CSV)
+    function processarChecklist(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            // Pega a primeira planilha
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // Converte para JSON
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            // Encontra os índices das colunas
+            const headerRow = jsonData[0];
+            const descricaoIndex = headerRow.findIndex(col => 
+              col.toString().toLowerCase().includes('descrição') || 
+              col.toString().toLowerCase().includes('descricao')
+            );
+            const trabalhoIndex = headerRow.findIndex(col => 
+              col.toString().toLowerCase().includes('trabalho') ||
+              col.toString().toLowerCase().includes('trabalho a ser feito') ||
+              col.toString().toLowerCase().includes('ação') ||
+              col.toString().toLowerCase().includes('acao')
+            );
+
+            if (descricaoIndex === -1 || trabalhoIndex === -1) {
+              reject(new Error('Colunas não encontradas. Verifique se o arquivo tem as colunas: Descrição e Trabalho (ou Trabalho a Ser Feito)'));
+              return;
+            }
+
+            // Processa as linhas de dados
+            const itensChecklist = [];
+            for (let i = 1; i < jsonData.length; i++) {
+              const row = jsonData[i];
+              if (row && row[descricaoIndex] && row[trabalhoIndex]) {
+                const trabalhoValor = row[trabalhoIndex].toString().trim().toUpperCase();
+                
+                // Validar se o trabalho é um valor válido
+                const trabalhosValidos = ['SUBSTITUIR', 'APERTO', 'HIGIENIZAR', 'AJUSTE', 'LIMPAR', 'VERIFICAR', 'MARINAR'];
+                if (!trabalhosValidos.includes(trabalhoValor)) {
+                  console.warn(`Trabalho inválido na linha ${i + 1}: "${trabalhoValor}". Será necessário selecionar manualmente.`);
+                }
+                
+                itensChecklist.push({
+                  descricao: row[descricaoIndex].toString().trim(),
+                  trabalho: trabalhosValidos.includes(trabalhoValor) ? trabalhoValor : ''
+                });
+              }
+            }
+
+            resolve(itensChecklist);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        
+        reader.onerror = function(error) {
+          reject(error);
+        };
+        
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
     // Função para importar peças do Excel
     async function importarPecasDoExcel(event) {
       const file = event.target.files[0];
@@ -599,6 +682,64 @@
       }
     }
 
+    // Função para importar checklist do Excel/CSV
+    async function importarChecklistDoExcel(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Verifica se é um arquivo Excel ou CSV
+      if (!file.name.match(/\.(xlsx|xls|csv)$/)) {
+        Swal.fire('Erro', 'Por favor, selecione um arquivo Excel (.xlsx, .xls) ou CSV (.csv)', 'error');
+        return;
+      }
+
+      Swal.fire({
+        title: 'Importando...',
+        text: 'Processando arquivo de checklist...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+
+      try {
+        const itensImportados = await processarChecklist(file);
+        
+        if (itensImportados.length === 0) {
+          Swal.fire('Atenção', 'Nenhum item válido encontrado no arquivo.', 'warning');
+          return;
+        }
+
+        // Limpar itens existentes (opcional - perguntar ao usuário)
+        const { value: limparExistente } = await Swal.fire({
+          title: 'Importar Checklist',
+          text: `Encontrados ${itensImportados.length} itens. Deseja limpar os itens atuais?`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sim, limpar e importar',
+          cancelButtonText: 'Não, adicionar aos existentes',
+          reverseButtons: true
+        });
+
+        if (limparExistente) {
+          // Limpar itens existentes
+          document.getElementById('lista-pecas').innerHTML = '';
+        }
+
+        // Adicionar itens importados
+        itensImportados.forEach(item => {
+          adicionarPeca(item);
+        });
+
+        Swal.fire('Sucesso!', `${itensImportados.length} itens importados com sucesso!`, 'success');
+        
+        // Limpar input file
+        event.target.value = '';
+
+      } catch (error) {
+        console.error('Erro ao importar checklist:', error);
+        Swal.fire('Erro', `Falha ao importar arquivo: ${error.message}`, 'error');
+      }
+    }
+
     // Função para carregar partes já cadastradas para o equipamento
     async function carregarPartesExistentes(tipoEquipamento, nomeEquipamento) {
       try {
@@ -633,11 +774,21 @@
           }
         });
 
+        // Remover duplicatas (manter apenas maiúsculas)
+        const partesUnicas = new Set();
+        partesExistentes.forEach(parte => {
+          const parteUpper = parte.toUpperCase();
+          // Se não existe a versão maiúscula, adiciona a parte original em maiúscula
+          if (!Array.from(partesUnicas).some(p => p.toUpperCase() === parteUpper)) {
+            partesUnicas.add(parteUpper);
+          }
+        });
+
         // Limpar e recriar o select com todas as partes (modelo + existentes)
         partesSelect.innerHTML = '<option value="">Selecione uma parte</option>';
         
         // Ordenar as partes alfabeticamente
-        const partesOrdenadas = Array.from(partesExistentes).sort();
+        const partesOrdenadas = Array.from(partesUnicas).sort();
         
         partesOrdenadas.forEach(parte => {
           const option = document.createElement('option');
@@ -697,13 +848,15 @@
         parteSelect.innerHTML = '<option value="">Selecione uma parte</option>';
         
         if (partes && partes.length > 0) {
-          partes.forEach(parte => {
+          // Remover duplicatas e normalizar para maiúsculas
+          const partesUnicas = [...new Set(partes.map(p => p.toUpperCase()))];
+          partesUnicas.forEach(parte => {
             const option = document.createElement('option');
             option.value = parte;
             option.textContent = parte;
             parteSelect.appendChild(option);
           });
-          console.log('Partes adicionadas ao select:', partes); // DEBUG
+          console.log('Partes adicionadas ao select:', partesUnicas); // DEBUG
         } else {
           console.log('Nenhuma parte encontrada no modelo'); // DEBUG
         }
@@ -749,6 +902,10 @@
     function atualizarTabelaPecas(isChecklist) {
       const thead = document.querySelector('.tabela-pecas thead tr');
       const tbody = document.getElementById('lista-pecas');
+      const fileInfo = document.getElementById('file-info');
+      const fileInfoChecklist = document.getElementById('file-info-checklist');
+      const containerImportarPecas = document.getElementById('container-importar-pecas');
+      const containerImportarChecklist = document.getElementById('container-importar-checklist');
       
       // Limpar linhas existentes
       tbody.innerHTML = '';
@@ -760,6 +917,12 @@
           <th>Trabalho a Ser Feito</th>
           <th>Ações</th>
         `;
+        // Mostrar info de checklist e esconder info normal
+        fileInfo.style.display = 'none';
+        fileInfoChecklist.style.display = 'block';
+        // Mostrar botão de importar checklist e ocultar importar peças
+        containerImportarPecas.style.display = 'none';
+        containerImportarChecklist.style.display = 'inline-block';
       } else {
         // Tabela normal: Código, Descrição, Qtd
         thead.innerHTML = `
@@ -768,6 +931,12 @@
           <th>Qtd</th>
           <th>Ações</th>
         `;
+        // Mostrar info normal e esconder info de checklist
+        fileInfo.style.display = 'block';
+        fileInfoChecklist.style.display = 'none';
+        // Mostrar botão de importar peças e ocultar importar checklist
+        containerImportarPecas.style.display = 'inline-block';
+        containerImportarChecklist.style.display = 'none';
       }
     }
 
@@ -1001,6 +1170,12 @@
           document.getElementById('file-excel').click();
         });
         document.getElementById('file-excel').addEventListener('change', importarPecasDoExcel);
+
+        // Configurar importação de Checklist
+        document.getElementById('btn-importar-checklist').addEventListener('click', function() {
+          document.getElementById('file-checklist').click();
+        });
+        document.getElementById('file-checklist').addEventListener('change', importarChecklistDoExcel);
 
         // Adicionar primeira peça por padrão
         adicionarPeca();

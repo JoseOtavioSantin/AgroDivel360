@@ -159,6 +159,9 @@
                             <label><input type="checkbox" name="filial" value="Campos Novos"> Campos Novos</label>
                             <label><input type="checkbox" name="filial" value="Rio do Sul"> Rio do Sul</label>
                             <label><input type="checkbox" name="filial" value="Lages"> Lages</label>
+                            <label><input type="checkbox" name="filial" value="São Miguel do Oeste"> São Miguel do Oeste</label>
+                            <label><input type="checkbox" name="filial" value="Pinhalzinho"> Pinhalzinho</label>
+                            <label><input type="checkbox" name="filial" value="Campo Erê"> Campo Erê</label>
                         </div>
                     </div>
 
@@ -222,6 +225,7 @@
 
             // --- DIRETORIA ---
             'dash-geral': ['admin', 'diretoria'],
+            'dash-AnalisarParadas': ['admin', 'diretoria'],
 
             // --- COMERCIAL ---
             'dash-comercial': ['admin', 'diretoria', 'comercial'],
@@ -235,7 +239,7 @@
             'ctrl-PedidosPecas': ['admin', 'diretoria', 'pecas'],
             'ctrl-PedidosPrim': ['admin', 'diretoria', 'pecas'],
             'ctrl-ControleFerramentas': ['admin', 'diretoria', 'pecas'],
-            'ctrl-Tempario': ['admin', 'diretoria', 'pecas'],
+            'ctrl-Prim': ['admin', 'diretoria', 'pecas'],
 
             // --- SERVICOS ---
             'dash-servicos': ['admin', 'diretoria', 'servicos'],
@@ -243,6 +247,11 @@
             'dash-planos-manutencao': ['admin', 'diretoria', 'servicos'],
             'ctrl-PlanosVigentes': ['admin', 'diretoria', 'servicos'],
             'ctrl-MaquinaParada': ['admin', 'diretoria', 'servicos'],
+            'ctrl-Telemetria': ['admin', 'diretoria', 'servicos'],
+            'ctrl-Tempario': ['admin', 'diretoria', 'servicos', 'pecas'],
+            
+            // --- LUBRIFICANTES ---
+            'lubri-AnaliseLubrificantes': ['admin', 'diretoria', 'pecas'],
         };
 
         // --- NOMES AMIGÁVEIS PARA AS PERMISSÕES ---
@@ -250,11 +259,12 @@
             'admin-CadastroGestores': 'Cadastro de Gestores',
             'admin-CadastroTecnicos': 'Cadastro de Técnicos',
             'dash-geral': 'Dashboard Geral',
+            'dash-AnalisarParadas': 'Dashboard Analisar Paradas',
             'dash-comercial': 'Dashboard Comercial',
             'dash-Seguro': 'Dashboard Seguro',
             'dash-Consorcio': 'Dashboard Consórcio',
             'dash-pecas': 'Dashboard Peças',
-            'ctrl-Kit50': 'Controle Kit 50',
+            'ctrl-Kit50': 'Controle Kit 50 Horas',
             'ctrl-ContagemDiaria': 'Contagem Diária',
             'ctrl-PedidosPecas': 'Pedidos de Peças',
             'ctrl-PedidosPrim': 'Pedidos de Prim',
@@ -264,7 +274,10 @@
             'dash-planos-manutencao': 'Planos de Manutenção',
             'ctrl-PlanosVigentes': 'Planos Vigentes',
             'ctrl-MaquinaParada': 'Máquina Parada',
-            'ctrl-Tempario': 'Tempario'
+            'ctrl-Tempario': 'Tempario',
+            'ctrl-Telemetria': 'Telemetria',
+            'ctrl-Prim': 'Controle Prim',
+            'lubri-AnaliseLubrificantes': 'Análise de Lubrificantes'
         };
 
         // --- Elementos do DOM ---
@@ -293,7 +306,8 @@
             const categories = {
                 'Administrativo': [],
                 'Dashboards': [],
-                'Controles': []
+                'Controles': [],
+                'Lubrificantes': []
             };
 
             for (const [permissionId, groups] of Object.entries(menuPermissions)) {
@@ -302,6 +316,7 @@
                 let category = 'Controles';
                 if (permissionId.startsWith('admin-')) category = 'Administrativo';
                 else if (permissionId.startsWith('dash-')) category = 'Dashboards';
+                else if (permissionId.startsWith('lubri-')) category = 'Lubrificantes';
                 
                 categories[category].push({ id: permissionId, name: permissionName });
             }
