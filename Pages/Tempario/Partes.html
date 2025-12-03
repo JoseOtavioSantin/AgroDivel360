@@ -41,6 +41,21 @@
             border-color: #193b7c;
         }
 
+        .parte-icon {
+            width: 100%;
+            height: 120px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .parte-icon img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
         .parte-name {
             font-size: 18px;
             font-weight: 600;
@@ -226,6 +241,30 @@
                 }
             });
 
+            // Ordenar partes: Revisões primeiro (ordenadas por número de horas) e depois as outras alfabeticamente
+            const partesOrdenadas = Object.values(partesUnicas).sort((a, b) => {
+                const nomeA = a.parteEquipamento.toLowerCase();
+                const nomeB = b.parteEquipamento.toLowerCase();
+                
+                const isRevisaoA = nomeA.includes('revisão') || nomeA.includes('revisao');
+                const isRevisaoB = nomeB.includes('revisão') || nomeB.includes('revisao');
+                
+                // Se ambas são revisões, ordenar por número de horas
+                if (isRevisaoA && isRevisaoB) {
+                    // Extrair números do nome (ex: "Revisão 50 horas" -> 50)
+                    const horasA = parseInt(nomeA.match(/\d+/)?.[0] || '0');
+                    const horasB = parseInt(nomeB.match(/\d+/)?.[0] || '0');
+                    return horasA - horasB;
+                }
+                
+                // Revisões sempre vêm primeiro
+                if (isRevisaoA) return -1;
+                if (isRevisaoB) return 1;
+                
+                // Caso contrário, ordem alfabética
+                return nomeA.localeCompare(nomeB);
+            });
+
             // Verificar se o usuário atual está autorizado
             let isAutorizado = false;
             try {
@@ -238,7 +277,7 @@
             }
 
             // Criar cards para cada parte única
-            Object.values(partesUnicas).forEach(parte => {
+            partesOrdenadas.forEach(parte => {
                 const card = document.createElement('a');
                 card.href = `Pecas.html?id=${parte.id}&maquina=${encodeURIComponent(maquina)}&parte=${encodeURIComponent(parte.parteEquipamento)}`;
                 card.className = 'parte-card';
@@ -249,6 +288,11 @@
                 }
                 
                 const quantidadePecas = parte.pecas ? parte.pecas.length : 0;
+                
+                // Extrair a primeira palavra do nome da parte para a imagem
+                const primeiraPalavra = parte.parteEquipamento.split(' ')[0];
+                const imagemParte = primeiraPalavra.charAt(0).toUpperCase() + primeiraPalavra.slice(1).toLowerCase();
+                
                 // Valores monetários removidos (form simplificado)
                 card.innerHTML = `
                     ${isAutorizado ? `
@@ -256,6 +300,10 @@
                             <i class='bx bx-edit'></i> Editar
                         </button>
                     ` : ''}
+                    <div class="parte-icon">
+                        <img src="/assets/images/${imagemParte}.png" alt="${parte.parteEquipamento}" 
+                            onerror="this.onerror=null; this.src='/assets/images/Parte.png';">
+                    </div>
                     <h3 class="parte-name">${parte.parteEquipamento}</h3>
                     <div class="parte-info">${quantidadePecas} peça(s) cadastrada(s)</div>
                 `;
@@ -337,4 +385,3 @@ async function editarParte(parteId) {
 </body>
 
 </html>
-
