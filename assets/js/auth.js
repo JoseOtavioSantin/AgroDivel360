@@ -9,6 +9,7 @@ const menuPermissions = {
 
     // --- DIRETORIA ---
     'dash-geral': ['admin', 'diretoria'],
+    'dash-AnalisarParadas': ['admin', 'diretoria'],
 
     // --- COMERCIAL ---
     'dash-comercial': ['admin', 'diretoria', 'comercial'],
@@ -22,6 +23,7 @@ const menuPermissions = {
     'ctrl-PedidosPecas': ['admin', 'diretoria', 'pecas'],
     'ctrl-PedidosPrim': ['admin', 'diretoria', 'pecas'],
     'ctrl-ControleFerramentas': ['admin', 'diretoria', 'pecas'],
+    'ctrl-Prim': ['admin', 'diretoria', 'pecas'],
 
     // --- SERVICOS ---
     'dash-servicos': ['admin', 'diretoria', 'servicos'],
@@ -29,12 +31,17 @@ const menuPermissions = {
     'dash-planos-manutencao': ['admin', 'diretoria', 'servicos'],
     'ctrl-PlanosVigentes': ['admin', 'diretoria', 'servicos'],
     'ctrl-MaquinaParada': ['admin', 'diretoria', 'servicos'],
-    'ctrl-Tempario': ['admin', 'diretoria', 'servicos'],
+    'ctrl-Tempario': ['admin', 'diretoria', 'servicos', 'pecas'],
+    'ctrl-Telemetria': ['admin', 'diretoria', 'servicos'],
+    
+    // --- LUBRIFICANTES ---
+    'lubri-AnaliseLubrificantes': ['admin', 'diretoria', 'pecas'],
 };
 
 // --- MAPA DE PÁGINAS PARA VERIFICAÇÃO ---
 const pagePermissions = {
     '/Pages/Dashboard/DashboardGeral.html': ['admin', 'diretoria'],
+    '/Pages/Dashboard/DashboardAnalisarParadas.html': ['admin', 'diretoria'],
     '/Pages/Dashboard/DashboardComercial.html': ['admin', 'diretoria', 'comercial'],
     '/Pages/Dashboard/DashboardSeguro.html': ['admin', 'diretoria', 'comercial'],
     '/Pages/Dashboard/DashboardConsorcio.html': ['admin', 'diretoria', 'comercial'],
@@ -46,10 +53,13 @@ const pagePermissions = {
     '/Pages/Controles/ContagemDiaria.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/PedidosPecas.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/PedidosPrim.html': ['admin', 'diretoria', 'pecas'],
+    '/Pages/Controles/prim.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/ControleFerramentas.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Controles/PlanosVigentes.html': ['admin', 'diretoria', 'servicos'],
     '/Pages/Controles/MaquinasParadas.html': ['admin', 'diretoria', 'servicos'],
-    '/Pages/Tempario/Tempario.html': ['admin', 'diretoria', 'servicos'],
+    '/Pages/Controles/Telemetria.html': ['admin', 'diretoria', 'servicos'],
+    '/Pages/Tempario/Tempario.html': ['admin', 'diretoria', 'servicos', 'pecas'],
+    '/Pages/Lubrificantes/AnaliseLubrificantes.html': ['admin', 'diretoria', 'pecas'],
     '/Pages/Cadastros/CadastroGestores.html': ['admin'],
     '/Pages/Cadastros/CadastroTecnicos.html': ['admin']
 };
@@ -89,26 +99,28 @@ function checkPageAccess(userGroup, permissoesIndividuais) {
         const menuId = Object.keys(menuPermissions).find(key => {
             // Mapeia páginas para IDs de menu (você pode precisar ajustar isso)
             const pageMap = {
-                
-        '/Pages/Dashboard/DashboardGeral.html': 'dash-geral',
-        '/Pages/Dashboard/DashboardComercial.html': 'dash-comercial',
-        '/Pages/Dashboard/DashboardSeguro.html': 'dash-Seguro',
-        '/Pages/Dashboard/DashboardConsorcio.html': 'dash-Consorcio',
-        '/Pages/Dashboard/DashboardPecas.html': 'dash-pecas',
-        '/Pages/Dashboard/DashboardServicos.html': 'dash-servicos',
-        '/Pages/Dashboard/DashboardPLM.html': 'dash-PLM',
-        '/Pages/Dashboard/DashboardPlanosManutencao.html': 'dash-planos-manutencao',
-        '/Pages/Controles/Kits50Horas.html': 'ctrl-Kit50',
-        '/Pages/Controles/ContagemDiaria.html': 'ctrl-ContagemDiaria',
-        '/Pages/Controles/PedidosPecas.html': 'ctrl-PedidosPecas',
-        '/Pages/Controles/PedidosPrim.html': 'ctrl-PedidosPrim',
-        '/Pages/Controles/ControleFerramentas.html': 'ctrl-ControleFerramentas',
-        '/Pages/Controles/PlanosVigentes.html': 'ctrl-PlanosVigentes',
-        '/Pages/Controles/MaquinasParadas.html': 'ctrl-MaquinaParada',
-        '/Pages/Tempario/Tempario.html': ['admin', 'diretoria', 'servicos'],
-        '/Pages/Cadastros/CadastroGestores.html': 'admin-CadastroGestores',
-        '/Pages/Cadastros/CadastroTecnicos.html': 'admin-CadastroTecnicos'
-
+                '/Pages/Dashboard/DashboardGeral.html': 'dash-geral',
+                '/Pages/Dashboard/DashboardAnalisarParadas.html': 'dash-AnalisarParadas',
+                '/Pages/Dashboard/DashboardComercial.html': 'dash-comercial',
+                '/Pages/Dashboard/DashboardSeguro.html': 'dash-Seguro',
+                '/Pages/Dashboard/DashboardConsorcio.html': 'dash-Consorcio',
+                '/Pages/Dashboard/DashboardPecas.html': 'dash-pecas',
+                '/Pages/Dashboard/DashboardServicos.html': 'dash-servicos',
+                '/Pages/Dashboard/DashboardPLM.html': 'dash-PLM',
+                '/Pages/Dashboard/DashboardPlanosManutencao.html': 'dash-planos-manutencao',
+                '/Pages/Controles/Kits50Horas.html': 'ctrl-Kit50',
+                '/Pages/Controles/ContagemDiaria.html': 'ctrl-ContagemDiaria',
+                '/Pages/Controles/PedidosPecas.html': 'ctrl-PedidosPecas',
+                '/Pages/Controles/PedidosPrim.html': 'ctrl-PedidosPrim',
+                '/Pages/Controles/prim.html': 'ctrl-Prim',
+                '/Pages/Controles/ControleFerramentas.html': 'ctrl-ControleFerramentas',
+                '/Pages/Controles/PlanosVigentes.html': 'ctrl-PlanosVigentes',
+                '/Pages/Controles/MaquinasParadas.html': 'ctrl-MaquinaParada',
+                '/Pages/Controles/Telemetria.html': 'ctrl-Telemetria',
+                '/Pages/Tempario/Tempario.html': 'ctrl-Tempario',
+                '/Pages/Lubrificantes/AnaliseLubrificantes.html': 'lubri-AnaliseLubrificantes',
+                '/Pages/Cadastros/CadastroGestores.html': 'admin-CadastroGestores',
+                '/Pages/Cadastros/CadastroTecnicos.html': 'admin-CadastroTecnicos'
             };
             return pageMap[currentPage] === key;
         });
