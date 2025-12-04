@@ -80,7 +80,7 @@
 .modal-ferramentas.active { display: flex; }
 .modal-content { background-color: var(--cor-sidebar); padding: 25px; border-radius: 12px; width: 95%; max-width: 500px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--cor-borda); padding-bottom: 10px; margin-bottom: 20px; }
-.modal-header h3 { margin: 0; font-size: 20px; }
+.modal-header h3 { margin: 0; font-size: 20px; color: #000000;}
 .close-button { cursor: pointer; font-size: 28px; font-weight: bold; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #ccc; }
@@ -307,3 +307,4 @@
 .btn-pdf-header:hover {
     background-color: #b71c1c !important;
 }
+
