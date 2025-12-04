@@ -237,7 +237,7 @@ async function salvarAlocacao(event) {
         ordemServico: os,
         ferramentaId: ferramentaId,
         funcionario: document.getElementById("tecnico-select").value,
-        dataAlocacao: new Date(document.getElementById("data-alocacao").value + "T12:00:00"),
+        dataAlocacao: new Date(),
         responsavelLancamento: document.getElementById("responsavel-lancamento").value,
     };
     if (!dadosAlocacao.funcionario || !document.getElementById("data-alocacao").value) {

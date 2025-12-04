@@ -125,6 +125,7 @@ function exibirPreviewPDF(os) {
     listaItensHTML += '<tr style="background-color: #f8f9fa;">';
     listaItensHTML += '<th style="padding: 6px; text-align: left; border-bottom: 1px solid #ddd;">Código</th>';
     listaItensHTML += '<th style="padding: 6px; text-align: left; border-bottom: 1px solid #ddd;">Descrição</th>';
+    listaItensHTML += '<th style="padding: 6px; text-align: left; border-bottom: 1px solid #ddd;">Localização</th>';
     listaItensHTML += '<th style="padding: 6px; text-align: center; border-bottom: 1px solid #ddd;">Qtd</th>';
     listaItensHTML += '</tr>';
     
@@ -132,44 +133,52 @@ function exibirPreviewPDF(os) {
         const ferramenta = todasFerramentas.find(f => f.id === alocacao.ferramentaId);
         const codigo = ferramenta ? (ferramenta.codigo || 'N/A') : 'N/A';
         const descricao = ferramenta ? (ferramenta.descricao || 'Descrição não disponível') : 'Ferramenta não encontrada';
+        const localizacao = ferramenta ? (ferramenta.localizacao || '-') : '-';
         const quantidade = alocacao.quantidade || 1;
         
         listaItensHTML += `<tr>`;
         listaItensHTML += `<td style="padding: 6px; border-bottom: 1px solid #eee;">${codigo}</td>`;
         listaItensHTML += `<td style="padding: 6px; border-bottom: 1px solid #eee;">${descricao}</td>`;
+        listaItensHTML += `<td style="padding: 6px; border-bottom: 1px solid #eee;">${localizacao}</td>`;
         listaItensHTML += `<td style="padding: 6px; text-align: center; border-bottom: 1px solid #eee;">${quantidade}</td>`;
         listaItensHTML += `</tr>`;
     });
     listaItensHTML += '</table>';
 
     const previewHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
-            <div>
-                <img src="/assets/images/logoPDF.png" alt="Logo" style="height: 150px; max-width: 200px;">
+        <div style="min-height: 260mm; display: flex; flex-direction: column; position: relative;">
+            <div style="flex: 0 0 auto;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0;">
+                    <div>
+                        <img src="/assets/images/logoPDF.png" alt="Logo" style="height: 150px; max-width: 200px;">
+                    </div>
+                    <div style="text-align: right;">
+                        <h2 style="margin: 0 0 2px 0; font-size: 16px; color: #333;">Relatório de Alocação</h2>
+                        <p style="margin: 0; font-size: 12px; color: #666;">OS: <strong>${os}</strong></p>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; font-size: 11px;">
+                    <div><strong>Técnico:</strong> ${tecnico}</div>
+                    <div><strong>Data:</strong> ${dataAlocacao}</div>
+                    <div><strong>Responsável:</strong> ${responsavel}</div>
+                </div>
+                
+                <h3 style="margin: 15px 0 8px 0; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 4px;">Itens Alocados</h3>
+                ${listaItensHTML}
             </div>
-            <div style="text-align: right;">
-                <h2 style="margin: 0 0 2px 0; font-size: 16px; color: #333;">Relatório de Alocação</h2>
-                <p style="margin: 0; font-size: 12px; color: #666;">OS: <strong>${os}</strong></p>
+            
+            <div style="margin-top: auto; padding-top: 40mm;">
+                <div style="text-align: center;">
+                    <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto; padding-top: 4px;">
+                        <p style="margin: 0; font-size: 10px;">Assinatura do Mecânico</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 10px; text-align: center; font-size: 9px; color: #666; border-top: 1px solid #eee; padding-top: 8px;">
+                    <p style="margin: 0;">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</p>
+                </div>
             </div>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; font-size: 11px;">
-            <div><strong>Técnico:</strong> ${tecnico}</div>
-            <div><strong>Data:</strong> ${dataAlocacao}</div>
-            <div><strong>Responsável:</strong> ${responsavel}</div>
-        </div>
-        
-        <h3 style="margin: 15px 0 8px 0; font-size: 13px; border-bottom: 1px solid #eee; padding-bottom: 4px;">Itens Alocados</h3>
-        ${listaItensHTML}
-        
-        <div style="margin-top: 30px; text-align: center;">
-            <div style="border-top: 1px solid #000; width: 200px; margin: 0 auto; padding-top: 4px;">
-                <p style="margin: 0; font-size: 10px;">Assinatura do Mecânico</p>
-            </div>
-        </div>
-        
-        <div style="margin-top: 20px; text-align: center; font-size: 9px; color: #666; border-top: 1px solid #eee; padding-top: 8px;">
-            <p style="margin: 0;">Documento gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</p>
         </div>
     `;
 
