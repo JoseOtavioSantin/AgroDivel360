@@ -192,7 +192,8 @@ function atualizarOpcoesFerramentas() {
     }
     const ferramentasDisponiveis = ferramentasFiltradas.filter(f => {
         const alocadas = todasAlocacoes.filter(a => a.ferramentaId === f.id).length;
-        return f.quantidade > alocadas && !f.reparo;
+        // Excluir ferramentas que estão em reparo OU marcadas como inativas
+        return f.quantidade > alocadas && !f.reparo && !f.inativa;
     });
     const opcoes = ferramentasDisponiveis.map(f => {
         const alocadas = todasAlocacoes.filter(a => a.ferramentaId === f.id).length;
