@@ -214,6 +214,32 @@
             transform: translateY(0);
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
+
+        /* Estilos para grupos de OS */
+        .grupo-os:hover {
+            background-color: #34495e !important;
+        }
+
+        .grupo-os td {
+            font-weight: 500;
+        }
+
+        .detalhes-os table {
+            font-size: 0.9rem;
+            background-color: #ffffff;
+        }
+
+        .detalhes-os tbody tr {
+            background-color: #ffffff !important;
+        }
+
+        .detalhes-os tbody tr:hover {
+            background-color: #e3f2fd !important;
+        }
+
+        .detalhes-os td {
+            color: #fff !important;
+        }
     </style>
 </head>
 <body>
@@ -512,7 +538,7 @@
             }
         }
 
-        // FUNÇÃO SIMPLIFICADA PARA RENDERIZAR ALOCAÇÕES
+        // FUNÇÃO MELHORADA PARA RENDERIZAR ALOCAÇÕES AGRUPADAS POR OS
         function renderizarTabelaAlocacao(alocacoes) {
             const tabelaBody = document.getElementById('tabela-alocacao');
             tabelaBody.innerHTML = '';
@@ -530,38 +556,127 @@
                 return;
             }
 
+            // Agrupar alocações por OS
+            const alocacoesPorOS = {};
             alocacoes.forEach(a => {
-                const ferramenta = todasFerramentas.find(f => f.id === a.ferramentaId);
-                const tr = document.createElement('tr');
-                
-                const dataAlocacao = formatarDataHora(a.dataAlocacao);
+                const os = a.ordemServico || 'Sem OS';
+                if (!alocacoesPorOS[os]) {
+                    alocacoesPorOS[os] = [];
+                }
+                alocacoesPorOS[os].push(a);
+            });
 
-                tr.innerHTML = `
-                    <td>
-                        <span class="os-badge">${a.ordemServico || 'N/A'}</span>
+            // Renderizar cada grupo de OS
+            Object.keys(alocacoesPorOS).forEach(os => {
+                const alocacoesOS = alocacoesPorOS[os];
+                const primeiraAlocacao = alocacoesOS[0];
+                const dataAlocacao = formatarDataHora(primeiraAlocacao.dataAlocacao);
+                const funcionario = primeiraAlocacao.funcionario;
+                
+                // Pegar a primeira ferramenta para mostrar a filial
+                const primeiraFerramenta = todasFerramentas.find(f => f.id === primeiraAlocacao.ferramentaId);
+                const filial = primeiraFerramenta ? primeiraFerramenta.filial : '';
+
+                // Linha principal do grupo (cabeçalho clicável)
+                const trGrupo = document.createElement('tr');
+                trGrupo.className = 'grupo-os';
+                trGrupo.style.cursor = 'pointer';
+                trGrupo.style.backgroundColor = '#2c3e50';
+                trGrupo.style.borderLeft = '4px solid #3498db';
+                trGrupo.style.color = '#ffffff';
+                
+                trGrupo.innerHTML = `
+                    <td style="padding: 15px 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i data-lucide="chevron-right" class="chevron-icon" style="width: 20px; height: 20px; transition: transform 0.3s; color: #3498db;"></i>
+                            <span class="os-badge" style="font-size: 14px; font-weight: 700; background: #3498db; color: white; border: none;">${os}</span>
+                        </div>
                     </td>
-                    <td>
+                    <td style="padding: 15px 10px;">
                         <div>
-                            <strong>${ferramenta ? ferramenta.descricao : 'Ferramenta não encontrada'}</strong>
-                            <div style="font-size: 0.85em; color: #666; margin-top: 2px;">
-                                ${ferramenta ? `Código: ${ferramenta.codigo} | ${ferramenta.filial}` : ''}
+                            <strong style="color: #ffffff;">${alocacoesOS.length} ferramenta${alocacoesOS.length > 1 ? 's' : ''} alocada${alocacoesOS.length > 1 ? 's' : ''}</strong>
+                            <div style="font-size: 0.85em; color: #bdc3c7; margin-top: 2px;">
+                                ${filial ? `Filial: ${filial}` : ''}
                             </div>
                         </div>
                     </td>
-                    <td>${a.funcionario}</td>
-                    <td>${dataAlocacao}</td>
-                    <td style="text-align: center;">
-                        <button class="btn btn-sucesso btn-devolver" 
-                                data-id="${a.id}" 
-                                data-ferramenta-id="${a.ferramentaId}" 
-                                data-funcionario="${a.funcionario}" 
-                                title="Registrar Devolução">
-                            <i data-lucide="arrow-left-circle"></i> Devolver
+                    <td style="padding: 15px 10px;">
+                        <strong style="color: #ffffff;">${funcionario}</strong>
+                    </td>
+                    <td style="padding: 15px 10px; color: #ecf0f1;">${dataAlocacao}</td>
+                    <td style="text-align: center; padding: 15px 10px;">
+                        <button class="btn btn-sucesso btn-devolver-os" 
+                                data-os="${os}"
+                                title="Devolver todas as ferramentas desta OS"
+                                style="font-size: 0.85rem;">
+                            <i data-lucide="arrow-left-circle"></i> Devolver Todas
                         </button>
                     </td>
                 `;
-                tabelaBody.appendChild(tr);
+
+                trGrupo.addEventListener('click', (e) => {
+                    // Não expandir se clicar no botão
+                    if (e.target.closest('.btn-devolver-os')) return;
+                    
+                    const detalhesRow = trGrupo.nextElementSibling;
+                    const chevron = trGrupo.querySelector('.chevron-icon');
+                    
+                    if (detalhesRow && detalhesRow.classList.contains('detalhes-os')) {
+                        const isVisible = detalhesRow.style.display !== 'none';
+                        detalhesRow.style.display = isVisible ? 'none' : 'table-row';
+                        chevron.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(90deg)';
+                    }
+                });
+
+                tabelaBody.appendChild(trGrupo);
+
+                // Linha de detalhes (expandível)
+                const trDetalhes = document.createElement('tr');
+                trDetalhes.className = 'detalhes-os';
+                trDetalhes.style.display = 'none';
+                trDetalhes.style.backgroundColor = '#ffffff';
+                
+                let detalhesHTML = '<td colspan="5" style="padding: 0;"><div style="padding: 15px 20px; border-left: 4px solid #3498db; margin-left: 4px; background: #f8f9fa;">';
+                detalhesHTML += '<table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">';
+                detalhesHTML += '<thead><tr style="background: #1a252f; color: white; font-size: 0.9rem;">';
+                detalhesHTML += '<th style="padding: 14px; text-align: left; font-weight: 600;">Ferramenta</th>';
+                detalhesHTML += '<th style="padding: 14px; text-align: left; font-weight: 600;">Código</th>';
+                detalhesHTML += '<th style="padding: 14px; text-align: left; font-weight: 600;">Localização</th>';
+                detalhesHTML += '<th style="padding: 14px; text-align: center; font-weight: 600;">Ações</th>';
+                detalhesHTML += '</tr></thead><tbody>';
+
+                alocacoesOS.forEach(a => {
+                    const ferramenta = todasFerramentas.find(f => f.id === a.ferramentaId);
+                    const descricao = ferramenta ? ferramenta.descricao : 'Ferramenta não encontrada';
+                    const codigo = ferramenta ? ferramenta.codigo : 'N/A';
+                    const localizacao = ferramenta ? (ferramenta.localizacao || '-') : '-';
+                    
+                    detalhesHTML += `
+                        <tr style="border-bottom: 1px solid #dee2e6; background-color: #ffffff;">
+                            <td style="padding: 14px; color: #1a252f; font-size: 0.95rem;">
+                                <strong>${descricao}</strong>
+                            </td>
+                            <td style="padding: 14px; color: #1a252f; font-weight: 500; font-size: 0.95rem;">${codigo}</td>
+                            <td style="padding: 14px; color: #1a252f; font-weight: 500; font-size: 0.95rem;">${localizacao}</td>
+                            <td style="padding: 12px; text-align: center;">
+                                <button class="btn btn-secundario btn-devolver" 
+                                        data-id="${a.id}" 
+                                        data-ferramenta-id="${a.ferramentaId}" 
+                                        data-funcionario="${a.funcionario}"
+                                        title="Devolver apenas esta ferramenta"
+                                        style="font-size: 0.8rem; padding: 6px 12px;">
+                                    <i data-lucide="arrow-left-circle" style="width: 14px; height: 14px;"></i> Devolver
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                detalhesHTML += '</tbody></table></div></td>';
+                trDetalhes.innerHTML = detalhesHTML;
+                tabelaBody.appendChild(trDetalhes);
             });
+            
             lucide.createIcons();
         }
 
@@ -901,6 +1016,21 @@
 
             // Devolver ferramenta (Modal Inteligente)
             document.getElementById('tabela-alocacao').addEventListener('click', async (e) => {
+                // Botão devolver todas as ferramentas da OS
+                const btnDevolverOS = e.target.closest('.btn-devolver-os');
+                if (btnDevolverOS) {
+                    const os = btnDevolverOS.dataset.os;
+                    const alocacoesOS = todasAlocacoes.filter(a => a.ordemServico === os);
+                    
+                    if (alocacoesOS.length > 0) {
+                        // Pega qualquer alocação para abrir o modal
+                        const primeiraAlocacao = alocacoesOS[0];
+                        abrirModalDevolucao(primeiraAlocacao.id, primeiraAlocacao.ferramentaId, primeiraAlocacao.funcionario);
+                    }
+                    return;
+                }
+
+                // Botão devolver ferramenta individual
                 const btnDev = e.target.closest('.btn-devolver');
                 if (btnDev) {
                     abrirModalDevolucao(btnDev.dataset.id, btnDev.dataset.ferramentaId, btnDev.dataset.funcionario);
