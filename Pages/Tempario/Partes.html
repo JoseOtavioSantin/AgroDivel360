@@ -129,6 +129,99 @@
         .parte-card-com-botao {
             padding-top: 50px; /* Espaço para o botão flutuante */
         }
+
+        /* Checkbox de seleção */
+        .checkbox-selecao {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            z-index: 10;
+            accent-color: #193b7c;
+            pointer-events: auto !important; /* Força o checkbox a ser clicável */
+        }
+
+        /* Barra de ações */
+        .barra-acoes {
+            position: fixed;
+            bottom: -100px;
+            left: 0;
+            right: 0;
+            background: #193b7c;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: bottom 0.3s ease;
+        }
+
+        .barra-acoes.ativa {
+            bottom: 0;
+        }
+
+        .info-selecao {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .botoes-acoes {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-acao {
+            background: white;
+            color: #193b7c;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-acao:hover {
+            background: #f0f0f0;
+            transform: translateY(-2px);
+        }
+
+        .btn-acao.btn-exportar {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-acao.btn-exportar:hover {
+            background: #218838;
+        }
+
+        .btn-acao.btn-cancelar {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-acao.btn-cancelar:hover {
+            background: #c82333;
+        }
+
+        /* Ajuste no card quando checkbox está visível */
+        .parte-card.selecionavel {
+            padding-top: 50px;
+        }
+
+        /* Estilo para card selecionado */
+        .parte-card.selecionado {
+            border-color: #193b7c;
+            background: #f0f4ff;
+        }
     </style>
 </head>
 <body>
@@ -145,11 +238,30 @@
             </div>
             <h1 id="page-title">Partes da Máquina</h1>
             <p id="page-subtitle">Selecione uma parte para ver suas peças cadastradas.</p>
+            <button class="btn-acao" id="btn-modo-selecao" style="margin-top: 15px;">
+                <i class='bx bx-check-square'></i> Selecionar Múltiplas Partes
+            </button>
         </div>
 
         <div class="partes-section">
             <div class="partes-grid" id="partes-grid">
                 <div class="loading">Carregando partes...</div>
+            </div>
+        </div>
+        
+        <!-- Barra de ações para seleção múltipla -->
+        <div class="barra-acoes" id="barra-acoes">
+            <div class="info-selecao">
+                <i class='bx bx-check-circle'></i>
+                <span id="contador-selecao">0 partes selecionadas</span>
+            </div>
+            <div class="botoes-acoes">
+                <button class="btn-acao btn-cancelar" id="btn-cancelar-selecao">
+                    <i class='bx bx-x'></i> Cancelar
+                </button>
+                <button class="btn-acao btn-exportar" id="btn-exportar-txt">
+                    <i class='bx bx-download'></i> Exportar TXT
+                </button>
             </div>
         </div>
     </section>
@@ -162,6 +274,153 @@
         'angelo.murilo@agrodivel.com'
     ];
     // --- FIM DA LISTA DE PERMISSÕES ---
+
+    // Variáveis para controle de seleção
+    let modoSelecao = false;
+    let partesSelecionadas = new Set();
+    let todasPartes = []; // Armazenar todas as partes carregadas
+
+    // Função para alternar modo de seleção
+    function toggleModoSelecao() {
+        modoSelecao = !modoSelecao;
+        const btn = document.getElementById('btn-modo-selecao');
+        const checkboxes = document.querySelectorAll('.checkbox-selecao');
+        const cards = document.querySelectorAll('.parte-card');
+        
+        if (modoSelecao) {
+            btn.innerHTML = '<i class=\'bx bx-x\'></i> Cancelar Seleção';
+            btn.style.background = '#dc3545';
+            btn.style.color = 'white';
+            checkboxes.forEach(cb => cb.style.display = 'block');
+            
+            // Modificar comportamento dos cards para seleção
+            cards.forEach(card => {
+                card.classList.add('selecionavel');
+                
+                // Remover o href para evitar navegação
+                card.dataset.originalHref = card.href;
+                card.removeAttribute('href');
+                card.style.cursor = 'pointer';
+                
+                // Adicionar evento de clique no card para alternar checkbox
+                card.addEventListener('click', handleCardClick);
+            });
+        } else {
+            btn.innerHTML = '<i class=\'bx bx-check-square\'></i> Selecionar Múltiplas Partes';
+            btn.style.background = 'white';
+            btn.style.color = '#193b7c';
+            checkboxes.forEach(cb => {
+                cb.style.display = 'none';
+                cb.checked = false;
+            });
+            
+            // Restaurar comportamento normal dos cards
+            cards.forEach(card => {
+                card.classList.remove('selecionavel', 'selecionado');
+                
+                // Restaurar o href
+                if (card.dataset.originalHref) {
+                    card.href = card.dataset.originalHref;
+                }
+                card.style.cursor = '';
+                
+                // Remover evento de clique
+                card.removeEventListener('click', handleCardClick);
+            });
+            partesSelecionadas.clear();
+            atualizarBarraAcoes();
+        }
+    }
+
+    // Função para lidar com clique no card (modo seleção)
+    function handleCardClick(e) {
+        // Não fazer nada se clicar no botão de editar
+        if (e.target.closest('.btn-editar-parte')) {
+            return;
+        }
+        
+        e.preventDefault();
+        const card = e.currentTarget;
+        const checkbox = card.querySelector('.checkbox-selecao');
+        
+        if (checkbox) {
+            // Alternar estado do checkbox
+            checkbox.checked = !checkbox.checked;
+            
+            // Disparar evento change manualmente
+            const event = new Event('change', { bubbles: true });
+            checkbox.dispatchEvent(event);
+        }
+    }
+
+    // Função para atualizar a barra de ações
+    function atualizarBarraAcoes() {
+        const barra = document.getElementById('barra-acoes');
+        const contador = document.getElementById('contador-selecao');
+        const qtd = partesSelecionadas.size;
+        
+        if (qtd > 0) {
+            barra.classList.add('ativa');
+            contador.textContent = `${qtd} parte${qtd > 1 ? 's' : ''} selecionada${qtd > 1 ? 's' : ''}`;
+        } else {
+            barra.classList.remove('ativa');
+        }
+    }
+
+    // Função para exportar partes selecionadas em TXT
+    async function exportarPartesTXT() {
+        if (partesSelecionadas.size === 0) {
+            alert('Selecione pelo menos uma parte para exportar.');
+            return;
+        }
+
+        try {
+            const { db } = await import('/assets/js/firebase-config.js');
+            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js");
+            
+            let conteudoTXT = 'Código;Quantidade\n';
+            
+            // Buscar dados de cada parte selecionada
+            for (const parteId of partesSelecionadas) {
+                const parteDoc = await getDoc(doc(db, "equipamentosPartes", parteId));
+                
+                if (parteDoc.exists()) {
+                    const data = parteDoc.data();
+                    
+                    if (data.pecas && Array.isArray(data.pecas) && data.pecas.length > 0) {
+                        // Formato simples: Código;Quantidade
+                        data.pecas.forEach((peca) => {
+                            const codigo = peca.codigo || '';
+                            const quantidade = peca.quantidade || '0';
+                            conteudoTXT += `${codigo};${quantidade}\n`;
+                        });
+                    }
+                }
+            }
+            
+            // Criar e baixar o arquivo
+            const blob = new Blob([conteudoTXT], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const urlParams = new URLSearchParams(window.location.search);
+            const maquina = urlParams.get('maquina');
+            a.href = url;
+            a.download = `${maquina}_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            // Resetar seleção
+            toggleModoSelecao();
+            
+            alert(`Arquivo TXT exportado com sucesso!\n${partesSelecionadas.size} parte(s) incluída(s).`);
+            
+        } catch (error) {
+            console.error('Erro ao exportar TXT:', error);
+            alert('Erro ao exportar arquivo TXT: ' + error.message);
+        }
+    }
 
     async function carregarPartes() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -282,6 +541,7 @@
                 const card = document.createElement('a');
                 card.href = `Pecas.html?id=${parte.id}&maquina=${encodeURIComponent(maquina)}&parte=${encodeURIComponent(parte.parteEquipamento)}`;
                 card.className = 'parte-card';
+                card.dataset.parteId = parte.id; // Adicionar ID como data attribute
                 
                 // Adicionar classe especial se tiver botão de editar
                 if (isAutorizado) {
@@ -296,6 +556,7 @@
                 
                 // Valores monetários removidos (form simplificado)
                 card.innerHTML = `
+                    <input type="checkbox" class="checkbox-selecao" style="display: none;" data-parte-id="${parte.id}">
                     ${isAutorizado ? `
                         <button class="btn-editar-parte" onclick="event.preventDefault(); event.stopPropagation(); window.editarParte('${parte.id}')" title="Editar Parte">
                             <i class='bx bx-edit'></i> Editar
@@ -309,6 +570,28 @@
                     <div class="parte-info">${quantidadePecas} peça(s) cadastrada(s)</div>
                 `;
                 grid.appendChild(card);
+            });
+            
+            // Armazenar partes para uso posterior
+            todasPartes = partesOrdenadas;
+            
+            // Adicionar event listeners para checkboxes
+            document.querySelectorAll('.checkbox-selecao').forEach(checkbox => {
+                checkbox.addEventListener('change', function(e) {
+                    e.stopPropagation();
+                    const parteId = this.dataset.parteId;
+                    const card = this.closest('.parte-card');
+                    
+                    if (this.checked) {
+                        partesSelecionadas.add(parteId);
+                        card.classList.add('selecionado');
+                    } else {
+                        partesSelecionadas.delete(parteId);
+                        card.classList.remove('selecionado');
+                    }
+                    
+                    atualizarBarraAcoes();
+                });
             });
 
         } catch (error) {
@@ -375,7 +658,14 @@ async function editarParte(parteId) {
     // Tornar a função global para ser acessível pelo onclick
     window.editarParte = editarParte;
 
-    document.addEventListener('DOMContentLoaded', carregarPartes);
+    document.addEventListener('DOMContentLoaded', () => {
+        carregarPartes();
+        
+        // Event listeners para botões de seleção
+        document.getElementById('btn-modo-selecao').addEventListener('click', toggleModoSelecao);
+        document.getElementById('btn-cancelar-selecao').addEventListener('click', toggleModoSelecao);
+        document.getElementById('btn-exportar-txt').addEventListener('click', exportarPartesTXT);
+    });
 </script>
 
     <script type="module" src="/assets/js/firebase-config.js"></script>

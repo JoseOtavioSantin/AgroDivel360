@@ -489,6 +489,7 @@
     let userData;
     let editMode = false;
     let docId = null;
+    let carregandoEdicao = false; // Flag para controlar carregamento de edição
 
     // Função para processar arquivo Excel
     function processarExcel(file) {
@@ -742,9 +743,12 @@
     }
 
     // Função para carregar partes já cadastradas para o equipamento
-    async function carregarPartesExistentes(tipoEquipamento, nomeEquipamento) {
+    async function carregarPartesExistentes(tipoEquipamento, nomeEquipamento, preservarSelecao = false) {
       try {
         const partesSelect = document.getElementById('parte-equipamento');
+        
+        // Guardar a seleção atual se estiver preservando
+        const selecaoAtual = preservarSelecao ? partesSelect.value : '';
         
         // Guardar as partes atuais que já estão no select
         const partesAtuais = new Set();
@@ -797,6 +801,11 @@
           option.textContent = parte;
           partesSelect.appendChild(option);
         });
+
+        // Restaurar a seleção se estiver preservando
+        if (preservarSelecao && selecaoAtual) {
+          partesSelect.value = selecaoAtual;
+        }
 
         console.log('Partes carregadas:', partesOrdenadas);
 
@@ -873,20 +882,32 @@
       const nomeInput = document.getElementById('nome-equipamento');
 
       tipoInput.addEventListener('change', function() {
+        // Não recarregar se estiver carregando dados de edição
+        if (carregandoEdicao) return;
+        
         if (nomeInput.value) {
-          carregarPartesExistentes(tipoInput.value, nomeInput.value);
+          // Preservar seleção atual quando recarregar
+          carregarPartesExistentes(tipoInput.value, nomeInput.value, editMode);
         }
       });
 
       nomeInput.addEventListener('change', function() {
+        // Não recarregar se estiver carregando dados de edição
+        if (carregandoEdicao) return;
+        
         if (tipoInput.value) {
-          carregarPartesExistentes(tipoInput.value, nomeInput.value);
+          // Preservar seleção atual quando recarregar
+          carregarPartesExistentes(tipoInput.value, nomeInput.value, editMode);
         }
       });
 
       nomeInput.addEventListener('blur', function() {
+        // Não recarregar se estiver carregando dados de edição
+        if (carregandoEdicao) return;
+        
         if (tipoInput.value && nomeInput.value) {
-          carregarPartesExistentes(tipoInput.value, nomeInput.value);
+          // Preservar seleção atual quando recarregar
+          carregarPartesExistentes(tipoInput.value, nomeInput.value, editMode);
         }
       });
 
@@ -1101,16 +1122,46 @@
         const data = docSnap.data();
         console.log('Dados carregados para edição:', data);
         
-        // Preencher todos os campos
-        document.getElementById('tipo-equipamento').value = data.tipoEquipamento || '';
+        // Ativar flag de carregamento
+        carregandoEdicao = true;
+        
+        // Preencher tipo de equipamento (corrigindo case)
+        const tipoSelect = document.getElementById('tipo-equipamento');
+        if (data.tipoEquipamento) {
+          // O banco salva em lowercase, mas o select tem valores com primeira maiúscula
+          const tipoLower = data.tipoEquipamento.toLowerCase();
+          // Buscar a opção que corresponde (case-insensitive)
+          for (let i = 0; i < tipoSelect.options.length; i++) {
+            if (tipoSelect.options[i].value.toLowerCase() === tipoLower) {
+              tipoSelect.value = tipoSelect.options[i].value;
+              break;
+            }
+          }
+        }
+        
+        // Preencher nome do equipamento
         document.getElementById('nome-equipamento').value = data.nomeEquipamento || '';
 
         // Carregar partes existentes para preencher o select
         await carregarPartesExistentes(data.tipoEquipamento, data.nomeEquipamento);
         
-        // Selecionar a parte atual
+        // Selecionar a parte atual DEPOIS de carregar as opções
         const parteSelect = document.getElementById('parte-equipamento');
-        parteSelect.value = data.parteEquipamento || '';
+        if (data.parteEquipamento) {
+          // Tentar encontrar a parte (case-insensitive)
+          const parteUpper = data.parteEquipamento.toUpperCase();
+          for (let i = 0; i < parteSelect.options.length; i++) {
+            if (parteSelect.options[i].value.toUpperCase() === parteUpper) {
+              parteSelect.selectedIndex = i;
+              break;
+            }
+          }
+        }
+
+        // Verificar se é checklist e atualizar tabela
+        const parteValue = (data.parteEquipamento || '').toUpperCase();
+        const isChecklist = parteValue.includes('CHECKLIST') || parteValue.includes('CHECK');
+        atualizarTabelaPecas(isChecklist);
 
         // Carregar peças
         if (data.pecas && Array.isArray(data.pecas)) {
@@ -1123,8 +1174,32 @@
           });
         }
 
+        // Desativar flag de carregamento após 500ms
+        setTimeout(() => {
+          carregandoEdicao = false;
+        }, 500);
+        
+        // Feedback visual de sucesso
+        Swal.fire({
+          icon: 'success',
+          title: 'Dados carregados!',
+          text: `${data.tipoEquipamento} - ${data.nomeEquipamento} - ${data.parteEquipamento}`,
+          timer: 2500,
+          showConfirmButton: false,
+          position: 'top-end',
+          toast: true
+        });
+        
+        console.log('Edição carregada com sucesso:', {
+          tipo: data.tipoEquipamento,
+          nome: data.nomeEquipamento,
+          parte: data.parteEquipamento,
+          pecas: data.pecas?.length || 0
+        });
+
         // Form simplificado: sem cálculo de valores
       } else {
+        carregandoEdicao = false;
         Swal.fire('Erro', 'Equipamento não encontrado. Redirecionando para a lista.', 'error');
         window.location.href = '/Pages/Tempario/Tempario.html';
       }
@@ -1146,8 +1221,18 @@
         document.getElementById('nome-equipamento').value = decodeURIComponent(maquina);
       }
       if (tipo && !docId) {
-        document.getElementById('tipo-equipamento').value = decodeURIComponent(tipo);
+        // Fazer match case-insensitive para o tipo
+        const tipoSelect = document.getElementById('tipo-equipamento');
+        const tipoDecoded = decodeURIComponent(tipo).toLowerCase();
+        for (let i = 0; i < tipoSelect.options.length; i++) {
+          if (tipoSelect.options[i].value.toLowerCase() === tipoDecoded) {
+            tipoSelect.value = tipoSelect.options[i].value;
+            break;
+          }
+        }
       }
+      
+      console.log('Parâmetros URL carregados:', { tipo, maquina, parteEquipamento, docId });
     }
 
     async function iniciarPagina() {

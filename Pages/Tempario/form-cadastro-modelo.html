@@ -375,6 +375,20 @@
       <!-- Formulário de Cadastro -->
       <div class="form-section">
         <h2 id="form-title">Novo Modelo</h2>
+        
+        <!-- Seção: Carregar Modelo Existente -->
+        <div class="partes-comuns-section" style="border-left-color: #193b7c; margin-bottom: 20px;">
+          <div class="partes-comuns-header">
+            <h3 class="partes-comuns-title" style="color: #193b7c;">Carregar Modelo Existente</h3>
+          </div>
+          <div class="form-group" style="margin: 0;">
+            <label for="selecionar-modelo">Selecionar Modelo</label>
+            <select id="selecionar-modelo" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; box-sizing: border-box; background-color: white; cursor: pointer;">
+              <option value="">Selecione um modelo para carregar...</option>
+            </select>
+          </div>
+        </div>
+        
         <form id="formModelo">
           <div class="form-container">
             <div class="form-group">
@@ -598,6 +612,7 @@
     function limparFormulario() {
       document.getElementById('tipo-equipamento').value = '';
       document.getElementById('nome-equipamento').value = '';
+      document.getElementById('selecionar-modelo').value = '';
       document.getElementById('lista-partes').innerHTML = '';
       
       // Limpar seleção das partes comuns
@@ -687,6 +702,20 @@
       });
     }
 
+    function atualizarSelectModelos() {
+      const selectModelo = document.getElementById('selecionar-modelo');
+      // Limpar opções existentes (exceto a primeira)
+      selectModelo.innerHTML = '<option value="">Selecione um modelo para carregar...</option>';
+      
+      // Adicionar modelos ordenados
+      todosModelos.forEach(modelo => {
+        const option = document.createElement('option');
+        option.value = modelo.id;
+        option.textContent = `${modelo.tipoEquipamento} - ${modelo.nomeEquipamento}`;
+        selectModelo.appendChild(option);
+      });
+    }
+
     async function carregarModelos() {
       try {
         const querySnapshot = await getDocs(collection(db, modelosCollectionName));
@@ -705,6 +734,7 @@
         
         exibirModelos(todosModelos);
         atualizarContador(todosModelos.length);
+        atualizarSelectModelos();
         
       } catch (error) {
         console.error('Erro ao carregar modelos:', error);
@@ -727,17 +757,21 @@
         if (docSnap.exists()) {
           const data = docSnap.data();
           
-          // Preencher formulário
-          document.getElementById('tipo-equipamento').value = data.tipoEquipamento;
-          document.getElementById('nome-equipamento').value = data.nomeEquipamento;
+          // Preencher formulário com TODAS as informações
+          document.getElementById('tipo-equipamento').value = data.tipoEquipamento || '';
+          document.getElementById('nome-equipamento').value = data.nomeEquipamento || '';
+          
+          // Atualizar o select de modelos para mostrar o modelo carregado
+          document.getElementById('selecionar-modelo').value = id;
           
           // Limpar e preencher partes
           document.getElementById('lista-partes').innerHTML = '';
-          if (data.partes && Array.isArray(data.partes)) {
+          if (data.partes && Array.isArray(data.partes) && data.partes.length > 0) {
             data.partes.forEach(parte => {
               adicionarParte(parte);
             });
           } else {
+            // Se não houver partes, adiciona um campo vazio
             adicionarParte();
           }
 
@@ -749,8 +783,18 @@
           document.getElementById('btn-cancelar').style.display = 'flex';
 
           // Scroll para o formulário
-          document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-
+          document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          
+          // Feedback visual
+          Swal.fire({
+            icon: 'info',
+            title: 'Modelo carregado!',
+            text: `${data.tipoEquipamento} - ${data.nomeEquipamento}`,
+            timer: 2000,
+            showConfirmButton: false,
+            position: 'top-end',
+            toast: true
+          });
         }
       } catch (error) {
         console.error('Erro ao carregar modelo para edição:', error);
@@ -852,6 +896,14 @@
         document.getElementById('btn-adicionar-comuns').addEventListener('click', adicionarPartesComunsSelecionadas);
         document.getElementById('formModelo').addEventListener('submit', salvarModelo);
         document.getElementById('btn-cancelar').addEventListener('click', limparFormulario);
+        
+        // Listener para o select de carregar modelo
+        document.getElementById('selecionar-modelo').addEventListener('change', (e) => {
+          const modeloId = e.target.value;
+          if (modeloId) {
+            editarModelo(modeloId);
+          }
+        });
         
         // Pesquisa em tempo real
         document.getElementById('campo-pesquisa').addEventListener('input', (e) => {

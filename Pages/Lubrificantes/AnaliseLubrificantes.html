@@ -526,33 +526,62 @@
     async function salvarDadosFirebase(dadosProcessados) {
       try {
         let salvosCount = 0;
+        let duplicatasCount = 0;
         const app = getApp();
         const db = getFirestore(app);
+        
         for (const item of dadosProcessados) {
           // Verificar se a filial está nas 3 permitidas
           if (FILIAIS.includes(item.filial)) {
-            const dadosParaSalvar = {
-              filial: item.filial,
-              data: item.data,
-              grupo: item.grupo || '',
-              numeroNF: item.numeroNF,
-              codProduto: item.codProduto,
-              descricao: item.descricao,
-              quantNF: item.quantNF,
-              unidadeNF: item.unidadeNF,
-              quantConvertida: item.quantConvertida,
-              unidade: item.unidade,
-              litros: item.litros,
-              totalLitros: item.totalLitros,
-              usuarioImportacao: userData?.nome || userData?.email || '',
-              dataImportacao: Timestamp.now(),
-              timestamp: Timestamp.now()
-            };
-            await addDoc(collection(db, "relatorioLubrificantes"), dadosParaSalvar);
-            salvosCount++;
+            // Criar chave única para evitar duplicatas: filial + data + numeroNF + codProduto
+            const chaveUnica = `${item.filial}_${item.data}_${item.numeroNF}_${item.codProduto}`;
+            
+            // Verificar se já existe um documento com essa chave única
+            const q = query(
+              collection(db, "relatorioLubrificantes"),
+              where("filial", "==", item.filial),
+              where("data", "==", item.data),
+              where("numeroNF", "==", item.numeroNF),
+              where("codProduto", "==", item.codProduto)
+            );
+            
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+              // Não existe duplicata, pode salvar
+              const dadosParaSalvar = {
+                filial: item.filial,
+                data: item.data,
+                grupo: item.grupo || '',
+                numeroNF: item.numeroNF,
+                codProduto: item.codProduto,
+                descricao: item.descricao,
+                quantNF: item.quantNF,
+                unidadeNF: item.unidadeNF,
+                quantConvertida: item.quantConvertida,
+                unidade: item.unidade,
+                litros: item.litros,
+                totalLitros: item.totalLitros,
+                chaveUnica: chaveUnica, // Adicionar chave única para facilitar buscas futuras
+                usuarioImportacao: userData?.nome || userData?.email || '',
+                dataImportacao: Timestamp.now(),
+                timestamp: Timestamp.now()
+              };
+              await addDoc(collection(db, "relatorioLubrificantes"), dadosParaSalvar);
+              salvosCount++;
+            } else {
+              // Já existe, pular
+              duplicatasCount++;
+            }
           }
         }
-        return true;
+        
+        // Mostrar mensagem com informações sobre duplicatas
+        if (duplicatasCount > 0) {
+          console.log(`ℹ️ ${duplicatasCount} registro(s) duplicado(s) ignorado(s)`);
+        }
+        
+        return { salvos: salvosCount, duplicatas: duplicatasCount };
       } catch (error) {
         console.error('❌ Erro ao salvar:', error);
         throw error;
@@ -610,7 +639,7 @@
             document.getElementById('loading').style.display = 'none';
             return;
           }
-          await salvarDadosFirebase(dadosProcessados);
+          const resultado = await salvarDadosFirebase(dadosProcessados);
           document.getElementById('loading').style.display = 'none';
           document.getElementById('upload-container').style.display = 'none';
           const uploadIcon = document.querySelector('#btn-importar i');
@@ -619,13 +648,19 @@
             uploadIcon.classList.remove('spin');
             lucide.createIcons();
           }
+          
+          // Mensagem com detalhes de salvos e duplicatas
+          let mensagem = `${resultado.salvos} registro(s) importado(s) com sucesso!`;
+          if (resultado.duplicatas > 0) {
+            mensagem += `\n${resultado.duplicatas} registro(s) duplicado(s) foram ignorados.`;
+          }
+          
           Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: `Relatório carregado! ${dadosProcessados.length} itens processados.`,
-            showConfirmButton: false,
-            timer: 3000
+            icon: resultado.salvos > 0 ? 'success' : 'info',
+            title: 'Importação Concluída',
+            text: mensagem,
+            showConfirmButton: true,
+            timer: resultado.duplicatas > 0 ? 5000 : 3000
           });
           await carregarDados();
           analisarDashboard();
